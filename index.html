@@ -430,7 +430,7 @@ const STORAGE_KEY="cedears_v9_data";
 async function saveToStorage(){
   try{
     const storage=window.storage||null;
-    const payload=JSON.stringify({data,customFund:CUSTOM_FUND,deleted:DELETED_TICKERS});
+    const payload=JSON.stringify({data,customFund:CUSTOM_FUND,deleted:[...DELETED_TICKERS]});
     if(storage){await storage.set(STORAGE_KEY,payload);}
     else{localStorage.setItem(STORAGE_KEY,payload);}
     const ind=document.getElementById("save-indicator");
