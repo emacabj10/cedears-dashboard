@@ -278,6 +278,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script>
 const FUND={MSFT:"excelentes",GOOGL:"excelentes",AMZN:"excelentes",META:"excelentes","BRK.B":"excelentes",V:"excelentes",WMT:"excelentes",MELI:"excelentes",QQQ:"excelentes",SPY:"excelentes",DIA:"excelentes",BTC:"excelentes",ETH:"excelentes",BNB:"excelentes",AMD:"buenos",NKE:"buenos",KO:"buenos",PEP:"buenos",MCD:"buenos",BABA:"buenos",PYPL:"buenos",B:"buenos",TSLA:"controversiales"};
 let CUSTOM_FUND={};
+let DELETED_TICKERS=new Set();
 let data=[
   {t:"AMD",co:"AMD",sec:"Semiconductores",rsi10:40.65,rsiW:43.09,ema200:192,price:192.77,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"bull",poc:160,rsiPrev:null},
   {t:"AMZN",co:"Amazon",sec:"Tech/Retail",rsi10:40.41,rsiW:40.19,ema200:220.9,price:207.67,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:220,rsiPrev:null},
@@ -365,46 +366,24 @@ function scoreSignal(s){
   const pocExtremo=ppct<-40;
 
   // ── Alerta setup en formación ────────────────────────────
-  // RSI bajando hacia 30: rsi10 entre 25-35, rsiPrev > rsi10 y no rebotó aún
   const setupForming=!s.rsiBounce&&s.rsi10>25&&s.rsi10<=35&&s.rsiPrev&&s.rsiPrev>s.rsi10;
 
   // ── Tamaño base por score ────────────────────────────────
-  let sig,bdg,posBdg,posSize,posCls,posWarning="";
+  let sig,bdg,posBdg,posSize,posCls;
   if(isBear||trendBajista){
     sig="caution";bdg="Precaución";posBdg="No entrar";
     posSize=isBear?"Divergencia bearish activa":"Tendencia bajista fuerte";posCls="ps-no";
   } else if(pts>=4){
-    sig="buy";bdg="Acumular";posCls="ps-full";
-    // Tamaño ajustado por fundamentals
-    if(fundEx){posBdg="100%";posSize="Posición completa";}
-    else if(fundOk){posBdg="75%";posSize="¾ de la posición";}
-    else{posBdg="50%";posSize="Media posición (fund. mod.)";}
+    sig="buy";bdg="Acumular";posBdg="100%";posSize="Posición completa";posCls="ps-full";
   } else if(pts===3){
-    sig="watch";bdg="Media posición";posCls="ps-half";
-    if(fundEx){posBdg="50%";posSize="50% de la posición";}
-    else if(fundOk){posBdg="35%";posSize="35% de la posición";}
-    else{posBdg="25%";posSize="25% — fund. moderados";}
+    sig="watch";bdg="Media posición";posBdg="50%";posSize="50% de la posición";posCls="ps-half";
   } else if(setupForming){
     sig="forming";bdg="Setup en formación";posBdg="—";posSize="RSI acercándose a 30 ↓";posCls="ps-forming";
   } else{
     sig="hold";bdg="Esperar setup";posBdg="—";posSize="No entrar aún";posCls="ps-wait";
   }
 
-  // ── Ajuste por RSI semanal < 25 ──────────────────────────
-  let rsiWAdj="";
-  if((sig==="buy"||sig==="watch")&&s.rsiW<25){
-    if(sig==="buy"){
-      sig="watch";bdg="Media posición";posCls="ps-half";
-      const base=fundEx?"50%":fundOk?"35%":"25%";
-      const baseSize=fundEx?"50% de la posición":fundOk?"35% de la posición":"25% — fund. moderados";
-      posBdg=base;posSize=baseSize;
-    } else {
-      sig="hold";bdg="Esperar setup";posBdg="—";posSize="No entrar aún";posCls="ps-wait";
-    }
-    rsiWAdj="RSI semanal <25 — tamaño reducido un nivel";
-  }
-
-  return{conds,pts,sig,bdg,posBdg,posSize,posCls,epct,ppct,fund,pocMaxOp,pocExtremo,setupForming,rsiWAdj};
+  return{conds,pts,sig,bdg,posBdg,posSize,posCls,epct,ppct,fund,pocMaxOp,pocExtremo,setupForming};
 }
 function scolor(pts){return pts>=4?"#2ea043":pts>=3?"#ef9f27":"#444441";}
 function calcEmaHint(p,e){if(!e||!p)return"";const pct=((p-e)/e*100);const col=pct>=0?"#2ea043":pct>=-8?"#ba7517":"#da3633";return`<span style="color:${col}">${pct>=0?"+":""}${pct.toFixed(1)}% ${pct>=0?"sobre":"bajo"} EMA</span>`;}
@@ -451,7 +430,7 @@ const STORAGE_KEY="cedears_v9_data";
 async function saveToStorage(){
   try{
     const storage=window.storage||null;
-    const payload=JSON.stringify({data,customFund:CUSTOM_FUND});
+    const payload=JSON.stringify({data,customFund:CUSTOM_FUND,deleted:DELETED_TICKERS});
     if(storage){await storage.set(STORAGE_KEY,payload);}
     else{localStorage.setItem(STORAGE_KEY,payload);}
     const ind=document.getElementById("save-indicator");
@@ -470,7 +449,10 @@ async function loadFromStorage(){
       const parsed=JSON.parse(saved);
       const savedData=parsed.data||parsed;
       const savedCustomFund=parsed.customFund||{};
+      const savedDeleted=parsed.deleted||[];
       Object.assign(CUSTOM_FUND,savedCustomFund);
+      savedDeleted.forEach(t=>{DELETED_TICKERS.add(t);});
+      data=data.filter(d=>!DELETED_TICKERS.has(d.t));
       const savedTickers=savedData.map(s=>s.t);
       const baseTickers=data.map(d=>d.t);
       savedData.forEach((s,i)=>{
@@ -498,6 +480,7 @@ async function clearStorage(){
     const storage=window.storage||null;
     if(storage){await storage.delete(STORAGE_KEY);}
     else{localStorage.removeItem(STORAGE_KEY);}
+    DELETED_TICKERS.clear();
     location.reload();
   }catch(e){location.reload();}
 }
@@ -533,7 +516,7 @@ function renderCards(){
   else{const ord={buy:0,watch:1,hold:2,caution:3};sorted.sort((a,b)=>{const sa=scoreSignal(a),sb=scoreSignal(b);return(ord[sa.sig]||2)-(ord[sb.sig]||2)||sa.rsi10-sb.rsi10;});}
   sorted.forEach(s=>{
     const i=data.indexOf(s);
-    const{conds,pts,sig,bdg,posBdg,posSize,posCls,epct,ppct,fund,pocMaxOp,pocExtremo,setupForming,rsiWAdj}=scoreSignal(s);
+    const{conds,pts,sig,bdg,posBdg,posSize,posCls,epct,ppct,fund,pocMaxOp,pocExtremo,setupForming}=scoreSignal(s);
     if(sig==="buy")b++;else if(sig==="watch")w++;else if(sig==="caution")ca++;else h++;
     if(curFilt!=="all"&&sig!==curFilt)return;
     const pct=Math.round((pts/5)*100);
@@ -551,11 +534,10 @@ function renderCards(){
     const noteLinesH=noteLines.map(l=>`<div class="auto-line"><span class="auto-line-dot" style="color:${colMap[l.col]}">◆</span><span>${l.txt}</span></div>`).join("");
     const bearAlert=s.divState==="bear"?`<div class="bear-alert">! Divergencia bearish activa — entrada cancelada</div>`:"";
     const pocMaxBadge=pocMaxOp?`<div style="margin:4px 0;padding:4px 8px;background:#0d2340;border:0.5px solid #58a6ff;border-radius:6px;font-size:10px;color:#58a6ff">★ Zona máxima oportunidad — precio ${ppct.toFixed(1)}% bajo POC · fund. excelentes</div>`:pocExtremo?`<div style="margin:4px 0;padding:4px 8px;background:#0d2340;border:0.5px solid #e3b341;border-radius:6px;font-size:10px;color:#e3b341">⚠ Precio >40% bajo POC — verificar fundamentals antes de entrar</div>`:"";
-    const rsiWBadge=rsiWAdj?`<div style="margin:4px 0;padding:4px 8px;background:#1a1100;border:0.5px solid #ba7517;border-radius:6px;font-size:10px;color:#ba7517">↓ ${rsiWAdj}</div>`:"";
     const setupBadge=setupForming?`<div style="margin:4px 0;padding:4px 8px;background:#2d2200;border:0.5px solid #e3b341;border-radius:6px;font-size:10px;color:#e3b341">⟳ RSI(10) ${s.rsi10} bajando hacia 30 — setup en formación</div>`:"";
     const card=document.createElement("div");card.className=`card s-${sig}`;card.dataset.sig=sig;
     card.innerHTML=`<div class="card-head"><div><div class="tkr">${s.t}<span class="trend-tag ${trendCls}">${trendTxt}</span></div><div class="co">${s.co} · ${s.sec}</div></div><div class="badge ${bCls}">${bdg}</div></div>
-    ${bearAlert}${pocMaxBadge}${rsiWBadge}${setupBadge}
+    ${bearAlert}${pocMaxBadge}${setupBadge}
     <div class="metrics">
       <div class="met"><div class="ml">RSI(10)</div><div class="mv ${rsiCls}">${s.rsi10}</div><div class="ms">${s.rsi10<=30?"oversold":"neutral"}</div></div>
       <div class="met"><div class="ml">RSI sem.</div><div class="mv ${rsiWCls}">${s.rsiW}</div><div class="ms">${s.rsiW>=40?"ok":s.rsiW>=25?"débil":"bajo"}</div></div>
@@ -622,55 +604,161 @@ function deleteTicker(ticker){
 }
 function filt(sig,btn){curFilt=sig;document.querySelectorAll(".fbtn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderCards();}
 function sortBy(type,btn){curSort=type;document.querySelectorAll(".sbtn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderCards();}
-loadFromStorage().then(()=>renderCards());
+loadFromStorage().then(()=>{renderCards();});
 
-// ── Data loader from data.json (GitHub Pages mode) ──────────────────────────
+// ── Yahoo Finance Auto-fetch ─────────────────────────────────────────────────
+
+// Map ticker → Yahoo Finance symbol
+const YF_MAP={
+  "AMD":"AMD","AMZN":"AMZN","B":"GOLD","BABA":"BABA","BNB":"BNB-USD",
+  "BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD",
+  "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
+  "MSFT":"MSFT","NKE":"NKE","PEP":"PEP","PYPL":"PYPL","QQQ":"QQQ",
+  "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT"
+};
 
 const FETCH_KEY="cedears_last_fetch";
+
+function calcRSI(closes, period){
+  if(closes.length < period+1) return null;
+  let gains=0, losses=0;
+  for(let i=1;i<=period;i++){
+    const diff=closes[i]-closes[i-1];
+    if(diff>0) gains+=diff; else losses+=Math.abs(diff);
+  }
+  let avgGain=gains/period, avgLoss=losses/period;
+  for(let i=period+1;i<closes.length;i++){
+    const diff=closes[i]-closes[i-1];
+    const g=diff>0?diff:0, l=diff<0?Math.abs(diff):0;
+    avgGain=(avgGain*(period-1)+g)/period;
+    avgLoss=(avgLoss*(period-1)+l)/period;
+  }
+  if(avgLoss===0) return 100;
+  const rs=avgGain/avgLoss;
+  return Math.round((100-(100/(1+rs)))*100)/100;
+}
+
+function calcEMA(closes, period){
+  if(closes.length < period) return null;
+  const k=2/(period+1);
+  let ema=closes.slice(0,period).reduce((a,b)=>a+b,0)/period;
+  for(let i=period;i<closes.length;i++) ema=closes[i]*k+ema*(1-k);
+  return Math.round(ema*100)/100;
+}
+
+function calcEmaTrend(closes, period){
+  if(closes.length < period+10) return "lateral";
+  const k=2/(period+1);
+  let ema=closes.slice(0,period).reduce((a,b)=>a+b,0)/period;
+  const emas=[];
+  for(let i=period;i<closes.length;i++){ema=closes[i]*k+ema*(1-k);emas.push(ema);}
+  const last10=emas.slice(-10);
+  const slope=(last10[last10.length-1]-last10[0])/last10[0]*100;
+  if(slope>1.5) return"subiendo"; if(slope<-1.5) return"bajando"; return"lateral";
+}
+
+async function fetchQuote(ticker){
+  const sym=YF_MAP[ticker]||ticker;
+  const yfUrl=`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1y`;
+
+  // Try multiple approaches in order
+  const attempts=[
+    // 1. Direct (works locally sometimes)
+    ()=>fetch(yfUrl,{headers:{"Accept":"application/json"}}),
+    // 2. allorigins proxy
+    ()=>fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}`).then(async r=>{
+      const d=await r.json();
+      return new Response(d.contents,{status:200,headers:{"Content-Type":"application/json"}});
+    }),
+    // 3. corsproxy.io
+    ()=>fetch(`https://corsproxy.io/?${encodeURIComponent(yfUrl)}`),
+  ];
+
+  let j=null;
+  for(const attempt of attempts){
+    try{
+      const r=await attempt();
+      if(!r.ok) continue;
+      j=await r.json();
+      if(j?.chart?.result?.[0]) break;
+      j=null;
+    }catch(e){j=null;}
+  }
+
+  try{
+    const result=j?.chart?.result?.[0];
+    if(!result) throw new Error("No data");
+    const closes=result.indicators?.quote?.[0]?.close?.filter(v=>v!=null);
+    if(!closes||closes.length<30) throw new Error("Insufficient data");
+    const price=Math.round(closes[closes.length-1]*100)/100;
+    const rsi10=calcRSI(closes,10);
+
+    // Weekly closes (approx every 5 daily bars)
+    const wCloses=[];
+    for(let i=0;i<closes.length;i+=5) wCloses.push(closes[i]);
+    const rsiW=calcRSI(wCloses,10);
+
+    const ema200=calcEMA(closes,200);
+    const emaTrend=calcEmaTrend(closes,200);
+
+    // rsiPrev: RSI of yesterday (closes excluding today)
+    const rsiPrev=calcRSI(closes.slice(0,-1),10);
+    return{price,rsi10,rsiW,ema200,emaTrend,rsiPrev,ok:true};
+  }catch(e){
+    return{ok:false,error:e.message};
+  }
+}
 
 async function fetchAllQuotes(){
   const btn=document.getElementById("fetch-btn");
   const status=document.getElementById("fetch-status");
-  btn.disabled=true; btn.textContent="Cargando...";
-  status.style.color="#58a6ff"; status.textContent="Cargando datos actualizados...";
+  btn.disabled=true; btn.textContent="Actualizando...";
+  status.style.color="#58a6ff"; status.textContent="Obteniendo datos...";
 
-  try{
-    const r=await fetch("data.json?t="+Date.now());
-    if(!r.ok) throw new Error("No se encontró data.json");
-    const json=await r.json();
-    const quotes=json.quotes||{};
-    const updated=json.updated||"";
-    let count=0;
+  let updated=0, failed=0;
+  const failedTickers=[];
 
-    for(const s of data){
-      if(quotes[s.t]){
-        const q=quotes[s.t];
-        s.price=q.price??s.price;
-        s.rsi10=q.rsi10??s.rsi10;
-        s.rsiPrev=q.rsiPrev??s.rsiPrev;
-        s.rsiW=q.rsiW??s.rsiW;
-        s.ema200=q.ema200??s.ema200;
-        s.emaTrend=q.emaTrend??s.emaTrend;
-        count++;
-      }
+  for(const s of data){
+    if(!YF_MAP[s.t]&&!s.t.endsWith("-USD")) continue;
+    status.textContent=`Actualizando ${s.t}...`;
+    const q=await fetchQuote(s.t);
+    if(q.ok){
+      s.price=q.price;
+      if(q.rsi10!==null) s.rsi10=q.rsi10;
+      if(q.rsiW!==null)  s.rsiW=q.rsiW;
+      if(q.ema200!==null){s.ema200=q.ema200; s.emaTrend=q.emaTrend;}
+      if(q.rsiPrev!==null) s.rsiPrev=q.rsiPrev;
+      updated++;
+    } else {
+      failed++;
+      failedTickers.push(s.t);
     }
-
-    saveToStorage();
-    renderCards();
-
-    const dateStr=updated?new Date(updated).toLocaleString("es-AR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
-    status.style.color="#2ea043";
-    status.textContent=`✓ ${count} tickers actualizados · ${dateStr}`;
-    try{localStorage.setItem(FETCH_KEY,dateStr);}catch(e){}
-  }catch(e){
-    status.style.color="#da3633";
-    status.textContent="Error: "+e.message+" — los datos del servidor no están disponibles";
-  }finally{
-    btn.disabled=false; btn.textContent="↻ Actualizar cotizaciones";
+    await new Promise(r=>setTimeout(r,300));
   }
+
+  saveToStorage();
+  renderCards();
+  btn.disabled=false; btn.textContent="↻ Actualizar cotizaciones";
+
+  const now=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+  if(failed===0){
+    status.style.color="#2ea043";
+    status.textContent=`✓ ${updated} tickers actualizados · ${now}`;
+  } else {
+    status.style.color="#ba7517";
+    status.textContent=`${updated} ok · ${failed} fallaron (${failedTickers.join(", ")}) · ${now}`;
+  }
+  try{localStorage.setItem(FETCH_KEY,now);}catch(e){}
 }
 
-// Show last fetch time on loadcatch(e){}
+// Show last fetch time on load
+try{
+  const last=localStorage.getItem(FETCH_KEY);
+  if(last){
+    const s=document.getElementById("fetch-status");
+    if(s){s.textContent="Última actualización: "+last;s.style.color="#6e7681";}
+  }
+}catch(e){}
 </script>
 </body>
 </html>
