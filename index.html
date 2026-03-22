@@ -596,7 +596,8 @@ function deleteTicker(ticker){
   const dataIdx=data.findIndex(d=>d.t===ticker);
   if(dataIdx===-1)return;
   const s=data[dataIdx];
-  if(!confirm(`¿Eliminar ${s.t} del dashboard?`))return;
+  if(!confirm(`¿Eliminar ${s.t} del dashboard? No volverá a aparecer.`))return;
+  DELETED_TICKERS.add(s.t);
   data.splice(dataIdx,1);
   delete CUSTOM_FUND[s.t];
   saveToStorage();
