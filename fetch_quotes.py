@@ -3,7 +3,7 @@ from datetime import datetime
 
 # Yahoo Finance symbol mapping — ticker local → símbolo YF
 YF_MAP = {
-    "AMD":"AMD","AMZN":"AMZN","B":"GOLD","BABA":"BABA","BNB":"BNB-USD",
+    "AMD":"AMD","AMZN":"AMZN","BABA":"BABA","BNB":"BNB-USD",
     "BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD",
     "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
     "MSFT":"MSFT","NKE":"NKE","PEP":"PEP","PYPL":"PYPL","QQQ":"QQQ",
