@@ -276,7 +276,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="grid" id="grid"></div>
 </div>
 <script>
-const FUND={MSFT:"excelentes",GOOGL:"excelentes",AMZN:"excelentes",META:"excelentes","BRK.B":"excelentes",V:"excelentes",WMT:"excelentes",MELI:"excelentes",QQQ:"excelentes",SPY:"excelentes",DIA:"excelentes",BTC:"excelentes",ETH:"excelentes",BNB:"excelentes",AMD:"buenos",NKE:"buenos",KO:"buenos",PEP:"buenos",MCD:"buenos",BABA:"buenos",PYPL:"buenos",TSLA:"controversiales"};
+const FUND={MSFT:"excelentes",GOOGL:"excelentes",AMZN:"excelentes",META:"excelentes","BRK.B":"excelentes",V:"excelentes",WMT:"excelentes",MELI:"excelentes",QQQ:"excelentes",SPY:"excelentes",DIA:"excelentes",GLD:"excelentes",BTC:"excelentes",ETH:"excelentes",BNB:"excelentes",AMD:"buenos",KO:"buenos",PEP:"buenos",MCD:"buenos",BABA:"buenos",PYPL:"buenos",TSLA:"controversiales"};
 let CUSTOM_FUND={};
 let DELETED_TICKERS=new Set();
 let data=[
@@ -294,7 +294,6 @@ let data=[
   {t:"MELI",co:"MercadoLibre",sec:"E-commerce LatAm",rsi10:28.92,rsiW:29.31,ema200:2095.88,price:1670,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:true,divState:"none",poc:2074,rsiPrev:null},
   {t:"META",co:"Meta Platforms",sec:"Redes sociales",rsi10:30.89,rsiW:40.23,ema200:662.08,price:613.71,emaTrend:"lateral",bbState:"below",bbRecov:false,rsiBounce:false,divState:"none",poc:644,rsiPrev:null},
   {t:"MSFT",co:"Microsoft",sec:"Tecnología",rsi10:37.93,rsiW:28.85,ema200:459.12,price:395.55,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:true,divState:"bull",poc:507,rsiPrev:null},
-  {t:"NKE",co:"Nike",sec:"Consumo/Deporte",rsi10:18.58,rsiW:32.06,ema200:66.23,price:53.98,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:62.23,rsiPrev:null},
   {t:"PEP",co:"PepsiCo",sec:"Consumo defensivo",rsi10:41.83,rsiW:56.19,ema200:150.57,price:159.88,emaTrend:"subiendo",bbState:"inside",bbRecov:true,rsiBounce:false,divState:"none",poc:130.35,rsiPrev:null},
   {t:"PYPL",co:"PayPal",sec:"Fintech",rsi10:45.89,rsiW:30.46,ema200:84.25,price:62.29,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:68.47,rsiPrev:null},
   {t:"QQQ",co:"Nasdaq 100 ETF",sec:"ETF índice",rsi10:37.06,rsiW:41.27,ema200:490.73,price:491.72,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:603.47,rsiPrev:null},
@@ -302,6 +301,7 @@ let data=[
   {t:"TSLA",co:"Tesla",sec:"Autos/Tech",rsi10:38.59,rsiW:39.04,ema200:395.85,price:391.2,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"bull",poc:334.22,rsiPrev:null},
   {t:"V",co:"Visa",sec:"Finanzas/Pagos",rsi10:31.3,rsiW:286.05,ema200:333.08,price:307.14,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:348.59,rsiPrev:null},
   {t:"WMT",co:"Walmart",sec:"Retail defensivo",rsi10:53.77,rsiW:60.92,ema200:109.57,price:126.52,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:97,rsiPrev:null},
+  {t:"GLD",co:"Gold Shares ETF",sec:"ETF índice",rsi10:21.7,rsiW:44.91,ema200:380,price:413,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:304,rsiPrev:null},
 ];
 function emaPct(p,e){return e>0?((p-e)/e*100):0;}
 function pocPct(p,c){return c>0?((p-c)/c*100):0;}
