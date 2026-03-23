@@ -3,7 +3,7 @@ name: Update quotes
 on:
   schedule:
     - cron: '0 11 * * *'
-    - cron: '0 17 * * *'
+    - cron: '17 30  * * *'
   workflow_dispatch:
 
 jobs:
