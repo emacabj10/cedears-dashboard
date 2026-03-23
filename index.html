@@ -879,7 +879,7 @@ async function fetchAllQuotes(){
       failed++;
       failedTickers.push(s.t);
     }
-    await new Promise(r=>setTimeout(r,300));
+    await new Promise(r=>setTimeout(r,200));
   }
 
   saveToStorage();
