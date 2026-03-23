@@ -7,7 +7,7 @@ Dashboard de alertas técnicas para CEDEARs con actualización automática de co
 1. Crear repositorio en GitHub llamado `cedears-dashboard`
 2. Subir todos los archivos de esta carpeta
 3. Activar GitHub Pages: Settings → Pages → Branch: main → / (root)
-4. El workflow corre automáticamente lunes a viernes a las 10am y 6pm (hora Argentina)
+4. El workflow corre automáticamente lunes a viernes a las 6am y 2pm (hora Argentina)
 
 ## URL pública
 
