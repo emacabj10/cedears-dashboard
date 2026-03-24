@@ -1,285 +1,285 @@
 {
-  "updated": "2026-03-23T21:52:50Z",
+  "updated": "2026-03-24T11:35:09Z",
   "quotes": {
     "AMD": {
       "price": 202.68,
       "rsi10": 51.12,
-      "rsiPrev": 49.56,
+      "rsiPrev": 51.12,
       "rsiW": 47.16,
-      "ema200": 183.84,
+      "ema200": 184.03,
       "emaTrend": "lateral"
     },
     "AMZN": {
       "price": 210.14,
       "rsi10": 48.15,
-      "rsiPrev": 39.0,
+      "rsiPrev": 48.15,
       "rsiW": 41.74,
-      "ema200": 218.19,
+      "ema200": 218.11,
       "emaTrend": "lateral"
     },
     "BABA": {
       "price": 126.06,
       "rsi10": 30.19,
-      "rsiPrev": 19.78,
+      "rsiPrev": 30.19,
       "rsiW": 31.26,
-      "ema200": 143.1,
+      "ema200": 142.93,
       "emaTrend": "lateral"
     },
     "BNB": {
-      "price": 640.0,
-      "rsi10": 47.86,
-      "rsiPrev": 39.82,
-      "rsiW": 33.64,
-      "ema200": 774.97,
-      "emaTrend": "lateral"
+      "price": 636.67,
+      "rsi10": 46.12,
+      "rsiPrev": 47.09,
+      "rsiW": 32.83,
+      "ema200": 773.21,
+      "emaTrend": "bajando"
     },
     "BRK.B": {
       "price": 479.98,
       "rsi10": 33.64,
-      "rsiPrev": 34.67,
+      "rsiPrev": 33.64,
       "rsiW": 42.77,
-      "ema200": 495.35,
+      "ema200": 495.2,
       "emaTrend": "lateral"
     },
     "BTC": {
-      "price": 70899.86,
-      "rsi10": 52.56,
-      "rsiPrev": 40.74,
-      "rsiW": 35.85,
-      "ema200": 86275.0,
+      "price": 71057.99,
+      "rsi10": 53.09,
+      "rsiPrev": 52.61,
+      "rsiW": 38.24,
+      "ema200": 86128.45,
       "emaTrend": "bajando"
     },
     "DIA": {
       "price": 461.97,
       "rsi10": 33.45,
-      "rsiPrev": 20.76,
+      "rsiPrev": 33.45,
       "rsiW": 35.29,
       "ema200": 462.32,
       "emaTrend": "lateral"
     },
     "ETH": {
-      "price": 2158.12,
-      "rsi10": 54.07,
-      "rsiPrev": 44.39,
-      "rsiW": 38.34,
-      "ema200": 2710.81,
+      "price": 2161.63,
+      "rsi10": 54.41,
+      "rsiPrev": 53.61,
+      "rsiW": 38.38,
+      "ema200": 2705.09,
       "emaTrend": "bajando"
     },
     "GOOGL": {
       "price": 302.06,
       "rsi10": 42.05,
-      "rsiPrev": 40.07,
+      "rsiPrev": 42.05,
       "rsiW": 50.56,
-      "ema200": 258.62,
+      "ema200": 259.05,
       "emaTrend": "subiendo"
     },
     "KO": {
       "price": 75.11,
       "rsi10": 31.16,
-      "rsiPrev": 26.64,
+      "rsiPrev": 31.16,
       "rsiW": 52.43,
-      "ema200": 72.53,
+      "ema200": 72.55,
       "emaTrend": "lateral"
     },
     "MCD": {
       "price": 308.47,
       "rsi10": 23.07,
-      "rsiPrev": 23.39,
+      "rsiPrev": 23.07,
       "rsiW": 41.48,
-      "ema200": 312.48,
+      "ema200": 312.44,
       "emaTrend": "lateral"
     },
     "MELI": {
       "price": 1666.08,
       "rsi10": 36.37,
-      "rsiPrev": 30.15,
+      "rsiPrev": 36.37,
       "rsiW": 27.21,
-      "ema200": 2130.77,
+      "ema200": 2126.15,
       "emaTrend": "bajando"
     },
     "META": {
       "price": 604.06,
       "rsi10": 35.27,
-      "rsiPrev": 27.75,
+      "rsiPrev": 35.27,
       "rsiW": 37.52,
-      "ema200": 663.88,
+      "ema200": 663.29,
       "emaTrend": "lateral"
     },
     "MSFT": {
       "price": 383.0,
       "rsi10": 30.26,
-      "rsiPrev": 28.32,
+      "rsiPrev": 30.26,
       "rsiW": 27.94,
-      "ema200": 454.2,
+      "ema200": 453.5,
       "emaTrend": "lateral"
     },
     "GLD": {
       "price": 404.04,
       "rsi10": 19.32,
-      "rsiPrev": 21.7,
+      "rsiPrev": 19.32,
       "rsiW": 42.78,
-      "ema200": 383.11,
-      "emaTrend": "subiendo"
+      "ema200": 383.32,
+      "emaTrend": "lateral"
     },
     "PEP": {
       "price": 150.88,
       "rsi10": 26.37,
-      "rsiPrev": 22.45,
+      "rsiPrev": 26.37,
       "rsiW": 46.33,
-      "ema200": 148.25,
+      "ema200": 148.27,
       "emaTrend": "lateral"
     },
     "PYPL": {
       "price": 45.49,
       "rsi10": 51.39,
-      "rsiPrev": 41.48,
+      "rsiPrev": 51.39,
       "rsiW": 30.1,
-      "ema200": 59.61,
+      "ema200": 59.47,
       "emaTrend": "bajando"
     },
     "QQQ": {
       "price": 588.0,
       "rsi10": 38.71,
-      "rsiPrev": 31.51,
+      "rsiPrev": 38.71,
       "rsiW": 36.4,
-      "ema200": 580.0,
+      "ema200": 580.08,
       "emaTrend": "lateral"
     },
     "SPY": {
       "price": 655.38,
       "rsi10": 35.01,
-      "rsiPrev": 25.68,
+      "rsiPrev": 35.01,
       "rsiW": 33.68,
-      "ema200": 650.41,
+      "ema200": 650.46,
       "emaTrend": "lateral"
     },
     "TSLA": {
       "price": 380.85,
       "rsi10": 39.84,
-      "rsiPrev": 27.99,
+      "rsiPrev": 39.84,
       "rsiW": 36.16,
-      "ema200": 382.71,
+      "ema200": 382.69,
       "emaTrend": "lateral"
     },
     "V": {
       "price": 304.44,
       "rsi10": 38.97,
-      "rsiPrev": 32.36,
+      "rsiPrev": 38.97,
       "rsiW": 35.41,
-      "ema200": 335.16,
+      "ema200": 334.85,
       "emaTrend": "lateral"
     },
     "WMT": {
       "price": 120.72,
       "rsi10": 39.2,
-      "rsiPrev": 31.88,
+      "rsiPrev": 39.2,
       "rsiW": 53.64,
-      "ema200": 109.86,
+      "ema200": 109.97,
       "emaTrend": "lateral"
     },
     "NVDA": {
       "price": 175.64,
       "rsi10": 39.93,
-      "rsiPrev": 33.61,
+      "rsiPrev": 39.93,
       "rsiW": 41.26,
-      "ema200": 170.59,
+      "ema200": 170.64,
       "emaTrend": "lateral"
     },
     "AAPL": {
       "price": 251.49,
       "rsi10": 39.86,
-      "rsiPrev": 30.95,
+      "rsiPrev": 39.86,
       "rsiW": 44.05,
-      "ema200": 243.95,
+      "ema200": 244.03,
       "emaTrend": "lateral"
     },
     "NFLX": {
       "price": 93.38,
       "rsi10": 53.7,
-      "rsiPrev": 47.52,
+      "rsiPrev": 53.7,
       "rsiW": 47.97,
-      "ema200": 103.12,
+      "ema200": 103.02,
       "emaTrend": "lateral"
     },
     "COIN": {
       "price": 200.62,
       "rsi10": 54.92,
-      "rsiPrev": 52.35,
+      "rsiPrev": 54.92,
       "rsiW": 41.17,
-      "ema200": 249.93,
+      "ema200": 249.44,
       "emaTrend": "bajando"
     },
     "ARKK": {
       "price": 70.92,
       "rsi10": 45.95,
-      "rsiPrev": 38.26,
+      "rsiPrev": 45.95,
       "rsiW": 39.08,
-      "ema200": 72.35,
+      "ema200": 72.34,
       "emaTrend": "lateral"
     },
     "XOM": {
       "price": 161.13,
       "rsi10": 72.29,
-      "rsiPrev": 69.67,
+      "rsiPrev": 72.29,
       "rsiW": 83.11,
-      "ema200": 125.7,
+      "ema200": 126.06,
       "emaTrend": "subiendo"
     },
     "JPM": {
       "price": 289.91,
       "rsi10": 45.43,
-      "rsiPrev": 36.41,
+      "rsiPrev": 45.43,
       "rsiW": 42.14,
-      "ema200": 293.08,
+      "ema200": 293.05,
       "emaTrend": "lateral"
     },
     "BAC": {
       "price": 47.52,
       "rsi10": 38.29,
-      "rsiPrev": 33.62,
+      "rsiPrev": 38.29,
       "rsiW": 37.15,
-      "ema200": 49.3,
+      "ema200": 49.28,
       "emaTrend": "lateral"
     },
     "UBER": {
       "price": 75.12,
       "rsi10": 50.88,
-      "rsiPrev": 46.03,
+      "rsiPrev": 50.88,
       "rsiW": 40.18,
-      "ema200": 83.56,
+      "ema200": 83.47,
       "emaTrend": "lateral"
     },
     "ABNB": {
       "price": 132.59,
       "rsi10": 55.07,
-      "rsiPrev": 45.26,
+      "rsiPrev": 55.07,
       "rsiW": 55.15,
-      "ema200": 128.12,
+      "ema200": 128.17,
       "emaTrend": "lateral"
     },
     "SHOP": {
       "price": 121.1,
       "rsi10": 44.77,
-      "rsiPrev": 37.4,
+      "rsiPrev": 44.77,
       "rsiW": 40.02,
-      "ema200": 131.02,
+      "ema200": 130.92,
       "emaTrend": "lateral"
     },
     "B": {
       "price": 37.69,
       "rsi10": 22.36,
-      "rsiPrev": 18.33,
+      "rsiPrev": 22.36,
       "rsiW": 39.31,
-      "ema200": 35.28,
-      "emaTrend": "subiendo"
+      "ema200": 35.3,
+      "emaTrend": "lateral"
     },
     "NKE": {
       "price": 52.71,
       "rsi10": 24.11,
-      "rsiPrev": 20.69,
+      "rsiPrev": 24.11,
       "rsiW": 28.99,
-      "ema200": 64.26,
-      "emaTrend": "lateral"
+      "ema200": 64.15,
+      "emaTrend": "bajando"
     }
   }
 }
