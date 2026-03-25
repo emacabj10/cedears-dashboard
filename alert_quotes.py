@@ -389,11 +389,8 @@ for ticker, sym in YF_MAP.items():
     elif score == 2:
         # Watchlist (amarillo) — aviso previo
         watchlist_found.append((ticker, score, q, epct, ppct, tags))
-    elif rsi10 <= 38 and rsi10 > 42:
-        # Radar: RSI frío (≤38) y no superó 42 → aparece solo en cierre
-        radar_info.append((ticker, q, epct, ppct, score, tags))
     elif rsi10 <= 38:
-        # RSI frío → radar
+        # Radar: RSI frío → aparece solo en reporte de cierre, sin alerta individual
         radar_info.append((ticker, q, epct, ppct, score, tags))
 
     time.sleep(0.5)
@@ -405,7 +402,17 @@ watchlist_found = watchlist_found[:MAX_WATCHLIST]
 now_str  = datetime.now().strftime("%d/%m %H:%M")
 date_str = datetime.now().strftime("%d/%m/%Y")
 
-SEP = "─" * 28   # separador visual Unicode para encabezados
+# Encabezado dinámico según hora de activación
+_hour = datetime.now().hour
+if 9 <= _hour < 13:
+    session_header = f"🔔 APERTURA DE MERCADO — {datetime.now().strftime('%H:%M')}\nIniciando reporte técnico..."
+elif 16 <= _hour < 20:
+    session_header = f"🔔 CIERRE DE MERCADO — {datetime.now().strftime('%H:%M')}\nIniciando reporte técnico..."
+else:
+    session_header = f"🔔 REPORTE DE MERCADO — {datetime.now().strftime('%H:%M')}\nIniciando análisis técnico..."
+
+send_telegram(session_header)
+time.sleep(0.3)
 
 # ── 1. Señales confirmadas (Score 3/4/5) → alerta verde individual ────────────
 for ticker, score, q, epct, ppct, fund, poc_max_op, tags in signals_found:
@@ -426,7 +433,6 @@ for ticker, score, q, epct, ppct, fund, poc_max_op, tags in signals_found:
 
     msg = (
         f"🟢 <b>{ticker} — SEÑAL {score}/5</b>\n"
-        f"<i>{SEP}</i>\n"
         f"{poc_badge}"
         f"\n<b>📊 Indicadores</b>\n"
         f"📉 {rsi_label_signal(rsi10, rsi_p)}\n"
@@ -453,7 +459,6 @@ for ticker, score, q, epct, ppct, tags in watchlist_found:
 
     msg = (
         f"🟡 <b>{ticker} — WATCHLIST {score}/5</b>\n"
-        f"<i>{SEP}</i>\n"
         f"⚠️ <b>Estado:</b> Setup en formación. Aviso previo — monitorear.\n"
         f"\n<b>📊 Indicadores</b>\n"
         f"📉 {rsi_label_watchlist(rsi10, rsi_p)}\n"
@@ -475,18 +480,13 @@ total_watch = len(watchlist_found)
 
 if total_sig == 0 and total_watch == 0:
     intro = "Hoy no se detectaron señales ni watchlists activas."
-    if radar_info:
-        intro += " Hay activos fríos en radar:"
 else:
     parts = []
     if total_sig:   parts.append(f"<b>{total_sig}</b> señal(es) confirmada(s) 🟢")
     if total_watch: parts.append(f"<b>{total_watch}</b> watchlist(s) enviada(s) 🟡")
-    intro = "Resumen: " + " · ".join(parts) + "."
-    if radar_info:
-        intro += "\n\nActivos en radar (fríos — RSI ≤ 38):"
+    intro = " · ".join(parts) + "."
 
-# Radar: score 0-1 — listos al final del reporte, NO alertas individuales
-# Se excluyen automáticamente activos con RSI > 42 (ya no están "fríos")
+# Radar: score 0-1, RSI ≤ 42 — solo en reporte de cierre, sin alertas individuales
 radar_lines = []
 radar_filtered = [(t, q, ep, pp, sc, tgs) for t, q, ep, pp, sc, tgs in radar_info
                   if (q["rsi10"] or 99) <= 42]
@@ -496,7 +496,7 @@ for ticker, q, epct, ppct, score, tags in sorted(radar_filtered, key=lambda x: x
     if rsi <= 35:
         line += " — bajando hacia 30."
     elif abs(epct) <= 3:
-        line += f" — cerca de testear la EMA200."
+        line += " — cerca de testear la EMA200."
     else:
         line += "."
     if q.get("bb_below"):
@@ -514,10 +514,7 @@ for ticker, q, epct, ppct, score, tags in sorted(radar_filtered, key=lambda x: x
 
 radar_section = ""
 if radar_lines:
-    radar_section = (
-        f"\n\n<b>📡 {SEP}\nRADAR — Activos fríos\n{SEP}</b>\n"
-        + "\n".join(radar_lines)
-    )
+    radar_section = "\n\n<b>📡 En radar (fríos):</b>\n" + "\n".join(radar_lines)
 
 rsi_values = [q["rsi10"] for _, _, q, _, _ in all_results if q.get("rsi10")]
 avg_rsi = round(sum(rsi_values)/len(rsi_values), 1) if rsi_values else 50
@@ -531,11 +528,10 @@ else:
     bot_note = random.choice(BOT_NOTES)
 
 summary_msg = (
-    f"📅 <b>Resumen Diario — {date_str}</b>\n"
-    f"<i>{SEP}</i>\n\n"
+    f"📅 <b>Resumen Diario — {date_str}</b>\n\n"
     f"{intro}"
     f"{radar_section}\n\n"
-    f"<b>💡 Nota del Bot</b>\n{bot_note}"
+    f"💡 <b>Nota del Bot:</b> {bot_note}"
 )
 print(f"\n{summary_msg}\n")
 send_telegram(summary_msg)
