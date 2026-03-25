@@ -1,11 +1,10 @@
 import json, urllib.request, urllib.error, time, os, random
 from datetime import datetime
 
-# ── Configuración (GitHub Secrets) ───────────────────────────────────────────
+# ── 1. CONFIGURACIÓN ──────────────────────────────────────────────────────────
 TELEGRAM_TOKEN   = os.environ.get("TELEGRAM_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
-# ── Diccionarios y Notas (Mantené los tuyos originales) ──────────────────────
 FUND = {
     "MSFT":"excelentes","GOOGL":"excelentes","AMZN":"excelentes",
     "META":"excelentes","BRK.B":"excelentes","V":"excelentes",
@@ -31,88 +30,95 @@ BOT_NOTES = [
     "Operá lo que ves, no lo que crees."
 ]
 
-# ── Funciones de Etiquetas (Usa las que ya tenés en tu archivo) ──────────────
-# rsi_label_signal, ema_label_signal, poc_label_signal, etc.
+# ── 2. FUNCIONES TÉCNICAS ─────────────────────────────────────────────────────
+def calc_rsi(closes, period=10):
+    if len(closes) < period + 1: return 50
+    gains = losses = 0
+    for i in range(1, period + 1):
+        d = closes[i] - closes[i-1]
+        if d > 0: gains += d
+        else: losses += abs(d)
+    ag, al = gains/period, losses/period
+    for i in range(period + 1, len(closes)):
+        d = closes[i] - closes[i-1]
+        ag = (ag*(period-1) + (d if d>0 else 0)) / period
+        al = (al*(period-1) + (abs(d) if d<0 else 0)) / period
+    return round(100 - (100/(1+ag/al)), 2) if al != 0 else 100
 
-# ── Bucle de Análisis Principal ──────────────────────────────────────────────
-all_results = []
-signals_found = []
-forming_found = []
-radar_info = []
+def fetch_ticker(sym):
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=1y"
+    headers = {"User-Agent":"Mozilla/5.0"}
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=15) as r:
+            data = json.loads(r.read())["chart"]["result"][0]
+        c = [x for x in data["indicators"]["quote"][0]["close"] if x is not None]
+        return {
+            "price": c[-1], "rsi10": calc_rsi(c, 10), "rsi_prev": calc_rsi(c[:-1], 10),
+            "ema200": sum(c[-200:])/200 if len(c)>=200 else None,
+            "bb_lo": (sum(c[-20:])/20) - 2*( (sum((x-(sum(c[-20:])/20))**2 for x in c[-20:])/20)**0.5 ),
+            "poc_proxy": max(set(c[-50:]), key=c[-50:].count), "emaTrend": "alcista" if c[-1] > sum(c[-200:])/200 else "bajista"
+        }
+    except: return None
+
+def score_signal(ticker, q):
+    score = 0
+    rsi, rsi_p = q["rsi10"], q["rsi_prev"]
+    # RSI Rebote (1 pto)
+    if rsi > 30 and rsi_p <= 30: score += 1
+    # Sobre EMA200 (1 pto)
+    epct = ((q["price"] - q["ema200"])/q["ema200"]*100) if q["ema200"] else 0
+    if epct > 0: score += 1
+    # Cerca de POC (1 pto)
+    ppct = ((q["price"] - q["poc_proxy"])/q["poc_proxy"]*100)
+    if abs(ppct) <= 2: score += 1
+    # Fundamentales Excelentes (1 pto)
+    fund = FUND.get(ticker, "buenos")
+    if fund == "excelentes": score += 1
+    # Bollinger recuperada (1 pto)
+    if q["price"] > q["bb_lo"] and rsi > 30 and rsi_p <= 30: score += 1
+    
+    return score, epct, ppct, fund
+
+def send_telegram(msg):
+    if not TELEGRAM_TOKEN: return
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    payload = json.dumps({"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "HTML"}).encode()
+    req = urllib.request.Request(url, data=payload, headers={"Content-Type":"application/json"})
+    try: urllib.request.urlopen(req)
+    except: pass
+
+# ── 3. EJECUCIÓN PRINCIPAL ────────────────────────────────────────────────────
+all_results, signals_found, forming_found, radar_info = [], [], [], []
 
 for ticker, sym in YF_MAP.items():
-    q = fetch_ticker(sym) # Tu función fetch original
+    q = fetch_ticker(sym)
     if not q: continue
     
-    # Obtenemos el score de tu función score_signal
-    score, forming, epct, ppct, fund, poc_max_op, rsi_bounced, rsi_oversold = score_signal(ticker, q)
-    all_results.append((ticker, score, q, epct, ppct))
+    score, epct, ppct, fund = score_signal(ticker, q)
+    all_results.append((ticker, q, score))
 
-    # ── CLASIFICACIÓN JERÁRQUICA (Sin duplicados) ──
     if score > 2:
-        # 1. SEÑAL (Círculo verde si es 4-5, diamante si es 3)
-        signals_found.append((ticker, score, q, epct, ppct, fund, poc_max_op))
-    
+        signals_found.append((ticker, score, q, epct, fund))
     elif score == 2:
-        # 2. WATCHLIST (Solo score 2)
-        forming_found.append((ticker, q, epct, ppct, score))
-    
-    elif (q.get("rsi10") and q["rsi10"] <= 38) or abs(epct) <= 2:
-        # 3. RADAR (Solo para el reporte final)
-        radar_info.append((ticker, q, epct, ppct, score))
-
+        forming_found.append((ticker, score, q, epct))
+    elif q["rsi10"] <= 38:
+        radar_info.append((ticker, q, score))
     time.sleep(0.5)
 
-# ── Envío de Mensajes ────────────────────────────────────────────────────────
-now_str = datetime.now().strftime("%d/%m %H:%M")
+# ── 4. ENVÍO DE ALERTAS ───────────────────────────────────────────────────────
+now = datetime.now().strftime("%d/%m %H:%M")
 
-# 1. SEÑALES INDIVIDUALES (🟢/✳️)
-for ticker, score, q, epct, ppct, fund, poc_max_op in signals_found:
-    emoji = "🟢" if score >= 4 else "✳️"
-    size = "Posición completa 100%" if score >= 4 else "Media posición 50%"
-    
-    msg = (
-        f"{emoji} <b>SEÑAL — {ticker} ({score}/5)</b>\n"
-        f"📅 {now_str} · Fund: {fund}\n\n"
-        f"📉 {rsi_label_signal(q['rsi10'], q['rsi_prev'])}\n"
-        f"📈 {ema_label_signal(epct, q['emaTrend'], q['ema200'])}\n"
-        f"📊 {poc_label_signal(ppct, q['poc_proxy'])}\n"
-        f"🎢 {bb_label_signal(q)}\n\n"
-        f"💰 <b>Sugerido: {size}</b>\n"
-        f"💵 Precio: ${q['price']:,}"
-    )
+for t, s, q, e, f in signals_found:
+    emoji = "🟢" if s >= 4 else "✳️"
+    msg = f"{emoji} <b>SEÑAL — {t} ({s}/5)</b>\n📅 {now}\n\nRSI: {q['rsi10']}\nEMA200: {e:+.1f}%\nFund: {f}\n\n💰 <b>Sugerido: {'100%' if s>=4 else '50%'}</b>"
     send_telegram(msg)
-    time.sleep(0.5)
 
-# 2. WATCHLIST INDIVIDUALES (🟡)
-for ticker, q, epct, ppct, score in forming_found:
-    msg = (
-        f"🟡 <b>WATCHLIST — {ticker} ({score}/5)</b>\n"
-        f"⚠️ <b>Estado:</b> Setup en formación.\n\n"
-        f"📉 {rsi_label_watchlist(q['rsi10'], q['rsi_prev'])}\n"
-        f"📈 EMA200 a {epct:+.1f}% de distancia.\n"
-        f"📊 POC a {ppct:+.1f}% de distancia.\n\n"
-        f"🛑 <b>Acción:</b> NO OPERAR. Esperar rebote o señal > 2."
-    )
+for t, s, q, e in forming_found:
+    msg = f"🟡 <b>WATCHLIST — {t} ({s}/5)</b>\n⚠️ Setup en formación.\n\nRSI: {q['rsi10']}\nEMA200: {e:+.1f}%\n\n🛑 <b>Acción:</b> NO OPERAR."
     send_telegram(msg)
-    time.sleep(0.5)
 
-# 3. REPORTE DIARIO (Radar y Resumen)
-if radar_info or signals_found or forming_found:
-    radar_lines = []
-    for ticker, q, epct, ppct, score in radar_info[:6]:
-        # Resumen rápido para el radar
-        situacion = "RSI bajo" if q['rsi10'] < 35 else "Cerca de EMA"
-        radar_lines.append(f"• {ticker}: {situacion} ({q['rsi10']} rsi). Score: {score}/5")
-    
-    # RSI Promedio
-    rsi_values = [res[2]["rsi10"] for res in all_results if res[2].get("rsi10")]
-    avg_rsi = round(sum(rsi_values)/len(rsi_values), 1) if rsi_values else 50
-    
-    msg_reporte = (
-        f"📋 <b>Reporte de Mercado — {now_str}</b>\n"
-        f"🌡️ RSI Promedio del Panel: {avg_rsi}\n\n"
-        f"<b>En el Radar (Seguimiento):</b>\n" + ("\n".join(radar_lines) if radar_lines else "Sin activos en zona.") +
-        f"\n\n<i>{random.choice(BOT_NOTES)}</i>"
-    )
-    send_telegram(msg_reporte)
+if radar_info:
+    radar_txt = "\n".join([f"• {t}: RSI {q['rsi10']} (Score {s}/5)" for t, q, s in radar_info[:6]])
+    avg_rsi = round(sum(r[1]["rsi10"] for r in all_results)/len(all_results), 1)
+    send_telegram(f"📋 <b>Reporte {now}</b>\n🌡️ RSI Promedio: {avg_rsi}\n\n<b>Radar:</b>\n{radar_txt}\n\n<i>{random.choice(BOT_NOTES)}</i>")
