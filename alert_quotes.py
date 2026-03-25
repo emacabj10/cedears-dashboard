@@ -392,11 +392,11 @@ for ticker, q, epct, ppct, score in forming_found:
         f"📊 {poc_label_watchlist(ppct, poc, q['price'])}\n"
         f"🎢 {bb_label_watchlist(q)}\n\n"
         f"🛑 <b>Acción sugerida:</b> NO OPERAR. Esperar que el RSI cruce al alza el nivel de 30 "
-        f"o que el precio haga suelo en el POC."
+        f"o validación de soporte en el POC."
     )
     print(f"\n{msg}\n")
     send_telegram(msg)
-    time.sleep(0.3)
+    time.sleep(0.5)
 
 # ── 3. Resumen diario ─────────────────────────────────────────────────────────
 total_sig  = len(signals_found)
@@ -405,14 +405,14 @@ total_form = len(forming_found)
 if total_sig == 0 and total_form == 0:
     intro = "Hoy no se detectaron señales ni watchlists activas."
     if radar_info:
-        intro += " Hay activos tibios en radar:"
+        intro += " Hay activos en seguimiento bajo radar:"
 else:
     parts = []
     if total_sig:  parts.append(f"<b>{total_sig}</b> señal(es) confirmada(s)")
     if total_form: parts.append(f"<b>{total_form}</b> watchlist(s) enviada(s)")
     intro = "Resumen: " + " · ".join(parts) + "."
     if radar_info:
-        intro += " Además, activos tibios en radar:"
+        intro += " Además, activos bajo observación:"
 
 # Radar: activos tibios (score ≤ 1) que no fueron watchlist
 radar_lines = []
@@ -441,11 +441,11 @@ radar_section = ("\n\n" + "\n".join(radar_lines)) if radar_lines else ""
 rsi_values = [q["rsi10"] for _, _, q, _, _ in all_results if q.get("rsi10")]
 avg_rsi = round(sum(rsi_values)/len(rsi_values), 1) if rsi_values else 50
 if avg_rsi < 30:
-    bot_note = f"RSI promedio {avg_rsi} — mercado en oversold generalizado. Momento de máxima atención."
+    bot_note = f"RSI promedio del panel {avg_rsi} — mercado en oversold generalizado. Momento de máxima atención."
 elif avg_rsi < 40:
-    bot_note = f"RSI promedio {avg_rsi} — mercado en zona de debilidad. Los setups están madurando."
+    bot_note = f"RSI promedio del panel {avg_rsi} — mercado en zona de debilidad. Los setups están madurando."
 elif avg_rsi > 65:
-    bot_note = f"RSI promedio {avg_rsi} — mercado sobrecomprado. No es zona de entrada, esperá corrección."
+    bot_note = f"RSI promedio del panel {avg_rsi} — mercado sobrecomprado. No es zona de entrada, esperá corrección."
 else:
     bot_note = random.choice(BOT_NOTES)
 
