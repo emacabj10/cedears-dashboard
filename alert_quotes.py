@@ -392,15 +392,16 @@ for ticker, sym in YF_MAP.items():
     rsi10 = q["rsi10"] or 50
 
     if rsi_bounced and rsi10 > 30 and score >= 3:
-        # ✅ Señal verde: RSI cruzó 30 hacia arriba (está HOY sobre 30) Y score alto
-        print(f"  >>> SEÑAL CONFIRMADA: {ticker} score={score} rsi={rsi10} rsi_prev={q.get('rsi_prev')}")
+        print(f"  >>> SEÑAL: {ticker} score={score} rsi={rsi10} rsi_prev={q.get('rsi_prev')} bb_recov={q.get('bb_recov')} div={q.get('div_bullish')} epct={epct:.1f} ppct={ppct:.1f}")
         signals_found.append((ticker, score, q, epct, ppct, fund, poc_max_op, tags))
     elif rsi10 <= 38:
-        # RSI en zona fría (≤38) → watchlist si score≥2, radar si score≤1
+        print(f"  ... {ticker}: rsi={rsi10} score={score} → {'watchlist' if score>=2 else 'radar'}")
         if score >= 2:
             watchlist_found.append((ticker, score, q, epct, ppct, tags))
         else:
             radar_info.append((ticker, q, epct, ppct, score, tags))
+    else:
+        print(f"  ... {ticker}: rsi={rsi10} score={score} → ignorado (rsi>38, sin rebote)")
 
     time.sleep(0.5)
 
@@ -490,8 +491,11 @@ if total_sig == 0 and total_watch == 0:
     intro = "Hoy no se detectaron señales ni watchlists activas."
 else:
     parts = []
-    if total_sig:   parts.append(f"<b>{total_sig}</b> señal(es) confirmada(s) 🟢")
-    if total_watch: parts.append(f"<b>{total_watch}</b> watchlist(s) enviada(s) 🟡")
+    if total_sig:
+        sig_tickers = ", ".join(f"<b>{t}</b>" for t, *_ in signals_found)
+        parts.append(f"<b>{total_sig}</b> señal(es) confirmada(s) 🟢 ({sig_tickers})")
+    if total_watch:
+        parts.append(f"<b>{total_watch}</b> watchlist(s) enviada(s) 🟡")
     intro = " · ".join(parts) + "."
 
 # Radar: score 0-1, RSI ≤ 42 — solo en reporte de cierre, sin alertas individuales
