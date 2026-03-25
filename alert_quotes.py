@@ -381,25 +381,21 @@ for ticker, sym in YF_MAP.items():
 
     rsi10 = q["rsi10"] or 50
 
-    if forming:
-        # RSI aún en zona de formación (≤38 sin rebote) → watchlist
-        watchlist_found.append((ticker, score, q, epct, ppct, tags))
-    elif score >= 3 and rsi_bounced:
-        # Señal confirmada REAL: score alto Y RSI cruzó 30 hacia arriba
-        print(f"  >>> SEÑAL: {ticker} score={score} rsi={rsi10} rsi_prev={q.get('rsi_prev')} bounced={rsi_bounced}")
+    if rsi_bounced and score >= 3:
+        # ✅ Señal verde: RSI cruzó 30 hacia arriba Y score alto
+        print(f"  >>> SEÑAL CONFIRMADA: {ticker} score={score} rsi={rsi10} rsi_prev={q.get('rsi_prev')}")
         signals_found.append((ticker, score, q, epct, ppct, fund, poc_max_op, tags))
-    elif score >= 2:
-        # Watchlist: score 2+ pero RSI no rebotó (o RSI neutro sin rebote)
-        watchlist_found.append((ticker, score, q, epct, ppct, tags))
-    elif rsi10 <= 38 and score <= 1:
-        # Radar score 0-1: RSI frío → solo en reporte de cierre
-        radar_info.append((ticker, q, epct, ppct, score, tags))
+    elif rsi10 <= 38:
+        # RSI en zona fría (≤38) → watchlist si score≥2, radar si score≤1
+        if score >= 2:
+            watchlist_found.append((ticker, score, q, epct, ppct, tags))
+        else:
+            radar_info.append((ticker, q, epct, ppct, score, tags))
 
     time.sleep(0.5)
 
-# Watchlists: máx. 5 por ejecución, priorizando menor RSI. Señales no tienen límite.
+# Watchlists ordenadas por RSI ascendente (más cerca del oversold primero)
 watchlist_found.sort(key=lambda x: x[2]["rsi10"] or 99)
-watchlist_found = watchlist_found[:5]
 
 now_str  = datetime.now().strftime("%d/%m %H:%M")
 date_str = datetime.now().strftime("%d/%m/%Y")
