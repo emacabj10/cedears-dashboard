@@ -2,9 +2,9 @@ name: Update quotes
 
 on:
   schedule:
-    - cron: '00 14 * * 1-5'
-    - cron: '00 17 * * 1-5'
-    - cron: '00 20 * * 1-5'
+    - cron: '30 13 * * 1-5'
+    - cron: '30 16 * * 1-5'
+    - cron: '30 19 * * 1-5'
   workflow_dispatch:
 
 jobs:
