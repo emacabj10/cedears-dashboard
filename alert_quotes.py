@@ -31,8 +31,6 @@ BOT_NOTES = [
     "Zona de acumulación institucional histórica en varios activos. Atención.",
 ]
 
-# Límite máximo de watchlists por ejecución (priorizando menor RSI)
-MAX_WATCHLIST = 3
 
 # ── Indicadores ───────────────────────────────────────────────────────────────
 def calc_rsi(closes, period=10):
@@ -383,8 +381,12 @@ for ticker, sym in YF_MAP.items():
 
     rsi10 = q["rsi10"] or 50
 
-    if score >= 3:
-        # Señal confirmada (verde) — score 3, 4 o 5
+    if forming:
+        # RSI aún no rebotó → siempre va a watchlist, nunca a señal,
+        # sin importar qué otros puntos tenga el score
+        watchlist_found.append((ticker, score, q, epct, ppct, tags))
+    elif score >= 3:
+        # Señal confirmada (verde) — score 3, 4 o 5 y RSI ya rebotó
         signals_found.append((ticker, score, q, epct, ppct, fund, poc_max_op, tags))
     elif score == 2:
         # Watchlist (amarillo) — aviso previo
@@ -395,9 +397,8 @@ for ticker, sym in YF_MAP.items():
 
     time.sleep(0.5)
 
-# ── Límite de watchlists: máx. MAX_WATCHLIST, priorizando menor RSI ───────────
+# Sin límite de watchlists — se envían todas las que califiquen, ordenadas por RSI
 watchlist_found.sort(key=lambda x: x[2]["rsi10"] or 99)
-watchlist_found = watchlist_found[:MAX_WATCHLIST]
 
 now_str  = datetime.now().strftime("%d/%m %H:%M")
 date_str = datetime.now().strftime("%d/%m/%Y")
