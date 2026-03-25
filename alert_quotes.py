@@ -441,11 +441,11 @@ radar_section = ("\n\n" + "\n".join(radar_lines)) if radar_lines else ""
 rsi_values = [q["rsi10"] for _, _, q, _, _ in all_results if q.get("rsi10")]
 avg_rsi = round(sum(rsi_values)/len(rsi_values), 1) if rsi_values else 50
 if avg_rsi < 30:
-    bot_note = f"RSI promedio en {avg_rsi} — mercado en oversold generalizado. Momento de máxima atención."
+    bot_note = f"RSI promedio {avg_rsi} — mercado en oversold generalizado. Momento de máxima atención."
 elif avg_rsi < 40:
-    bot_note = f"RSI promedio en {avg_rsi} — mercado en zona de debilidad. Los setups están madurando."
+    bot_note = f"RSI promedio {avg_rsi} — mercado en zona de debilidad. Los setups están madurando."
 elif avg_rsi > 65:
-    bot_note = f"RSI promedio en {avg_rsi} — mercado sobrecomprado. No es zona de entrada, esperá corrección."
+    bot_note = f"RSI promedio {avg_rsi} — mercado sobrecomprado. No es zona de entrada, esperá corrección."
 else:
     bot_note = random.choice(BOT_NOTES)
 
