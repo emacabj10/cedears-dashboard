@@ -299,10 +299,10 @@ def score_signal(ticker, q):
 
     poc_max_op = fund_ex and ppct <= -25 and ppct >= -40
 
-    # Setup en formación: RSI bajando hacia 30 (31-38) O ya en oversold sin rebote
-    forming_approaching = (rsi10 > 30 and rsi10 <= 38 and rsi_prev and rsi_prev > rsi10)
-    forming_oversold    = (rsi10 <= 30 and not rsi_bounced)
-    forming = forming_approaching or forming_oversold
+    # Setup en formación: cualquier RSI ≤ 38 sin rebote confirmado es watchlist
+    forming_rsi_zone  = (rsi10 <= 38 and not rsi_bounced)
+    forming_oversold  = (rsi10 <= 30 and not rsi_bounced)
+    forming = forming_rsi_zone or forming_oversold  # forming_rsi_zone ya lo cubre todo
 
     # ── Limpieza del Radar ────────────────────────────────────────────────────
     # Si RSI superó 42, ya no está "frío": sale del radar automáticamente
@@ -397,8 +397,9 @@ for ticker, sym in YF_MAP.items():
 
     time.sleep(0.5)
 
-# Sin límite de watchlists — se envían todas las que califiquen, ordenadas por RSI
+# Watchlists: máx. 5 por ejecución, priorizando menor RSI. Señales no tienen límite.
 watchlist_found.sort(key=lambda x: x[2]["rsi10"] or 99)
+watchlist_found = watchlist_found[:5]
 
 now_str  = datetime.now().strftime("%d/%m %H:%M")
 date_str = datetime.now().strftime("%d/%m/%Y")
