@@ -343,7 +343,8 @@ for ticker, sym in YF_MAP.items():
         signals_found.append((ticker, score, q, epct, ppct, fund, poc_max_op))
     elif forming:
         forming_found.append((ticker, q, epct, ppct, score))
-    elif q["rsi10"] and q["rsi10"] <= 42:
+    elif q["rsi10"] and q["rsi10"] <= 38:
+        # Solo va al radar si NO salió como watchlist ni señal
         radar_info.append((ticker, q, epct, ppct, score))
 
     time.sleep(0.5)
@@ -402,13 +403,18 @@ total_sig  = len(signals_found)
 total_form = len(forming_found)
 
 if total_sig == 0 and total_form == 0:
-    intro = "Hoy el sistema no detectó señales con score superior a 3/5, pero hay activos en zona de monitoreo:"
+    intro = "Hoy no se detectaron señales ni watchlists activas."
+    if radar_info:
+        intro += " Hay activos tibios en radar:"
 else:
     parts = []
     if total_sig:  parts.append(f"<b>{total_sig}</b> señal(es) confirmada(s)")
-    if total_form: parts.append(f"<b>{total_form}</b> setup(s) en formación")
-    intro = "Se detectaron " + " y ".join(parts) + "."
+    if total_form: parts.append(f"<b>{total_form}</b> watchlist(s) enviada(s)")
+    intro = "Resumen: " + " · ".join(parts) + "."
+    if radar_info:
+        intro += " Además, activos tibios en radar:"
 
+# Radar: activos tibios (score ≤ 1) que no fueron watchlist
 radar_lines = []
 for ticker, q, epct, ppct, score in sorted(radar_info, key=lambda x: x[1]["rsi10"] or 99)[:5]:
     rsi = q["rsi10"] or 0
