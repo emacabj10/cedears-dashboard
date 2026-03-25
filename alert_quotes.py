@@ -60,15 +60,15 @@ def fetch_ticker(sym):
 
 def score_signal(ticker, q):
     score = 0
-    # RSI Rebote (1 pto)
+    # RSI (1 pto)
     if q["rsi10"] > 30 and q["rsi_prev"] <= 30: score += 1
-    # EMA200 Alcista (1 pto)
+    # EMA200 (1 pto)
     epct = ((q["price"] - q["ema200"])/q["ema200"]*100)
     if epct > 0: score += 1
     # POC Distancia (Fuerte +2, Moderada +1)
     ppct = ((q["price"] - q["poc_proxy"])/q["poc_proxy"]*100)
-    if ppct <= -15: score += 2  # FUERTE: Más de -15%
-    elif -15 < ppct <= -5: score += 1 # MODERADA: -5% a -15%
+    if ppct <= -15: score += 2
+    elif -15 < ppct <= -5: score += 1
     # Fundamentales (1 pto)
     if FUND.get(ticker) == "excelentes": score += 1
     return score, epct, ppct
@@ -77,7 +77,6 @@ def get_labels(q, epct, ppct):
     if q["rsi10"] > 30 and q["rsi_prev"] <= 30: r_txt = f"{q['rsi10']} — Rebote confirmado."
     elif q["rsi10"] <= 30: r_txt = f"{q['rsi10']} — En sobreventa (Sin fuerza)."
     else: r_txt = f"{q['rsi10']} — Neutral."
-    
     e_txt = f"{epct:+.1f}% — {'Sobre' if epct > 0 else 'Bajo'} la tendencia de largo plazo."
     p_txt = f"${q['poc_proxy']:,} — Distancia: {ppct:+.1f}%."
     b_txt = "Presionando banda inferior." if q["price"] <= q["bb_lo"] else "Rango normal."
@@ -105,21 +104,17 @@ for ticker, sym in YF_MAP.items():
     score, epct, ppct = score_signal(ticker, q)
     all_rsi.append(q["rsi10"])
     
-    # ── JERARQUÍA DE SCORE ──
     if score >= 3:
         signals.append((ticker, score, q, epct, ppct))
     elif score == 2:
         watchlist.append((ticker, score, q, epct, ppct))
-    else:
-        # Score 0 o 1 se guarda para el reporte si el RSI es bajo
-        if q["rsi10"] <= 42:
-            radar.append((ticker, score, q))
+    elif q["rsi10"] <= 42:
+        radar.append((ticker, score, q))
     time.sleep(0.5)
 
 # ── 4. ENVÍO DE ALERTAS ───────────────────────────────────────────────────────
-send_telegram(f"{header}\nIniciando escaneo técnico...")
+send_telegram(f"{header}\nIniciando reporte técnico...")
 
-# 🟢 SEÑAL INDIVIDUAL (Score 3 o más)
 for t, s, q, e, p in signals:
     r_l, e_l, p_l, b_l = get_labels(q, e, p)
     msg = (f"🟢 <b>{t} — {s}/5</b>\n"
@@ -127,7 +122,6 @@ for t, s, q, e, p in signals:
            f"💡 <b>Sugerencia:</b> {'Posición completa 100%' if s>=4 else 'Media posición 50%'}")
     send_telegram(msg)
 
-# 🟡 WATCHLIST INDIVIDUAL (Score 2)
 for t, s, q, e, p in watchlist:
     r_l, e_l, p_l, b_l = get_labels(q, e, p)
     msg = (f"🟡 <b>WATCHLIST — {t} (2/5)</b>\n⚠️ Estado: Setup en formación.\n\n"
@@ -135,8 +129,11 @@ for t, s, q, e, p in watchlist:
            f"🛑 <b>Acción sugerida:</b> NO OPERAR. Esperar confirmación.")
     send_telegram(msg)
 
-# 📋 REPORTE RADAR (Score 0 o 1)
 avg_rsi = round(sum(all_rsi)/len(all_rsi), 1) if all_rsi else 50
+# CORRECCIÓN AQUÍ: Se usa 's' para el score en el f-string
 radar_txt = "\n".join([f"• {t}: RSI {q['rsi10']} (Score {s}/5)" for t, s, q in radar[:6]])
 msg_final = (f"📋 <b>Reporte Final — {header}</b>\n\n"
-             f"<b>Radar de Seguimiento (Score 0-1):
+             f"<b>Radar de Seguimiento (Score 0-1):</b>\n{radar_txt if radar_txt else 'Sin activos en zona.'}\n\n"
+             f"🌡️ <b>RSI Promedio:</b> {avg_rsi}\n"
+             f"💡 <b>Nota:</b> {random.choice(BOT_NOTES)}")
+send_telegram(msg_final)
