@@ -224,13 +224,13 @@ def poc_label_watchlist(ppct, poc, price):
 def bb_label_signal(q):
     """Labels BB para señal confirmada"""
     if q.get("bb_recov"):
-        return "BB: Recuperó banda inferior (Rebote Bollinger confirmado ✅)"
+        return "BB: Recuperó banda inferior (Rebote Bollinger confirmado)"
     elif q.get("bb_squeeze"):
         return "BB: Bandas comprimidas (Explosión de volatilidad inminente)"
     elif q.get("bb_above"):
         return "BB: Fuera de banda superior (Sobrecomprado en el corto plazo)"
     elif q.get("bb_near_lo"):
-        return f"BB: Apoyando en banda inferior (Rebote técnico probable)"
+        return "BB: Apoyando en banda inferior (Rebote técnico probable)"
     else:
         return "BB: Precio dentro de bandas"
 
@@ -435,10 +435,11 @@ for ticker, score, q, epct, ppct, fund, poc_max_op, tags in signals_found:
 
     sugerencia = sugerencia_signal(score, rsi10, epct, ppct)
 
-    # Tags de divergencia y rebote Bollinger
     tags_line = ""
     if tags:
-        tags_line = "\n🏷 <b>Tags:</b> " + " | ".join(tags) + "\n"
+        # Limpiar emojis de los tags para evitar errores de parseo HTML en Telegram
+        clean_tags = [t.replace("✅","").replace("📐","").strip() for t in tags]
+        tags_line = "\n🏷 <b>Tags:</b> " + " | ".join(clean_tags) + "\n"
 
     msg = (
         f"🟢 <b>{ticker} — SEÑAL {score}/5</b>\n"
@@ -464,7 +465,8 @@ for ticker, score, q, epct, ppct, tags in watchlist_found:
 
     tags_line = ""
     if tags:
-        tags_line = "\n🏷 <b>Tags:</b> " + " | ".join(tags) + "\n"
+        clean_tags = [t.replace("✅","").replace("📐","").strip() for t in tags]
+        tags_line = "\n🏷 <b>Tags:</b> " + " | ".join(clean_tags) + "\n"
 
     msg = (
         f"🟡 <b>{ticker} — WATCHLIST {score}/5</b>\n"
