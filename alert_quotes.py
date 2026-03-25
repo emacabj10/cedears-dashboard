@@ -149,7 +149,9 @@ def rsi_label_signal(rsi10, rsi_prev):
 
 def rsi_label_watchlist(rsi10, rsi_prev):
     """Labels RSI para watchlist/setup en formación"""
-    if rsi10 <= 35 and rsi_prev and rsi_prev > rsi10:
+    if rsi10 <= 30:
+        return f"RSI(10): {rsi10} — En Oversold (Bajo 30, sin rebote confirmado aún)"
+    elif rsi10 <= 35 and rsi_prev and rsi_prev > rsi10:
         return f"RSI(10): {rsi10} — Bajando hacia 30 (Sin fuerza de rebote)"
     elif rsi10 <= 38:
         return f"RSI(10): {rsi10} — Cerca de Oversold (Preparando posible entrada)"
@@ -265,7 +267,10 @@ def score_signal(ticker, q):
     if ppct <= -15: score += 1
 
     poc_max_op = fund_ex and ppct <= -25 and ppct >= -40
-    forming    = (rsi10 > 30 and rsi10 <= 38 and rsi_prev and rsi_prev > rsi10)
+    # Setup en formación: RSI bajando hacia 30 (31-38) O ya en oversold sin rebote
+    forming_approaching = (rsi10 > 30 and rsi10 <= 38 and rsi_prev and rsi_prev > rsi10)
+    forming_oversold    = (rsi10 <= 30 and not rsi_bounced)
+    forming = forming_approaching or forming_oversold
 
     return score, forming, epct, ppct, fund, poc_max_op, rsi_bounced, rsi_oversold
 
