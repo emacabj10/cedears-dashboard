@@ -1,5 +1,5 @@
 {
-  "updated": "2026-03-25T20:57:27Z",
+  "updated": "2026-03-25T20:59:49Z",
   "quotes": {
     "AMD": {
       "price": 220.27,
@@ -26,10 +26,10 @@
       "emaTrend": "lateral"
     },
     "BNB": {
-      "price": 646.09,
-      "rsi10": 51.66,
+      "price": 646.41,
+      "rsi10": 51.83,
       "rsiPrev": 46.94,
-      "rsiW": 35.64,
+      "rsiW": 35.7,
       "ema200": 771.73,
       "emaTrend": "bajando"
     },
@@ -42,11 +42,11 @@
       "emaTrend": "lateral"
     },
     "BTC": {
-      "price": 71033.11,
-      "rsi10": 53.03,
+      "price": 71021.62,
+      "rsi10": 52.99,
       "rsiPrev": 51.14,
-      "rsiW": 37.79,
-      "ema200": 85984.6,
+      "rsiW": 37.76,
+      "ema200": 85984.48,
       "emaTrend": "bajando"
     },
     "DIA": {
@@ -58,8 +58,8 @@
       "emaTrend": "lateral"
     },
     "ETH": {
-      "price": 2166.76,
-      "rsi10": 54.94,
+      "price": 2166.69,
+      "rsi10": 54.93,
       "rsiPrev": 53.91,
       "rsiW": 38.59,
       "ema200": 2699.92,
