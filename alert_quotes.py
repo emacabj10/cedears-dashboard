@@ -23,11 +23,7 @@ YF_MAP = {
     "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD",
 }
 
-BOT_NOTES = [
-    "Día de paciencia, los setups maduran lento.",
-    "El mercado da revancha, el capital no.",
-    "Operá lo que ves, no lo que crees."
-]
+BOT_NOTES = ["Paciencia, los setups maduran.", "Operá lo que ves.", "Capital > Ego."]
 
 # ── 2. FUNCIONES TÉCNICAS ─────────────────────────────────────────────────────
 def fetch_ticker(sym):
@@ -36,7 +32,12 @@ def fetch_ticker(sym):
     try:
         req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req, timeout=15) as r:
-            data = json.loads(r.read())["chart"]["result"][0]
+            resp = json.loads(r.read())
+            # Validación de seguridad para el error 'chart'
+            if "chart" not in resp or resp["chart"]["result"] is None:
+                return None
+            data = resp["chart"]["result"][0]
+        
         c = [x for x in data["indicators"]["quote"][0]["close"] if x is not None]
         if len(c) < 21: return None
         
@@ -49,7 +50,7 @@ def fetch_ticker(sym):
                 else: l += abs(d)
             return round(100 - (100/(1+(g/10)/(l/10))), 2) if l != 0 else 100
 
-        ema200 = sum(c[-200:])/200
+        ema200 = sum(c[-200:])/200 if len(c)>=200 else c[-1]
         avg20 = sum(c[-20:])/20
         std20 = (sum((x-avg20)**2 for x in c[-20:])/20)**0.5
         avg20_prev = sum(c[-21:-1])/20
@@ -62,24 +63,24 @@ def fetch_ticker(sym):
             "bb_lo": avg20 - 2*std20, "bb_lo_prev": avg20_prev - 2*std20_prev,
             "poc_proxy": max(set(c[-50:]), key=c[-50:].count)
         }
-    except: return None
+    except Exception:
+        return None
 
 def score_signal(ticker, q):
-    score = 0
-    tags = []
+    score, tags = 0, []
     # RSI Rebote / Divergencia
     if q["rsi10"] > 30 and q["rsi_prev"] <= 30:
         score += 1
         tags.append("Rebote RSI")
     elif q["price"] < q["price_prev"] and q["rsi10"] > q["rsi_prev"]:
         score += 1
-        tags.append("Divergencia Alcista")
+        tags.append("Divergencia")
     # EMA200
     epct = ((q["price"] - q["ema200"])/q["ema200"]*100)
     if epct > 0: 
         score += 1
-        tags.append("Sobre EMA200")
-    # POC (Tu tabla: >-15% = +2, -5% a -15% = +1)
+        tags.append("EMA200")
+    # POC
     ppct = ((q["price"] - q["poc_proxy"])/q["poc_proxy"]*100)
     if ppct <= -15: 
         score += 2
@@ -87,7 +88,7 @@ def score_signal(ticker, q):
     elif -15 < ppct <= -5: 
         score += 1
         tags.append("POC Mod")
-    # Rebote Bollinger
+    # Rebote BB
     if q["price_prev"] <= q["bb_lo_prev"] and q["price"] > q["bb_lo"]:
         score += 1
         tags.append("Rebote BB")
@@ -101,14 +102,13 @@ def send_telegram(msg):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = json.dumps({"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "HTML"}).encode()
     req = urllib.request.Request(url, data=payload, headers={"Content-Type":"application/json"})
-    try: urllib.request.urlopen(req)
+    try:
+        with urllib.request.urlopen(req) as f: pass
     except: pass
 
 # ── 3. EJECUCIÓN ──────────────────────────────────────────────────────────────
 h = datetime.now().hour
-if h < 13: header = "☀️ <b>APERTURA - 11:00 AM</b>"
-elif h < 16: header = "📊 <b>MEDIA RUEDA - 02:00 PM</b>"
-else: header = "🔔 <b>CIERRE DE MERCADO - 05:00 PM</b>"
+header = "☀️ 11:00 AM" if h < 13 else "📊 02:00 PM" if h < 16 else "🔔 05:00 PM"
 
 signals, watchlist, radar, all_rsi = [], [], [], []
 
@@ -119,4 +119,19 @@ for ticker, sym in YF_MAP.items():
     all_rsi.append(q["rsi10"])
     
     if s >= 3: signals.append((ticker, s, q, e, p, t))
-    elif s ==
+    elif s == 2: watchlist.append((ticker, s, q, e, p, t))
+    elif q["rsi10"] <= 42: radar.append((ticker, s, q))
+    time.sleep(0.7) # Más delay para evitar bloqueos
+
+# ── 4. ENVÍO ──────────────────────────────────────────────────────────────────
+send_telegram(f"<b>REPORTANDO: {header}</b>")
+
+for t, s, q, e, p, tags in signals:
+    send_telegram(f"🟢 <b>{t} — {s}/5</b>\nTags: {', '.join(tags)}\nDist. POC: {p:+.1f}%")
+
+for t, s, q, e, p, tags in watchlist:
+    send_telegram(f"🟡 <b>WATCHLIST: {t} (Score 2)</b>\nSetup: {', '.join(tags)}\nPOC: {p:+.1f}%")
+
+avg_rsi = round(sum(all_rsi)/len(all_rsi), 1) if all_rsi else 50
+radar_txt = "\n".join([f"• {t}: RSI {q['rsi10']} (S:{s}/5)" for t, s, q in radar[:6]])
+send_telegram(f"📋 <b>RESUMEN RADAR</b>\n{radar_txt}\n\n🌡️ RSI Prom: {avg_rsi}")
