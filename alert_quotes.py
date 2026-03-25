@@ -514,7 +514,7 @@ for ticker, q, epct, ppct, score, tags in sorted(radar_filtered, key=lambda x: x
 
 radar_section = ""
 if radar_lines:
-    radar_section = "\n\n<b>📡 En radar (fríos):</b>\n" + "\n".join(radar_lines)
+    radar_section = "\n\n<b>📡 Activos bajo confirmación:</b>\n" + "\n".join(radar_lines)
 
 rsi_values = [q["rsi10"] for _, _, q, _, _ in all_results if q.get("rsi10")]
 avg_rsi = round(sum(rsi_values)/len(rsi_values), 1) if rsi_values else 50
