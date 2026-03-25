@@ -382,17 +382,17 @@ for ticker, sym in YF_MAP.items():
     rsi10 = q["rsi10"] or 50
 
     if forming:
-        # RSI aún no rebotó → siempre va a watchlist, nunca a señal,
-        # sin importar qué otros puntos tenga el score
+        # RSI aún en zona de formación (≤38 sin rebote) → watchlist
         watchlist_found.append((ticker, score, q, epct, ppct, tags))
-    elif score >= 3:
-        # Señal confirmada (verde) — score 3, 4 o 5 y RSI ya rebotó
+    elif score >= 3 and rsi_bounced:
+        # Señal confirmada REAL: score alto Y RSI cruzó 30 hacia arriba
+        print(f"  >>> SEÑAL: {ticker} score={score} rsi={rsi10} rsi_prev={q.get('rsi_prev')} bounced={rsi_bounced}")
         signals_found.append((ticker, score, q, epct, ppct, fund, poc_max_op, tags))
-    elif score == 2:
-        # Watchlist (amarillo) — aviso previo
+    elif score >= 2:
+        # Watchlist: score 2+ pero RSI no rebotó (o RSI neutro sin rebote)
         watchlist_found.append((ticker, score, q, epct, ppct, tags))
-    elif rsi10 <= 38:
-        # Radar: RSI frío → aparece solo en reporte de cierre, sin alerta individual
+    elif rsi10 <= 38 and score <= 1:
+        # Radar score 0-1: RSI frío → solo en reporte de cierre
         radar_info.append((ticker, q, epct, ppct, score, tags))
 
     time.sleep(0.5)
@@ -516,7 +516,7 @@ for ticker, q, epct, ppct, score, tags in sorted(radar_filtered, key=lambda x: x
 
 radar_section = ""
 if radar_lines:
-    radar_section = "\n\n<b>📡 Activos bajo confirmación:</b>\n" + "\n".join(radar_lines)
+    radar_section = "\n\n<b>📡 Activos en confirmación:</b>\n" + "\n".join(radar_lines)
 
 rsi_values = [q["rsi10"] for _, _, q, _, _ in all_results if q.get("rsi10")]
 avg_rsi = round(sum(rsi_values)/len(rsi_values), 1) if rsi_values else 50
