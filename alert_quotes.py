@@ -359,13 +359,14 @@ for ticker, sym in YF_MAP.items():
             prev = existing[ticker]
             q = {
                 "price":prev.get("price",0),"rsi10":prev.get("rsi10",50),
-                "rsi_prev":prev.get("rsiPrev",prev.get("rsi10",50)),
+                "rsi_prev":prev.get("rsi10",50),  # igual al actual → nunca genera rsi_bounced
                 "rsiW":prev.get("rsiW",50),"ema200":prev.get("ema200",0),
                 "emaTrend":prev.get("emaTrend","lateral"),
                 "bb_lo":None,"bb_hi":None,"bb_recov":False,
                 "bb_below":False,"bb_above":False,"bb_squeeze":False,
                 "bb_near_lo":False,"poc_proxy":None,
                 "div_bullish":False,"price_prev":0,"bb_lo_prev":None,
+                "_fallback":True,
             }
             print("datos anteriores")
         else:
@@ -375,14 +376,23 @@ for ticker, sym in YF_MAP.items():
         bb_tag  = " · BB↑"   if q.get("bb_recov")   else ""
         print(f"RSI {q['rsi10']} · ${q['price']}{div_tag}{bb_tag}")
 
+    if q.get("_fallback"):
+        # Datos del caché — no generan señales ni watchlists, solo radar si aplica
+        rsi10 = q["rsi10"] or 50
+        _, _, epct, ppct, _, _, _, _, tags = score_signal(ticker, q)
+        all_results.append((ticker, 0, q, epct, ppct))
+        if rsi10 <= 38:
+            radar_info.append((ticker, q, epct, ppct, 0, tags))
+        continue
+
     score, forming, epct, ppct, fund, poc_max_op, rsi_bounced, rsi_oversold, tags = \
         score_signal(ticker, q)
     all_results.append((ticker, score, q, epct, ppct))
 
     rsi10 = q["rsi10"] or 50
 
-    if rsi_bounced and score >= 3:
-        # ✅ Señal verde: RSI cruzó 30 hacia arriba Y score alto
+    if rsi_bounced and rsi10 > 30 and score >= 3:
+        # ✅ Señal verde: RSI cruzó 30 hacia arriba (está HOY sobre 30) Y score alto
         print(f"  >>> SEÑAL CONFIRMADA: {ticker} score={score} rsi={rsi10} rsi_prev={q.get('rsi_prev')}")
         signals_found.append((ticker, score, q, epct, ppct, fund, poc_max_op, tags))
     elif rsi10 <= 38:
@@ -512,7 +522,7 @@ for ticker, q, epct, ppct, score, tags in sorted(radar_filtered, key=lambda x: x
 
 radar_section = ""
 if radar_lines:
-    radar_section = "\n\n<b>📡 Activos en confirmación:</b>\n" + "\n".join(radar_lines)
+    radar_section = "\n\n<b>📡 Activos bajo confirmación:</b>\n" + "\n".join(radar_lines)
 
 rsi_values = [q["rsi10"] for _, _, q, _, _ in all_results if q.get("rsi10")]
 avg_rsi = round(sum(rsi_values)/len(rsi_values), 1) if rsi_values else 50
