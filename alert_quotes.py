@@ -321,6 +321,8 @@ def send_telegram(message):
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         print("Sin credenciales:\n" + message); return
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+
+    # Intento 1: con HTML
     payload = json.dumps({
         "chat_id": TELEGRAM_CHAT_ID,
         "text": message,
@@ -331,8 +333,25 @@ def send_telegram(message):
     try:
         with urllib.request.urlopen(req, timeout=10) as r:
             print(f"  Telegram OK ({r.status})")
+            return
     except Exception as e:
-        print(f"  Telegram error: {e}")
+        print(f"  Telegram HTML error: {e}")
+        print(f"  MSG DUMP: {repr(message[:300])}")
+
+    # Intento 2: sin parse_mode (texto plano, borra tags HTML)
+    import re
+    plain = re.sub(r"<[^>]+>", "", message)
+    payload2 = json.dumps({
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": plain,
+    }).encode()
+    req2 = urllib.request.Request(url, data=payload2,
+                                  headers={"Content-Type":"application/json"})
+    try:
+        with urllib.request.urlopen(req2, timeout=10) as r:
+            print(f"  Telegram OK plain ({r.status})")
+    except Exception as e:
+        print(f"  Telegram plain error: {e}")
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 print(f"\n{'='*55}")
@@ -444,14 +463,14 @@ for ticker, score, q, epct, ppct, fund, poc_max_op, tags in signals_found:
     msg = (
         f"🟢 <b>{ticker} — SEÑAL {score}/5</b>\n"
         f"{poc_badge}"
-        f"\n<b>📊 Indicadores</b>\n"
+        f"\n<b>Indicadores</b>\n"
         f"📉 {rsi_label_signal(rsi10, rsi_p)}\n"
         f"📈 {ema_label_signal(epct, q['emaTrend'], q['ema200'])}\n"
         f"📦 {poc_label_signal(ppct, poc)}\n"
         f"🎢 {bb_label_signal(q)}\n"
         f"{tags_line}"
-        f"\n<b>💡 Sugerencia</b>\n"
-        f"{sugerencia}"
+        f"\n<b>Sugerencia</b>\n"
+        f"💡 {sugerencia}"
     )
     print(f"\n{msg}\n")
     send_telegram(msg)
@@ -471,14 +490,14 @@ for ticker, score, q, epct, ppct, tags in watchlist_found:
     msg = (
         f"🟡 <b>{ticker} — WATCHLIST {score}/5</b>\n"
         f"⚠️ <b>Estado:</b> Setup en formación. Aviso previo — monitorear.\n"
-        f"\n<b>📊 Indicadores</b>\n"
+        f"\n<b>Indicadores</b>\n"
         f"📉 {rsi_label_watchlist(rsi10, rsi_p)}\n"
         f"📈 {ema_label_watchlist(epct, q['emaTrend'])}\n"
         f"📦 {poc_label_watchlist(ppct, poc, q['price'])}\n"
         f"🎢 {bb_label_watchlist(q)}\n"
         f"{tags_line}"
-        f"\n<b>🛑 Acción sugerida</b>\n"
-        f"NO OPERAR. Esperá que el RSI cruce al alza el nivel de 30 "
+        f"\n<b>Accion sugerida</b>\n"
+        f"🛑 NO OPERAR. Esperá que el RSI cruce al alza el nivel de 30 "
         f"o validación de soporte en el POC."
     )
     print(f"\n{msg}\n")
@@ -528,7 +547,7 @@ for ticker, q, epct, ppct, score, tags in sorted(radar_filtered, key=lambda x: x
 
 radar_section = ""
 if radar_lines:
-    radar_section = "\n\n<b>📡 Activos bajo confirmación:</b>\n" + "\n".join(radar_lines)
+    radar_section = "\n\n📡 Activos bajo confirmación:</b>\n" + "\n".join(radar_lines)
 
 rsi_values = [q["rsi10"] for _, _, q, _, _ in all_results if q.get("rsi10")]
 avg_rsi = round(sum(rsi_values)/len(rsi_values), 1) if rsi_values else 50
