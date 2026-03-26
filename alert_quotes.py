@@ -289,8 +289,9 @@ def score_signal(ticker, q):
         score += 1
         tags.append("RSI Rebote ✅")
 
-    # ── Punto 2: EMA200 — precio encima o a no más del 3% por debajo ─────────
-    ema_ok = (epct >= 0) or (epct >= -3)
+    # ── Punto 2: EMA200 — precio encima O a no más del 3% por debajo ────────
+    # epct >= -3 cubre ambos casos: positivo (encima) y negativo hasta -3% (soporte)
+    ema_ok = epct >= -3
     if ema_ok:
         score += 1
         if epct >= 0:
@@ -413,15 +414,15 @@ for ticker, sym in YF_MAP.items():
         # SEÑAL completa: los 3 puntos técnicos confirmados
         print(f"  >>> SEÑAL 3/3: {ticker} rsi={rsi10} rsi_prev={q.get('rsi_prev')} bb_recov={q.get('bb_recov')} epct={epct:.1f}")
         signals_found.append((ticker, score, q, epct, ppct, fund, poc_max_op, tags))
-    elif score == 2 and rsi10 <= 38:
-        # WATCHLIST: 2 puntos, setup en formación
+    elif score == 2 and not rsi_bounced and rsi10 <= 38:
+        # WATCHLIST: 2 de 3 puntos, RSI aún no confirmó rebote
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → watchlist")
         watchlist_found.append((ticker, score, q, epct, ppct, tags))
-    elif rsi10 <= 35 or (rsi10 <= 30) or (abs(epct) <= 1 and rsi10 <= 45):
-        # RADAR: activos cerca de dar señal (Score 0-1)
-        # Zona de Alerta: RSI 30-35
-        # Zona de Suelo: RSI < 30 sin rebote confirmado
-        # Cerca de EMA: precio a menos del 1% de la EMA200
+    elif (rsi10 <= 35) or (rsi10 < 30 and not rsi_bounced) or (abs(epct) <= 1):
+        # RADAR: cerca de dar señal
+        # - Zona de Alerta : RSI 30–35
+        # - Zona de Suelo  : RSI < 30 sin rebote confirmado
+        # - Cerca de EMA   : precio a ≤1% de la EMA200
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → radar")
         radar_info.append((ticker, q, epct, ppct, score, tags))
     else:
@@ -549,12 +550,14 @@ for ticker, q, epct, ppct, score, tags in sorted(radar_filtered, key=lambda x: x
     line = f"• <b>{ticker}</b>: RSI(10) en {rsi}"
 
     if rsi < 30:
-        line += " y bajando hacia 30."
+        # Zona de Suelo: RSI ya está en oversold, sin rebote confirmado
+        line += ". En zona de suelo (oversold)."
         if q.get("bb_below"):
             line += " Perdió la banda inferior de Bollinger. Sin rebote confirmado."
         if score > 0:
             line += f" Score actual: {score}/3."
     elif rsi <= 35:
+        # Zona de Alerta: aproximándose al suelo
         line += " y bajando hacia 30."
         if q.get("bb_below"):
             line += " Perdió la banda inferior de Bollinger. Sin rebote confirmado."
