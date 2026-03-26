@@ -19,6 +19,8 @@ FUND = {
     "MCD":"buenos","BABA":"buenos","PYPL":"buenos","TSLA":"controversiales",
 }
 
+CRYPTO = {"BTC", "ETH", "BNB"}   # tickers cripto — sin link a StocksAnalyzer
+
 YF_MAP = {
     "AMD":"AMD","AMZN":"AMZN","BABA":"BABA","BNB":"BNB-USD",
     "BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD",
@@ -608,9 +610,9 @@ date_str = now_arg().strftime("%d/%m/%Y")
 
 # Encabezado dinámico según hora de activación (hora Argentina UTC-3)
 _hour = now_arg().hour
-if 9 <= _hour < 13:
+if 9 <= _hour < 14:
     session_header = f"🔔 APERTURA DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando reporte técnico..."
-elif 13 <= _hour < 18:
+elif 14 <= _hour < 18:
     session_header = f"🔔 CIERRE DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando reporte técnico..."
 else:
     session_header = f"🔔 REPORTE DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando análisis técnico..."
@@ -629,9 +631,12 @@ for ticker, score, q, epct, ppct, fund in signals_found:
     sugerencia = sugerencia_signal(score, rsi10, epct, fund, div, bb_rec)
     analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
 
-    # Link stocksanalyzer (cripto no tiene página, usa símbolo sin -USD)
-    _sym_sa  = YF_MAP.get(ticker, ticker).replace("-USD", "")
-    _link_sa = f'🔗 <a href="https://www.stocksanalyzer.app/stocks/{_sym_sa}">Ver análisis completo en StocksAnalyzer →</a>'
+    # Link stocksanalyzer — se omite para cripto
+    if ticker not in CRYPTO:
+        _sym_sa  = YF_MAP.get(ticker, ticker).replace("-USD", "")
+        _link_sa = f'\n🔗 <a href="https://www.stocksanalyzer.app/analyze/{_sym_sa}">Ver análisis completo</a>'
+    else:
+        _link_sa = ""
 
     msg = (
         f"🟢 <b>{ticker} — SEÑAL {score}/3</b>\n"
@@ -666,9 +671,12 @@ for ticker, score, q, epct, ppct in watchlist_found:
     sugerencia = sugerencia_watchlist(score, rsi10, epct, fund, div,
                                       bb_rec, bb_below, rsi_bounced_w)
 
-    # Link stocksanalyzer (cripto no tiene página, usa símbolo sin -USD)
-    _sym_sa_w  = YF_MAP.get(ticker, ticker).replace("-USD", "")
-    _link_sa_w = f'🔗 <a href="https://www.stocksanalyzer.app/stocks/{_sym_sa_w}">Ver análisis completo en StocksAnalyzer →</a>'
+    # Link stocksanalyzer — se omite para cripto
+    if ticker not in CRYPTO:
+        _sym_sa_w  = YF_MAP.get(ticker, ticker).replace("-USD", "")
+        _link_sa_w = f'\n🔗 <a href="https://www.stocksanalyzer.app/analyze/{_sym_sa_w}">Ver análisis completo</a>'
+    else:
+        _link_sa_w = ""
 
     msg = (
         f"🟡 <b>{ticker} — WATCHLIST {score}/3</b>\n"
