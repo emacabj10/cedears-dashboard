@@ -319,7 +319,7 @@ def generar_analisis(ticker, score, q, epct, ppct, fund):
     if epct < -10 and score == 3:
         riesgo_partes.append(f"entrada por debajo de EMA200 implica mayor riesgo — ajustá el stop")
     elif epct >= 0 and score == 3:
-        riesgo_partes.append("EMA200 como soporte activo reduce el riesgo del trade")
+        riesgo_partes.append("La EMA200 actuando como soporte dinámico valida la estructura alcista de fondo")
 
     if fund == "excelentes":
         riesgo_partes.append("fundamentals excelentes respaldan el rebote técnico")
@@ -348,6 +348,7 @@ def sugerencia_signal(score, rsi10, epct, ppct, fund, div, bb_recov):
         return (
             "Setup completo en zona de valor profunda. "
             "Entrada con posición completa — el precio está históricamente barato. "
+            "Fase de acumulación institucional detectada. "
         )
 
     # Caso 2: divergencia alcista activa (señal de mayor calidad)
