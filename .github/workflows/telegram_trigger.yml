@@ -25,7 +25,7 @@ jobs:
           GH_REPO  = os.environ["GH_REPO"]
 
           KEYWORD       = "!run"           # Palabra que enviás por Telegram
-          WORKFLOW_FILE = "update_quotes.yml"  # Nombre exacto de tu workflow principal
+          WORKFLOW_FILE = "update-quotes.yml"  # Nombre exacto de tu workflow principal
           BRANCH        = "main"           # Rama de tu repo (cambiá a "master" si corresponde)
 
           # ── 1. Obtener mensajes recientes de Telegram ──────────────────────────
