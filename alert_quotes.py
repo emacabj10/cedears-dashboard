@@ -24,13 +24,12 @@ YF_MAP = {
 
 BOT_NOTES = [
     "Día de paciencia. El mercado está en fase de digestión.",
-    "RSI promedio en zona neutral — esperar definición.",
+    "RSI promedio zona neutral — esperar definición.",
     "Los mejores setups suelen venir después de estas fases de compresión.",
     "Sin señales no hay operación. La paciencia es parte de la estrategia.",
     "El mejor trade a veces es no operar. Esperá el setup limpio.",
     "Zona de acumulación institucional histórica en varios activos. Atención.",
 ]
-
 
 # ── Indicadores ───────────────────────────────────────────────────────────────
 def calc_rsi(closes, period=10):
@@ -114,25 +113,14 @@ def fetch_ticker(sym):
         ema200    = calc_ema(closes, 200)
         ema_trend = calc_ema_trend(closes, 200)
         bb_lo     = calc_bb_lower(closes, 20, 2)
-        # bb_lo_prev: banda inferior calculada con los cierres hasta ayer
-        bb_lo_prev = calc_bb_lower(closes[:-1], 20, 2)
         bb_hi     = calc_bb_upper(closes, 20, 2)
         bb_wid    = calc_bb_width(closes, 20, 2)
         poc_proxy = calc_poc_proxy(closes)
-        price_prev = closes[-2] if len(closes) >= 2 else price
-
-        # Rebote Bollinger confirmado: ayer cerró por debajo, hoy cerró por encima
-        bb_recov   = (bb_lo_prev is not None and price_prev <= bb_lo_prev and price >= bb_lo) if bb_lo else False
-        bb_below   = price < bb_lo if bb_lo else False
-        bb_above   = price > bb_hi if bb_hi else False
-        bb_squeeze = (bb_wid[0] < bb_wid[1] * 0.85) if bb_wid else False
-        bb_near_lo = (not bb_below) and bb_lo and ((price - bb_lo) / bb_lo * 100 < 2)
-
-        # Divergencia alcista: precio hace mínimo más bajo, RSI hace mínimo más alto
-        div_bullish = False
-        if rsi10 is not None and rsi_prev is not None:
-            div_bullish = (price < price_prev) and (rsi10 > rsi_prev)
-
+        bb_recov  = (closes[-2] < bb_lo) and (price >= bb_lo) if bb_lo else False
+        bb_below  = price < bb_lo if bb_lo else False
+        bb_above  = price > bb_hi if bb_hi else False
+        bb_squeeze= (bb_wid[0] < bb_wid[1] * 0.85) if bb_wid else False
+        bb_near_lo= (not bb_below) and bb_lo and ((price - bb_lo) / bb_lo * 100 < 2)
         return {
             "price":price,"rsi10":rsi10,"rsi_prev":rsi_prev,
             "rsiW":rsi_w,"ema200":ema200,"emaTrend":ema_trend,
@@ -140,9 +128,6 @@ def fetch_ticker(sym):
             "bb_below":bb_below,"bb_above":bb_above,
             "bb_squeeze":bb_squeeze,"bb_near_lo":bb_near_lo,
             "poc_proxy":poc_proxy,
-            "div_bullish": div_bullish,
-            "price_prev": price_prev,
-            "bb_lo_prev": bb_lo_prev,
         }
     except Exception as e:
         print(f"  Error: {e}"); return None
@@ -224,13 +209,13 @@ def poc_label_watchlist(ppct, poc, price):
 def bb_label_signal(q):
     """Labels BB para señal confirmada"""
     if q.get("bb_recov"):
-        return "BB: Recuperó banda inferior (Rebote Bollinger confirmado)"
+        return "BB: Recuperó banda inferior (Falso quiebre detectado)"
     elif q.get("bb_squeeze"):
         return "BB: Bandas comprimidas (Explosión de volatilidad inminente)"
     elif q.get("bb_above"):
         return "BB: Fuera de banda superior (Sobrecomprado en el corto plazo)"
     elif q.get("bb_near_lo"):
-        return "BB: Apoyando en banda inferior (Rebote técnico probable)"
+        return f"BB: Apoyando en banda inferior (Rebote técnico probable)"
     else:
         return "BB: Precio dentro de bandas"
 
@@ -269,47 +254,25 @@ def score_signal(ticker, q):
     ppct    = (price - poc) / poc * 100
 
     score = 0
-    tags  = []
 
     rsi_bounced  = (rsi10 > 30 and rsi_prev <= 30)
     rsi_oversold = rsi10 <= 30
+    if rsi_bounced: score += 1
 
-    # ── Puntos base ──────────────────────────────────────────────────────────
-    if rsi_bounced:
-        score += 1
+    if q["bb_recov"]: score += 1
 
-    # Rebote Bollinger confirmado (+1 punto)
-    if q.get("bb_recov"):
-        score += 1
-        tags.append("Rebote Bollinger ✅")
+    if epct >= 0: score += 1
+    elif ema_trend_ok(q["emaTrend"], epct, fund_ex, fund_ok): pass
 
-    # Divergencia alcista (+1 punto)
-    if q.get("div_bullish"):
-        score += 1
-        tags.append("Divergencia Alcista 📐")
-
-    if epct >= 0:
-        score += 1
-    elif ema_trend_ok(q["emaTrend"], epct, fund_ex, fund_ok):
-        pass
-
-    # POC: precio con descuento moderado (-5%) o más = condición de calidad
-    if ppct <= -5:
-        score += 1
+    if ppct <= -15: score += 1
 
     poc_max_op = fund_ex and ppct <= -25 and ppct >= -40
+    # Setup en formación: RSI bajando hacia 30 (31-38) O ya en oversold sin rebote
+    forming_approaching = (rsi10 > 30 and rsi10 <= 38 and rsi_prev and rsi_prev > rsi10)
+    forming_oversold    = (rsi10 <= 30 and not rsi_bounced)
+    forming = forming_approaching or forming_oversold
 
-    # Setup en formación: cualquier RSI ≤ 38 sin rebote confirmado es watchlist
-    forming_rsi_zone  = (rsi10 <= 38 and not rsi_bounced)
-    forming_oversold  = (rsi10 <= 30 and not rsi_bounced)
-    forming = forming_rsi_zone or forming_oversold  # forming_rsi_zone ya lo cubre todo
-
-    # ── Limpieza del Radar ────────────────────────────────────────────────────
-    # Si RSI superó 42, ya no está "frío": sale del radar automáticamente
-    # (simplemente no lo marcamos como radar_candidate desde score_signal;
-    #  la lógica de exclusión se aplica en el loop principal)
-
-    return score, forming, epct, ppct, fund, poc_max_op, rsi_bounced, rsi_oversold, tags
+    return score, forming, epct, ppct, fund, poc_max_op, rsi_bounced, rsi_oversold
 
 def ema_trend_ok(trend, epct, fund_ex, fund_ok):
     if epct >= 0: return True
@@ -321,8 +284,6 @@ def send_telegram(message):
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         print("Sin credenciales:\n" + message); return
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-
-    # Intento 1: con HTML
     payload = json.dumps({
         "chat_id": TELEGRAM_CHAT_ID,
         "text": message,
@@ -333,35 +294,18 @@ def send_telegram(message):
     try:
         with urllib.request.urlopen(req, timeout=10) as r:
             print(f"  Telegram OK ({r.status})")
-            return
     except Exception as e:
-        print(f"  Telegram HTML error: {e}")
-        print(f"  MSG DUMP: {repr(message[:300])}")
-
-    # Intento 2: sin parse_mode (texto plano, borra tags HTML)
-    import re
-    plain = re.sub(r"<[^>]+>", "", message)
-    payload2 = json.dumps({
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": plain,
-    }).encode()
-    req2 = urllib.request.Request(url, data=payload2,
-                                  headers={"Content-Type":"application/json"})
-    try:
-        with urllib.request.urlopen(req2, timeout=10) as r:
-            print(f"  Telegram OK plain ({r.status})")
-    except Exception as e:
-        print(f"  Telegram plain error: {e}")
+        print(f"  Telegram error: {e}")
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 print(f"\n{'='*55}")
 print(f"CEDEARS ALERTAS — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
 print(f"{'='*55}\n")
 
-signals_found  = []   # score >= 3  → alerta verde individual
-watchlist_found = []  # score == 2  → alerta amarilla individual
-radar_info     = []   # score 0-1   → solo en reporte de cierre
-all_results    = []
+signals_found = []
+forming_found = []
+all_results   = []
+radar_info    = []
 
 existing = {}
 try:
@@ -378,72 +322,39 @@ for ticker, sym in YF_MAP.items():
             prev = existing[ticker]
             q = {
                 "price":prev.get("price",0),"rsi10":prev.get("rsi10",50),
-                "rsi_prev":prev.get("rsi10",50),  # igual al actual → nunca genera rsi_bounced
+                "rsi_prev":prev.get("rsiPrev",prev.get("rsi10",50)),
                 "rsiW":prev.get("rsiW",50),"ema200":prev.get("ema200",0),
                 "emaTrend":prev.get("emaTrend","lateral"),
                 "bb_lo":None,"bb_hi":None,"bb_recov":False,
                 "bb_below":False,"bb_above":False,"bb_squeeze":False,
                 "bb_near_lo":False,"poc_proxy":None,
-                "div_bullish":False,"price_prev":0,"bb_lo_prev":None,
-                "_fallback":True,
             }
             print("datos anteriores")
         else:
             print("sin datos"); continue
     else:
-        div_tag = " · DIV✅" if q.get("div_bullish") else ""
-        bb_tag  = " · BB↑"   if q.get("bb_recov")   else ""
-        print(f"RSI {q['rsi10']} · ${q['price']}{div_tag}{bb_tag}")
+        print(f"RSI {q['rsi10']} · ${q['price']}")
 
-    if q.get("_fallback"):
-        # Datos del caché — no generan señales ni watchlists, solo radar si aplica
-        rsi10 = q["rsi10"] or 50
-        _, _, epct, ppct, _, _, _, _, tags = score_signal(ticker, q)
-        all_results.append((ticker, 0, q, epct, ppct))
-        if rsi10 <= 38:
-            radar_info.append((ticker, q, epct, ppct, 0, tags))
-        continue
-
-    score, forming, epct, ppct, fund, poc_max_op, rsi_bounced, rsi_oversold, tags = \
+    score, forming, epct, ppct, fund, poc_max_op, rsi_bounced, rsi_oversold = \
         score_signal(ticker, q)
     all_results.append((ticker, score, q, epct, ppct))
 
-    rsi10 = q["rsi10"] or 50
-
-    if rsi_bounced and rsi10 > 30 and score >= 3:
-        print(f"  >>> SEÑAL: {ticker} score={score} rsi={rsi10} rsi_prev={q.get('rsi_prev')} bb_recov={q.get('bb_recov')} div={q.get('div_bullish')} epct={epct:.1f} ppct={ppct:.1f}")
-        signals_found.append((ticker, score, q, epct, ppct, fund, poc_max_op, tags))
-    elif rsi10 <= 38:
-        print(f"  ... {ticker}: rsi={rsi10} score={score} → {'watchlist' if score>=2 else 'radar'}")
-        if score >= 2:
-            watchlist_found.append((ticker, score, q, epct, ppct, tags))
-        else:
-            radar_info.append((ticker, q, epct, ppct, score, tags))
-    else:
-        print(f"  ... {ticker}: rsi={rsi10} score={score} → ignorado (rsi>38, sin rebote)")
+    if score >= 3:
+        signals_found.append((ticker, score, q, epct, ppct, fund, poc_max_op))
+    elif forming:
+        forming_found.append((ticker, q, epct, ppct, score))
+    elif q["rsi10"] and q["rsi10"] <= 38:
+        # Solo va al radar si NO salió como watchlist ni señal
+        radar_info.append((ticker, q, epct, ppct, score))
 
     time.sleep(0.5)
-
-# Watchlists ordenadas por RSI ascendente (más cerca del oversold primero)
-watchlist_found.sort(key=lambda x: x[2]["rsi10"] or 99)
 
 now_str  = datetime.now().strftime("%d/%m %H:%M")
 date_str = datetime.now().strftime("%d/%m/%Y")
 
-# Encabezado dinámico según hora de activación
-_hour = datetime.now().hour
-if 9 <= _hour < 13:
-    session_header = f"🔔 APERTURA DE MERCADO — {datetime.now().strftime('%H:%M')}\nIniciando reporte técnico..."
-elif 16 <= _hour < 20:
-    session_header = f"🔔 CIERRE DE MERCADO — {datetime.now().strftime('%H:%M')}\nIniciando reporte técnico..."
-else:
-    session_header = f"🔔 REPORTE DE MERCADO — {datetime.now().strftime('%H:%M')}\nIniciando análisis técnico..."
-
-send_telegram(session_header)
-time.sleep(0.3)
-
-# ── 1. Señales confirmadas (Score 3/4/5) → alerta verde individual ────────────
-for ticker, score, q, epct, ppct, fund, poc_max_op, tags in signals_found:
+# ── 1. Señales confirmadas ────────────────────────────────────────────────────
+for ticker, score, q, epct, ppct, fund, poc_max_op in signals_found:
+    emoji  = "🟢" if score >= 4 else "🟡"
     rsi10  = q["rsi10"] or 50
     rsi_p  = q["rsi_prev"] or rsi10
     poc    = q["poc_proxy"] or 0
@@ -454,100 +365,78 @@ for ticker, score, q, epct, ppct, fund, poc_max_op, tags in signals_found:
 
     sugerencia = sugerencia_signal(score, rsi10, epct, ppct)
 
-    tags_line = ""
-    if tags:
-        # Limpiar emojis de los tags para evitar errores de parseo HTML en Telegram
-        clean_tags = [t.replace("✅","").replace("📐","").strip() for t in tags]
-        tags_line = "\n🏷 <b>Tags:</b> " + " | ".join(clean_tags) + "\n"
-
     msg = (
-        f"🟢 <b>{ticker} — SEÑAL {score}/5</b>\n"
-        f"{poc_badge}"
-        f"\n<b>Indicadores</b>\n"
+        f"{emoji} <b>{ticker} — {score}/5</b>\n"
+        f"{poc_badge}\n"
         f"📉 {rsi_label_signal(rsi10, rsi_p)}\n"
         f"📈 {ema_label_signal(epct, q['emaTrend'], q['ema200'])}\n"
-        f"📦 {poc_label_signal(ppct, poc)}\n"
-        f"🎢 {bb_label_signal(q)}\n"
-        f"{tags_line}"
-        f"\n<b>Sugerencia</b>\n"
-        f"💡 {sugerencia}"
+        f"📊 {poc_label_signal(ppct, poc)}\n"
+        f"🎢 {bb_label_signal(q)}\n\n"
+        f"💡 <b>Sugerencia:</b> {sugerencia}"
     )
     print(f"\n{msg}\n")
     send_telegram(msg)
     time.sleep(0.3)
 
-# ── 2. Watchlist — Score 2 → alerta amarilla individual ──────────────────────
-for ticker, score, q, epct, ppct, tags in watchlist_found:
+# ── 2. Watchlist — setups en formación ───────────────────────────────────────
+for ticker, q, epct, ppct, score in forming_found:
     rsi10 = q["rsi10"] or 50
     rsi_p = q["rsi_prev"] or rsi10
     poc   = q["poc_proxy"] or 0
 
-    tags_line = ""
-    if tags:
-        clean_tags = [t.replace("✅","").replace("📐","").strip() for t in tags]
-        tags_line = "\n🏷 <b>Tags:</b> " + " | ".join(clean_tags) + "\n"
-
     msg = (
-        f"🟡 <b>{ticker} — WATCHLIST {score}/5</b>\n"
-        f"⚠️ <b>Estado:</b> Setup en formación. Aviso previo — monitorear.\n"
-        f"\n<b>Indicadores</b>\n"
+        f"🟡 <b>WATCHLIST — {ticker} ({score}/5)</b>\n\n"
+        f"⚠️ <b>Estado:</b> Setup en formación.\n\n"
         f"📉 {rsi_label_watchlist(rsi10, rsi_p)}\n"
         f"📈 {ema_label_watchlist(epct, q['emaTrend'])}\n"
-        f"📦 {poc_label_watchlist(ppct, poc, q['price'])}\n"
-        f"🎢 {bb_label_watchlist(q)}\n"
-        f"{tags_line}"
-        f"\n<b>Accion sugerida</b>\n"
-        f"🛑 NO OPERAR. Esperá que el RSI cruce al alza el nivel de 30 "
+        f"📊 {poc_label_watchlist(ppct, poc, q['price'])}\n"
+        f"🎢 {bb_label_watchlist(q)}\n\n"
+        f"🛑 <b>Acción sugerida:</b> NO OPERAR. Esperar que el RSI cruce al alza el nivel de 30 "
         f"o validación de soporte en el POC."
     )
     print(f"\n{msg}\n")
     send_telegram(msg)
     time.sleep(0.5)
 
-# ── 3. Resumen / Reporte de cierre ────────────────────────────────────────────
-total_sig   = len(signals_found)
-total_watch = len(watchlist_found)
+# ── 3. Resumen diario ─────────────────────────────────────────────────────────
+total_sig  = len(signals_found)
+total_form = len(forming_found)
 
-if total_sig == 0 and total_watch == 0:
+if total_sig == 0 and total_form == 0:
     intro = "Hoy no se detectaron señales ni watchlists activas."
+    if radar_info:
+        intro += " Hay activos en seguimiento bajo radar:"
 else:
     parts = []
-    if total_sig:
-        sig_tickers = ", ".join(f"<b>{t}</b>" for t, *_ in signals_found)
-        parts.append(f"<b>{total_sig}</b> señal(es) confirmada(s) 🟢 ({sig_tickers})")
-    if total_watch:
-        parts.append(f"<b>{total_watch}</b> watchlist(s) enviada(s) 🟡")
-    intro = " · ".join(parts) + "."
+    if total_sig:  parts.append(f"<b>{total_sig}</b> señal(es) confirmada(s)")
+    if total_form: parts.append(f"<b>{total_form}</b> watchlist(s) enviada(s)")
+    intro = "Resumen: " + " · ".join(parts) + "."
+    if radar_info:
+        intro += " Además, activos bajo observación:"
 
-# Radar: score 0-1, RSI ≤ 42 — solo en reporte de cierre, sin alertas individuales
+# Radar: activos tibios (score ≤ 1) que no fueron watchlist
 radar_lines = []
-radar_filtered = [(t, q, ep, pp, sc, tgs) for t, q, ep, pp, sc, tgs in radar_info
-                  if (q["rsi10"] or 99) <= 42]
-for ticker, q, epct, ppct, score, tags in sorted(radar_filtered, key=lambda x: x[1]["rsi10"] or 99)[:6]:
+for ticker, q, epct, ppct, score in sorted(radar_info, key=lambda x: x[1]["rsi10"] or 99)[:5]:
     rsi = q["rsi10"] or 0
-    line = f"• <b>{ticker}</b>: RSI(10) {rsi}"
+    line = f"• <b>{ticker}</b>: RSI(10) en {rsi}"
     if rsi <= 35:
-        line += " — bajando hacia 30."
+        line += " y bajando hacia 30."
     elif abs(epct) <= 3:
-        line += " — cerca de testear la EMA200."
+        line += f". Cerca de testear la EMA200."
     else:
         line += "."
     if q.get("bb_below"):
-        line += " Perdió banda inferior Bollinger."
+        line += f" Perdió la banda inferior de Bollinger."
         if ppct <= -5 and q.get("poc_proxy"):
-            line += f" POC {abs(ppct):.0f}% abajo (${q['poc_proxy']:,.0f})."
+            line += f" POC un {abs(ppct):.0f}% por debajo (${q['poc_proxy']:,.0f})."
         line += " Sin rebote confirmado."
     elif abs(ppct) <= 3 and q.get("poc_proxy"):
-        line += " Consolidando sobre el POC."
-    if tags:
-        line += " [" + ", ".join(tags) + "]"
+        line += f" Consolidando sobre el POC."
     if score > 0:
-        line += f" Score: {score}/5."
+        line += f" Score actual: {score}/5."
     radar_lines.append(line)
 
-radar_section = ""
-if radar_lines:
-    radar_section = "\n\n📡 Activos bajo confirmación:</b>\n" + "\n".join(radar_lines)
+radar_section = ("\n\n" + "\n".join(radar_lines)) if radar_lines else ""
 
 rsi_values = [q["rsi10"] for _, _, q, _, _ in all_results if q.get("rsi10")]
 avg_rsi = round(sum(rsi_values)/len(rsi_values), 1) if rsi_values else 50
@@ -561,7 +450,7 @@ else:
     bot_note = random.choice(BOT_NOTES)
 
 summary_msg = (
-    f"📅 <b>Resumen Diario — {date_str}</b>\n\n"
+    f"📅 <b>Resumen Diario de Mercado — [{date_str}]</b>\n\n"
     f"{intro}"
     f"{radar_section}\n\n"
     f"💡 <b>Nota del Bot:</b> {bot_note}"
