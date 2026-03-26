@@ -24,7 +24,7 @@ YF_MAP = {
 
 BOT_NOTES = [
     "Día de paciencia. El mercado está en fase de digestión.",
-    "RSI promedio del universo en zona neutral — esperar definición.",
+    "RSI promedio en zona neutral — esperar definición.",
     "Los mejores setups suelen venir después de estas fases de compresión.",
     "Sin señales no hay operación. La paciencia es parte de la estrategia.",
     "El mejor trade a veces es no operar. Esperá el setup limpio.",
@@ -252,227 +252,206 @@ def bb_label_watchlist(q):
 
 def generar_analisis(ticker, score, q, epct, ppct, fund):
     """
-    Genera un análisis contextual de 2-3 líneas según los valores reales del activo.
-    Cubre: tendencia/contexto, niveles clave y riesgo del setup.
+    Análisis contextual de 2-3 líneas:
+      Línea 1 — Contexto de mercado (tendencia, corrección, lateralización)
+      Línea 2 — Niveles clave (EMA200, POC, banda BB)
+      Línea 3 — Divergencias y momentum (solo si hay señal real)
+    Sin referencias a fundamentals.
     """
-    rsi10    = q.get("rsi10") or 50
-    rsi_prev = q.get("rsi_prev") or rsi10
+    rsi10     = q.get("rsi10") or 50
+    rsi_prev  = q.get("rsi_prev") or rsi10
     ema_trend = q.get("emaTrend") or "lateral"
-    div      = q.get("div_bullish", False)
-    bb_recov = q.get("bb_recov", False)
-    bb_below = q.get("bb_below", False)
-    bb_near  = q.get("bb_near_lo", False)
-    price    = q.get("price") or 0
-    ema200   = q.get("ema200") or 1
-    poc      = q.get("poc_proxy") or 1
+    div       = q.get("div_bullish", False)
+    bb_recov  = q.get("bb_recov", False)
+    bb_below  = q.get("bb_below", False)
+    bb_near   = q.get("bb_near_lo", False)
+    poc       = q.get("poc_proxy") or 1
 
     lineas = []
 
-    # ── Línea 1: Contexto de tendencia ───────────────────────────────────────
+    # ── Línea 1: Contexto de mercado ─────────────────────────────────────────
     if epct >= 0 and ema_trend == "subiendo":
-        ctx = f"Tendencia alcista de largo plazo intacta (precio {epct:.1f}% sobre EMA200 en ascenso)."
+        ctx = f"Tendencia alcista de largo plazo intacta — precio {epct:.1f}% sobre EMA200 en ascenso. Corrección técnica dentro de estructura positiva."
     elif epct >= 0 and ema_trend == "lateral":
-        ctx = f"Tendencia lateral — precio sobre EMA200 ({epct:.1f}%) pero sin dirección definida."
+        ctx = f"Mercado lateralizando — precio {epct:.1f}% sobre EMA200 sin tendencia definida. La corrección actual busca soporte en la media."
     elif epct >= 0 and ema_trend == "bajando":
-        ctx = f"EMA200 en descenso ({epct:.1f}% sobre media) — posible agotamiento de tendencia alcista."
+        ctx = f"EMA200 perdiendo pendiente con precio aún {epct:.1f}% sobre la media — señal de agotamiento de tendencia alcista. Corrección en desarrollo."
     elif epct >= -3:
-        ctx = f"Precio testeando la EMA200 ({epct:.1f}%) — zona crítica de soporte dinámico."
+        ctx = f"Precio testeando la EMA200 ({epct:.1f}%) — zona de decisión crítica. Un cierre por encima confirma el soporte dinámico."
     elif epct >= -10:
-        ctx = f"Precio por debajo de EMA200 ({epct:.1f}%) en corrección. EMA actúa como resistencia dinámica."
+        ctx = f"Corrección moderada — precio {abs(epct):.1f}% bajo EMA200. La media actúa como resistencia dinámica en el corto plazo."
     else:
-        ctx = f"Corrección profunda: precio {abs(epct):.1f}% bajo EMA200. Mercado en tendencia bajista de corto plazo."
+        ctx = f"Corrección profunda — precio {abs(epct):.1f}% bajo EMA200. Zona de capitulación con tendencia bajista de corto plazo vigente."
     lineas.append(ctx)
 
-    # ── Línea 2: Niveles clave y estructura de precio ────────────────────────
+    # ── Línea 2: Niveles clave ────────────────────────────────────────────────
     if bb_recov and ppct <= -10:
-        niv = f"Rebotó desde la banda inferior de BB con precio {abs(ppct):.1f}% bajo el POC — zona de alto valor histórico."
+        niv = f"Rebote desde banda inferior de BB con precio {abs(ppct):.1f}% bajo el POC (${poc:,.0f}) — doble confluencia alcista: BB + zona de valor profundo."
     elif bb_recov and abs(ppct) <= 5:
-        niv = f"Rebote desde BB inferior con precio cerca del POC (${poc:,.0f}) — zona de equilibrio de volumen."
+        niv = f"Recuperó banda inferior de BB cerca del POC (${poc:,.0f}) — rebote técnico con respaldo de volumen histórico."
     elif bb_recov:
-        niv = f"Recuperó la banda inferior de BB. POC en ${poc:,.0f} ({ppct:+.1f}%) — referencia de valor a monitorear."
+        niv = f"Recuperó banda inferior de BB. POC en ${poc:,.0f} ({ppct:+.1f}%) — próximo objetivo de recuperación a monitorear."
     elif bb_below:
-        niv = f"Precio fuera de banda inferior — capitulación en curso. POC en ${poc:,.0f} ({ppct:+.1f}%) aún lejos."
+        niv = f"Precio fuera de la banda inferior de BB — extremo de volatilidad bajista. POC en ${poc:,.0f} ({ppct:+.1f}%), aún distante como soporte real."
     elif bb_near:
-        niv = f"Apoyando en banda inferior de BB sin haberla perdido. POC en ${poc:,.0f} ({ppct:+.1f}%)."
+        niv = f"Apoyando en banda inferior de BB sin perderla. POC en ${poc:,.0f} ({ppct:+.1f}%) — soporte de volumen histórico cercano."
     elif ppct <= -15:
-        niv = f"Precio {abs(ppct):.1f}% bajo el POC (${poc:,.0f}) — zona de valor profundo, históricamente de acumulación."
+        niv = f"Precio {abs(ppct):.1f}% bajo el POC (${poc:,.0f}) — zona de acumulación histórica con alta relación riesgo/beneficio."
     elif ppct <= -5:
-        niv = f"Precio acercándose al POC (${poc:,.0f}, {ppct:.1f}%) — potencial zona de rebote por volumen."
+        niv = f"Precio acercándose al POC (${poc:,.0f}, {ppct:.1f}%) — potencial zona de rebote por confluencia de volumen."
     elif abs(ppct) <= 3:
-        niv = f"Precio en equilibrio de volumen (POC ${poc:,.0f}) — alta liquidez, zona de decisión."
+        niv = f"Precio en equilibrio de volumen sobre el POC (${poc:,.0f}) — zona de alta liquidez y decisión de mercado."
     else:
-        niv = f"Precio {ppct:.1f}% sobre el POC (${poc:,.0f}) — extendido respecto al valor justo."
+        niv = f"Precio {ppct:.1f}% sobre el POC (${poc:,.0f}) — extendido respecto al valor justo. Atención a posible toma de ganancias."
     lineas.append(niv)
 
-    # ── Línea 3: Riesgo del setup / momentum ─────────────────────────────────
-    riesgo_partes = []
-
+    # ── Línea 3: Divergencias y momentum (solo si hay señal real) ────────────
     if div:
-        riesgo_partes.append("Divergencia alcista RSI confirmada — momentum mejora mientras precio cae")
+        lineas.append(f"Divergencia alcista confirmada — RSI({rsi10}) marcando mínimo más alto mientras el precio hace mínimo más bajo. Cambio de momentum favorable.")
     elif rsi10 > 30 and rsi_prev <= 30:
-        riesgo_partes.append("RSI cruzó al alza el nivel 30 — momentum cambiando a favor")
+        lineas.append(f"RSI cruzó al alza el nivel 30 (de {rsi_prev} a {rsi10}) — momentum girando a favor del comprador.")
     elif rsi10 <= 28:
-        riesgo_partes.append(f"RSI en oversold extremo ({rsi10}) — zona de máxima presión vendedora")
-    elif rsi10 <= 32:
-        riesgo_partes.append(f"RSI en {rsi10} saliendo de oversold — confirmar con próxima vela")
-
-    if epct < -10 and score == 3:
-        riesgo_partes.append(f"entrada por debajo de EMA200 implica mayor riesgo — ajustá el stop")
-    elif epct >= 0 and score == 3:
-        riesgo_partes.append("La EMA200 actuando como soporte dinámico valida la estructura alcista de fondo")
-
-    if fund == "excelentes":
-        riesgo_partes.append("fundamentals excelentes respaldan el rebote técnico")
-    elif fund == "controversiales":
-        riesgo_partes.append("fundamentals controversiales — priorizar gestión del riesgo")
-
-    if riesgo_partes:
-        # Primera letra en mayúscula, separar con " · "
-        riesgo_partes[0] = riesgo_partes[0][0].upper() + riesgo_partes[0][1:]
-        lineas.append(" · ".join(riesgo_partes) + ".")
+        lineas.append(f"RSI en oversold extremo ({rsi10}) — presión vendedora en máximos, históricamente precede rebotes técnicos.")
+    elif rsi10 <= 32 and rsi10 > rsi_prev:
+        lineas.append(f"RSI en {rsi10} con pendiente alcista desde {rsi_prev} — momentum comenzando a recuperarse desde zona de suelo.")
 
     return "\n".join(lineas)
 
+
 def sugerencia_signal(score, rsi10, epct, ppct, fund, div, bb_recov):
     """
-    Sugerencia contextual para SEÑAL 3/3.
-    Solo recomienda entrada cuando score == 3.
-    Varía según: zona de valor (ppct), distancia a EMA (epct),
-    fundamentals, divergencia y confirmación BB.
+    Sugerencia para SEÑAL 3/3. Estrategia de acumulación a largo plazo.
+    Entrada completa cuando hay confluencia de valor + técnica.
+    Media posición en setups válidos pero con alguna advertencia de contexto.
     """
     if score != 3:
         return "Señal incompleta. Monitorear — no operar aún."
 
-    # Caso 1: zona de valor profunda + fundamentals sólidos
-    if ppct <= -15 and fund in ("excelentes", "buenos"):
+    # Entrada completa: zona de valor profunda (precio barato históricamente)
+    if ppct <= -15:
         return (
-            "Setup completo en zona de valor profunda. "
-            "Entrada con posición completa — el precio está históricamente barato. "
-            "Fase de acumulación institucional detectada. "
+            "Zona de acumulación de largo plazo — precio históricamente barato respecto al POC. "
+            "Entrada con posición completa. "
+            "Horizonte largo: mantener mientras la tesis de acumulación esté vigente."
         )
 
-    # Caso 2: divergencia alcista activa (señal de mayor calidad)
-    if div:
+    # Entrada completa: divergencia alcista + señal limpia (máxima calidad)
+    if div and epct >= -3:
         return (
-            "Setup con divergencia alcista confirmada — mayor calidad de señal. "
-            "Entrada válida con posición completa. "
-            "Ampliá si la siguiente vela confirma continuidad alcista."
+            "Setup de alta calidad: divergencia alcista confirmada con soporte técnico completo. "
+            "Entrada con posición completa. "
+            "La divergencia sugiere agotamiento vendedor — favorable para acumulación."
         )
 
-    # Caso 3: corrección profunda (precio muy por debajo de EMA200)
+    # Entrada completa: precio sobre EMA200 en tendencia alcista + BB recuperado
+    if epct >= 0 and bb_recov and not div:
+        return (
+            "Setup limpio sobre EMA200 con recuperación de BB confirmada. "
+            "Entrada con posición completa. "
+            "La EMA200 actúa como soporte dinámico de largo plazo — favorable para acumulación."
+        )
+
+    # Media posición: corrección profunda bajo EMA200 (contra tendencia de fondo)
     if epct < -10:
         return (
-            f"Rebote técnico con precio {abs(epct):.1f}% bajo EMA200 — tendencia bajista de fondo vigente. "
+            f"Rebote técnico con precio {abs(epct):.1f}% bajo EMA200 — tendencia bajista de corto plazo vigente. "
             "Entrada con media posición. "
-            "Precio con descuento respecto a la media.."
+            "Acumulación escalonada: ampliá posición si el precio confirma soporte en las próximas ruedas."
         )
 
-    # Caso 4: testeando EMA200 como soporte dinámico
-    if -3 <= epct < 0:
+    # Media posición: testeando EMA200 (zona crítica, puede perderla)
+    if -10 <= epct < -3:
         return (
-            "Setup sobre soporte dinámico (EMA200). "
-            "Entrada con media posición — confirmá que el precio no pierde la media en la próxima vela. "
-            "Mantener ritmo de acumulación."
+            "Precio en corrección moderada bajo EMA200. "
+            "Entrada con media posición — la EMA actúa como resistencia dinámica. "
+            "Ampliá a posición completa si el precio recupera la media con volumen."
         )
 
-    # Caso 5: precio extendido sobre POC (riesgo de toma de ganancias)
+    # Media posición: cerca de EMA pero extendido sobre POC
     if ppct >= 20:
         return (
             f"Setup válido pero precio {ppct:.1f}% sobre el POC — extendido respecto al valor justo. "
             "Entrada con media posición. "
-            "Precio extendido, POC como referencia.".format(ppct)
+            "Reservá capital para acumular más cerca del POC si hay retroceso."
         )
 
-    # Caso 6: fundamentals controversiales
-    if fund == "controversiales":
-        return (
-            "Setup técnico confirmado en activo con fundamentals controversiales. "
-            "Entrada con media posición. "
-            "No extendas el horizonte temporal más allá del setup."
-        )
-
-    # Caso estándar: señal limpia sobre EMA con BB recuperado
-    if epct >= 0 and bb_recov:
-        return (
-            "Setup limpio: RSI rebotó, precio sobre EMA200 y recuperó banda BB. "
-            "Entrada con media posición. Chequeá divergencias en TradingView para ampliar convicción."
-        )
-
-    # Default
+    # Default: señal técnica completa, contexto neutro
     return (
-        "Setup válido. Entrada confirmada con media posición según tu plan de riesgo. "
-        "Verificá niveles en TradingView antes de ejecutar."
+        "Setup técnico completo. "
+        "Entrada con media posición — confirmá tendencia en TradingView antes de ejecutar. "
+        "Ampliá a posición completa si la siguiente vela confirma continuidad alcista."
     )
 
 
 def sugerencia_watchlist(score, rsi10, epct, ppct, fund, div, bb_recov, bb_below, rsi_bounced):
     """
-    Sugerencia contextual para WATCHLIST 2/3.
-    Siempre indica NO OPERAR, pero describe exactamente qué condición falta
-    y qué vigilar según los 2 puntos que ya se cumplieron.
+    Sugerencia para WATCHLIST 2/3. Estrategia de acumulación a largo plazo.
+    Siempre indica esperar, pero describe exactamente qué falta y qué vigilar.
     """
-    ema_ok   = epct >= -3
-    rsi_ok   = rsi_bounced
-    bb_ok    = bb_recov
+    ema_ok = epct >= -3
+    rsi_ok = rsi_bounced
+    bb_ok  = bb_recov
 
-    # Caso 1: tiene EMA + BB, falta RSI (más común en watchlist)
+    # Caso 1: EMA + BB confirmados, falta RSI (falta el cruce)
     if ema_ok and bb_ok and not rsi_ok:
         if rsi10 <= 30:
             return (
-                "NO OPERAR aún. Falta confirmar el cruce del RSI sobre 30. "
-                f"RSI actual en {rsi10} — oversold pero sin rebote confirmado. "
-                "Activá alerta en TradingView para RSI(10) cruzando 30 al alza."
+                "Esperá el cruce del RSI sobre 30 para confirmar la entrada. "
+                f"RSI en {rsi10} — en oversold pero sin rebote confirmado aún. "
+                "Cuando cruce, los 3 puntos estarán completos: entrada con posición completa."
             )
         else:
             return (
-                "NO OPERAR aún. EMA200 y BB recuperados, pero RSI no cruzó el nivel 30 en la vela anterior. "
-                f"RSI actual en {rsi10} — esperá que baje a zona de oversold y rebote. "
-                "Setup en formación, puede madurar en próximas ruedas."
+                "EMA200 y BB recuperados — dos de tres puntos confirmados. "
+                f"RSI en {rsi10}, aún no bajó a oversold. Esperá que baje y rebote sobre 30. "
+                "El setup puede madurar en las próximas ruedas."
             )
 
-    # Caso 2: tiene RSI + EMA, falta BB (precio no recuperó la banda)
+    # Caso 2: RSI + EMA confirmados, falta BB
     if rsi_ok and ema_ok and not bb_ok:
         if bb_below:
             return (
-                "NO OPERAR. RSI rebotó y precio sobre EMA200, pero sigue fuera de la banda inferior de BB. "
-                "Esperá que el precio cierre dentro de las bandas para confirmar el rebote. "
-                "La recuperación de la banda BB es la confirmación que falta."
+                "RSI rebotó y precio sobre EMA200, pero el precio sigue fuera de la banda inferior de BB. "
+                "Esperá que cierre dentro de las bandas — es la confirmación que falta. "
+                "Cuando BB se recupere, setup completo: entrada con posición completa."
             )
         else:
             return (
-                "NO OPERAR. RSI rebotó y precio sobre EMA200, pero aún no se dio el rebote desde la banda BB. "
-                f"Precio cerca de la banda inferior — monitorear. "
-                "Si BB se recupera en próxima vela, setup completo."
+                "RSI rebotó y precio sobre EMA200. Falta el rebote desde la banda inferior de BB. "
+                "El precio aún no tocó la banda — monitorear. "
+                "Si en las próximas ruedas presiona BB y rebota, setup completo."
             )
 
-    # Caso 3: tiene RSI + BB, falta EMA (precio bajo EMA200)
+    # Caso 3: RSI + BB confirmados, falta EMA (precio bajo la media)
     if rsi_ok and bb_ok and not ema_ok:
         return (
-            f"NO OPERAR. RSI y BB confirmados, pero precio {abs(epct):.1f}% bajo EMA200 — resistencia dinámica activa. "
-            "El setup es válido técnicamente pero opera en contra de la tendencia de largo plazo. "
-            "Reducí el tamaño de posición si decidís entrar cuando se complete la señal."
+            f"RSI y BB confirmados, pero precio {abs(epct):.1f}% bajo EMA200 — opera contra la tendencia de largo plazo. "
+            "Cuando complete la señal, entrada con media posición (acumulación escalonada). "
+            "Ampliá a posición completa si el precio recupera la EMA200."
         )
 
-    # Caso 4: divergencia activa → monitoreo prioritario
+    # Caso 4: divergencia activa → prioridad máxima
     if div:
+        falta = "RSI" if not rsi_ok else ("BB" if not bb_ok else "EMA")
         return (
-            "NO OPERAR aún, pero divergencia alcista activa — setup de alta prioridad. "
-            "El momentum está mejorando mientras el precio cae. "
-            f"Falta {'RSI' if not rsi_ok else 'BB' if not bb_ok else 'EMA'} para completar la señal. Monitorear de cerca."
+            f"Divergencia alcista activa — setup de alta prioridad para acumulación. "
+            f"Falta confirmar {falta} para completar la señal. "
+            "Monitorear de cerca: cuando se complete, entrada con posición completa."
         )
 
-    # Caso 5: precio cerca del POC
-    if abs(ppct) <= 5:
+    # Caso 5: precio cerca del POC (nivel de valor)
+    if abs(ppct) <= 8:
         return (
-            f"NO OPERAR. Setup en formación sobre el POC (${ppct:.0f}% del valor justo) — zona de decisión. "
-            "Esperá validación de soporte en este nivel antes de entrar. "
-            "Un cierre firme sobre el POC con RSI en recuperación sería la confirmación ideal."
+            f"Setup en formación sobre zona de valor (POC ${ppct:.0f}%). "
+            "Esperá las confirmaciones técnicas faltantes antes de entrar. "
+            "Si completa los 3 puntos desde este nivel, será zona ideal de acumulación."
         )
 
-    # Default watchlist
+    # Default
     return (
-        "NO OPERAR. Setup en formación — falta al menos una confirmación técnica. "
-        "Esperá el cruce del RSI al alza sobre 30 o validación de soporte en el POC."
+        "Setup en formación — falta al menos una confirmación técnica para entrar. "
+        "Cuando los 3 puntos estén completos, entrada según el contexto de precio. "
+        "Paciencia: los mejores setups de acumulación se confirman, no se anticipan."
     )
 
 # ── Scoring — NUEVO SISTEMA 3/3 ───────────────────────────────────────────────
@@ -751,30 +730,57 @@ radar_filtered = [
     if es_radar_valido(q, ep)
 ]
 for ticker, q, epct, ppct, score in sorted(radar_filtered, key=lambda x: x[1]["rsi10"] or 99)[:6]:
-    rsi = q["rsi10"] or 0
-    line = f"• <b>{ticker}</b>: RSI(10) en {rsi}"
+    rsi  = q["rsi10"] or 0
+    poc  = q.get("poc_proxy") or 0
+    partes = []
 
+    # ── Condición principal de RSI ────────────────────────────────────────────
     if rsi < 30:
-        # Zona de Suelo: RSI ya está en oversold, sin rebote confirmado
-        line += ". En zona de suelo (oversold)."
-        if q.get("bb_below"):
-            line += " Perdió la banda inferior de Bollinger. Sin rebote confirmado."
-        if score > 0:
-            line += f" Score actual: {score}/3."
+        partes.append(f"RSI(10) en {rsi} — en zona de suelo (oversold)")
     elif rsi <= 35:
-        # Zona de Alerta: aproximándose al suelo
-        line += " y bajando hacia 30."
-        if q.get("bb_below"):
-            line += " Perdió la banda inferior de Bollinger. Sin rebote confirmado."
-        if score > 0:
-            line += f" Score actual: {score}/3."
-    elif abs(epct) <= 1:
-        line += f". Cerca de testear la EMA200."
-        if score > 0:
-            line += f" Score actual: {score}/3."
+        partes.append(f"RSI(10) en {rsi} y bajando hacia 30")
+
+    # ── EMA200 ────────────────────────────────────────────────────────────────
+    if abs(epct) <= 1:
+        partes.append(f"cerca de testear la EMA200 ({epct:+.1f}%)")
+    elif abs(epct) <= 3 and epct < 0:
+        partes.append(f"testeando la EMA200 ({epct:.1f}%)")
+
+    # ── Bollinger ─────────────────────────────────────────────────────────────
+    if q.get("bb_below"):
+        if poc and ppct <= -8:
+            partes.append(
+                f"Perdió la banda inferior de Bollinger, pero el POC está un {abs(ppct):.0f}% por debajo (${poc:,.0f}). Sin rebote confirmado"
+            )
+        else:
+            partes.append("Perdió la banda inferior de Bollinger. Sin rebote confirmado")
+    elif q.get("bb_near_lo"):
+        partes.append("apoyando en banda inferior de BB")
+
+    # ── POC ───────────────────────────────────────────────────────────────────
+    if not q.get("bb_below") and poc:
+        if abs(ppct) <= 3:
+            partes.append(f"Consolidando sobre el POC (${poc:,.0f})")
+        elif ppct <= -10:
+            partes.append(f"POC un {abs(ppct):.0f}% por debajo (${poc:,.0f}) — zona de valor profundo")
+        elif ppct <= -5:
+            partes.append(f"acercándose al POC (${poc:,.0f})")
+
+    # ── Score si es > 0 ───────────────────────────────────────────────────────
+    if score > 0:
+        partes.append(f"Score: {score}/3")
+
+    # Construir línea: primera parte como inicio, resto separado por ". "
+    if partes:
+        first = partes[0][0].upper() + partes[0][1:]
+        rest  = ". ".join(partes[1:])
+        line  = f"• <b>{ticker}</b>: {first}"
+        if rest:
+            line += f". {rest}."
+        else:
+            line += "."
     else:
-        if score > 0:
-            line += f". Score actual: {score}/3."
+        line = f"• <b>{ticker}</b>: RSI(10) en {rsi}."
 
     radar_lines.append(line)
 
