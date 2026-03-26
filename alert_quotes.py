@@ -333,17 +333,146 @@ def generar_analisis(ticker, score, q, epct, ppct, fund):
 
     return "\n".join(lineas)
 
-def sugerencia_signal(score, rsi10, epct, ppct):
+def sugerencia_signal(score, rsi10, epct, ppct, fund, div, bb_recov):
     """
-    Solo recomienda Entrada cuando score es 3/3 (los 3 puntos técnicos confirmados).
+    Sugerencia contextual para SEÑAL 3/3.
+    Solo recomienda entrada cuando score == 3.
+    Varía según: zona de valor (ppct), distancia a EMA (epct),
+    fundamentals, divergencia y confirmación BB.
     """
-    if score == 3:
-        if ppct <= -15:
-            return "Setup completo en zona de valor. Entrada válida — posición según tu plan de riesgo."
-        else:
-            return "Setup válido. Entrada confirmada. Chequeá BB y divergencias en TradingView antes de entrar."
-    else:
+    if score != 3:
         return "Señal incompleta. Monitorear — no operar aún."
+
+    # Caso 1: zona de valor profunda + fundamentals sólidos
+    if ppct <= -15 and fund in ("excelentes", "buenos"):
+        return (
+            "Setup completo en zona de valor profunda. "
+            "Entrada con posición completa — el precio está históricamente barato. "
+        )
+
+    # Caso 2: divergencia alcista activa (señal de mayor calidad)
+    if div:
+        return (
+            "Setup con divergencia alcista confirmada — mayor calidad de señal. "
+            "Entrada válida con posición completa. "
+            "Ampliá si la siguiente vela confirma continuidad alcista."
+        )
+
+    # Caso 3: corrección profunda (precio muy por debajo de EMA200)
+    if epct < -10:
+        return (
+            f"Rebote técnico con precio {abs(epct):.1f}% bajo EMA200 — tendencia bajista de fondo vigente. "
+            "Entrada con media posición. "
+            "Precio con descuento respecto a la media.."
+        )
+
+    # Caso 4: testeando EMA200 como soporte dinámico
+    if -3 <= epct < 0:
+        return (
+            "Setup sobre soporte dinámico (EMA200). "
+            "Entrada con media posición — confirmá que el precio no pierde la media en la próxima vela. "
+            "Mantener ritmo de acumulación."
+        )
+
+    # Caso 5: precio extendido sobre POC (riesgo de toma de ganancias)
+    if ppct >= 20:
+        return (
+            f"Setup válido pero precio {ppct:.1f}% sobre el POC — extendido respecto al valor justo. "
+            "Entrada con media posición. "
+            "Precio extendido, POC como referencia.".format(ppct)
+        )
+
+    # Caso 6: fundamentals controversiales
+    if fund == "controversiales":
+        return (
+            "Setup técnico confirmado en activo con fundamentals controversiales. "
+            "Entrada con media posición. "
+            "No extendas el horizonte temporal más allá del setup."
+        )
+
+    # Caso estándar: señal limpia sobre EMA con BB recuperado
+    if epct >= 0 and bb_recov:
+        return (
+            "Setup limpio: RSI rebotó, precio sobre EMA200 y recuperó banda BB. "
+            "Entrada con media posición. Chequeá divergencias en TradingView para ampliar convicción."
+        )
+
+    # Default
+    return (
+        "Setup válido. Entrada confirmada con media posición según tu plan de riesgo. "
+        "Verificá niveles en TradingView antes de ejecutar."
+    )
+
+
+def sugerencia_watchlist(score, rsi10, epct, ppct, fund, div, bb_recov, bb_below, rsi_bounced):
+    """
+    Sugerencia contextual para WATCHLIST 2/3.
+    Siempre indica NO OPERAR, pero describe exactamente qué condición falta
+    y qué vigilar según los 2 puntos que ya se cumplieron.
+    """
+    ema_ok   = epct >= -3
+    rsi_ok   = rsi_bounced
+    bb_ok    = bb_recov
+
+    # Caso 1: tiene EMA + BB, falta RSI (más común en watchlist)
+    if ema_ok and bb_ok and not rsi_ok:
+        if rsi10 <= 30:
+            return (
+                "NO OPERAR aún. Falta confirmar el cruce del RSI sobre 30. "
+                f"RSI actual en {rsi10} — oversold pero sin rebote confirmado. "
+                "Activá alerta en TradingView para RSI(10) cruzando 30 al alza."
+            )
+        else:
+            return (
+                "NO OPERAR aún. EMA200 y BB recuperados, pero RSI no cruzó el nivel 30 en la vela anterior. "
+                f"RSI actual en {rsi10} — esperá que baje a zona de oversold y rebote. "
+                "Setup en formación, puede madurar en próximas ruedas."
+            )
+
+    # Caso 2: tiene RSI + EMA, falta BB (precio no recuperó la banda)
+    if rsi_ok and ema_ok and not bb_ok:
+        if bb_below:
+            return (
+                "NO OPERAR. RSI rebotó y precio sobre EMA200, pero sigue fuera de la banda inferior de BB. "
+                "Esperá que el precio cierre dentro de las bandas para confirmar el rebote. "
+                "La recuperación de la banda BB es la confirmación que falta."
+            )
+        else:
+            return (
+                "NO OPERAR. RSI rebotó y precio sobre EMA200, pero aún no se dio el rebote desde la banda BB. "
+                f"Precio cerca de la banda inferior — monitorear. "
+                "Si BB se recupera en próxima vela, setup completo."
+            )
+
+    # Caso 3: tiene RSI + BB, falta EMA (precio bajo EMA200)
+    if rsi_ok and bb_ok and not ema_ok:
+        return (
+            f"NO OPERAR. RSI y BB confirmados, pero precio {abs(epct):.1f}% bajo EMA200 — resistencia dinámica activa. "
+            "El setup es válido técnicamente pero opera en contra de la tendencia de largo plazo. "
+            "Reducí el tamaño de posición si decidís entrar cuando se complete la señal."
+        )
+
+    # Caso 4: divergencia activa → monitoreo prioritario
+    if div:
+        return (
+            "NO OPERAR aún, pero divergencia alcista activa — setup de alta prioridad. "
+            "El momentum está mejorando mientras el precio cae. "
+            f"Falta {'RSI' if not rsi_ok else 'BB' if not bb_ok else 'EMA'} para completar la señal. Monitorear de cerca."
+        )
+
+    # Caso 5: precio cerca del POC
+    if abs(ppct) <= 5:
+        return (
+            f"NO OPERAR. Setup en formación sobre el POC (${ppct:.0f}% del valor justo) — zona de decisión. "
+            "Esperá validación de soporte en este nivel antes de entrar. "
+            "Un cierre firme sobre el POC con RSI en recuperación sería la confirmación ideal."
+        )
+
+    # Default watchlist
+    return (
+        "NO OPERAR. Setup en formación — falta al menos una confirmación técnica. "
+        "Esperá el cruce del RSI al alza sobre 30 o validación de soporte en el POC."
+    )
 
 # ── Scoring — NUEVO SISTEMA 3/3 ───────────────────────────────────────────────
 def score_signal(ticker, q):
@@ -369,7 +498,6 @@ def score_signal(ticker, q):
     ppct    = (price - poc) / poc * 100
 
     score = 0
-    tags  = []
 
     # ── Punto 1: RSI cruzando al alza el nivel de 30 ─────────────────────────
     rsi_bounced  = (rsi10 > 30 and rsi_prev <= 30)
@@ -377,28 +505,15 @@ def score_signal(ticker, q):
 
     if rsi_bounced:
         score += 1
-        tags.append("RSI Rebote ✅")
 
     # ── Punto 2: EMA200 — precio encima O a no más del 3% por debajo ────────
-    # epct >= -3 cubre ambos casos: positivo (encima) y negativo hasta -3% (soporte)
     ema_ok = epct >= -3
     if ema_ok:
         score += 1
-        if epct >= 0:
-            tags.append("Sobre EMA200 ✅")
-        else:
-            tags.append("Soporte EMA200 ✅")
 
     # ── Punto 3: Bollinger — recuperó banda inferior ──────────────────────────
     if q.get("bb_recov"):
         score += 1
-        tags.append("Rebote Bollinger ✅")
-
-    # ── Contexto adicional (no suma puntos) ───────────────────────────────────
-    if q.get("div_bullish"):
-        tags.append("Divergencia Alcista 📐")
-    if q.get("bb_squeeze"):
-        tags.append("BB Squeeze 📐")
 
     poc_max_op = fund_ex and ppct <= -25 and ppct >= -40
 
@@ -406,7 +521,7 @@ def score_signal(ticker, q):
     forming_rsi_zone = (rsi10 <= 38 and not rsi_bounced)
     forming = forming_rsi_zone
 
-    return score, forming, epct, ppct, fund, poc_max_op, rsi_bounced, rsi_oversold, tags
+    return score, forming, epct, ppct, fund, poc_max_op, rsi_bounced, rsi_oversold
 
 def send_telegram(message):
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
@@ -490,33 +605,27 @@ for ticker, sym in YF_MAP.items():
 
     if q.get("_fallback"):
         rsi10 = q["rsi10"] or 50
-        _, _, epct, ppct, _, _, _, _, tags = score_signal(ticker, q)
+        _, _, epct, ppct, _, _, _, _ = score_signal(ticker, q)
         all_results.append((ticker, 0, q, epct, ppct))
         if rsi10 <= 38:
-            radar_info.append((ticker, q, epct, ppct, 0, tags))
+            radar_info.append((ticker, q, epct, ppct, 0))
         continue
 
-    score, forming, epct, ppct, fund, poc_max_op, rsi_bounced, rsi_oversold, tags = \
+    score, forming, epct, ppct, fund, poc_max_op, rsi_bounced, rsi_oversold = \
         score_signal(ticker, q)
     all_results.append((ticker, score, q, epct, ppct))
 
     rsi10 = q["rsi10"] or 50
 
     if score == 3 and rsi_bounced:
-        # SEÑAL completa: los 3 puntos técnicos confirmados
         print(f"  >>> SEÑAL 3/3: {ticker} rsi={rsi10} rsi_prev={q.get('rsi_prev')} bb_recov={q.get('bb_recov')} epct={epct:.1f}")
-        signals_found.append((ticker, score, q, epct, ppct, fund, poc_max_op, tags))
+        signals_found.append((ticker, score, q, epct, ppct, fund, poc_max_op))
     elif score == 2 and not rsi_bounced and rsi10 <= 38:
-        # WATCHLIST: 2 de 3 puntos, RSI aún no confirmó rebote
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → watchlist")
-        watchlist_found.append((ticker, score, q, epct, ppct, tags))
+        watchlist_found.append((ticker, score, q, epct, ppct))
     elif (rsi10 <= 35) or (rsi10 < 30 and not rsi_bounced) or (abs(epct) <= 1):
-        # RADAR: cerca de dar señal
-        # - Zona de Alerta : RSI 30–35
-        # - Zona de Suelo  : RSI < 30 sin rebote confirmado
-        # - Cerca de EMA   : precio a ≤1% de la EMA200
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → radar")
-        radar_info.append((ticker, q, epct, ppct, score, tags))
+        radar_info.append((ticker, q, epct, ppct, score))
     else:
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → ignorado")
 
@@ -541,22 +650,19 @@ send_telegram(session_header)
 time.sleep(0.3)
 
 # ── 1. Señales confirmadas (Score 3/3) → alerta verde individual ──────────────
-for ticker, score, q, epct, ppct, fund, poc_max_op, tags in signals_found:
+for ticker, score, q, epct, ppct, fund, poc_max_op in signals_found:
     rsi10  = q["rsi10"] or 50
     rsi_p  = q["rsi_prev"] or rsi10
     poc    = q["poc_proxy"] or 0
+    div    = q.get("div_bullish", False)
+    bb_rec = q.get("bb_recov", False)
 
     poc_badge = ""
     if poc_max_op:
         poc_badge = f"\n⭐ <b>Máxima oportunidad</b> — {ppct:.1f}% bajo POC · Fundamentals excelentes\n"
 
-    sugerencia = sugerencia_signal(score, rsi10, epct, ppct)
+    sugerencia = sugerencia_signal(score, rsi10, epct, ppct, fund, div, bb_rec)
     analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
-
-    tags_line = ""
-    if tags:
-        clean_tags = [t.replace("✅","").replace("📐","").strip() for t in tags]
-        tags_line = "\n🏷 <b>Tags:</b> " + " | ".join(clean_tags) + "\n"
 
     msg = (
         f"🟢 <b>{ticker} — SEÑAL {score}/3</b>\n"
@@ -566,7 +672,6 @@ for ticker, score, q, epct, ppct, fund, poc_max_op, tags in signals_found:
         f"📈 {ema_label_signal(epct, q['emaTrend'], q['ema200'])}\n"
         f"📦 {poc_label_signal(ppct, poc)}\n"
         f"🎢 {bb_label_signal(q)}\n"
-        f"{tags_line}"
         f"\n🔍 <b>Análisis</b>\n"
         f"{analisis}\n"
         f"\n<b>Sugerencia</b>\n"
@@ -577,18 +682,20 @@ for ticker, score, q, epct, ppct, fund, poc_max_op, tags in signals_found:
     time.sleep(0.3)
 
 # ── 2. Watchlist — Score 2/3 → alerta amarilla individual ────────────────────
-for ticker, score, q, epct, ppct, tags in watchlist_found:
-    rsi10 = q["rsi10"] or 50
-    rsi_p = q["rsi_prev"] or rsi10
-    poc   = q["poc_proxy"] or 0
-    fund  = FUND.get(ticker, "buenos")
+for ticker, score, q, epct, ppct in watchlist_found:
+    rsi10    = q["rsi10"] or 50
+    rsi_p    = q["rsi_prev"] or rsi10
+    poc      = q["poc_proxy"] or 0
+    fund     = FUND.get(ticker, "buenos")
+    div      = q.get("div_bullish", False)
+    bb_rec   = q.get("bb_recov", False)
+    bb_below = q.get("bb_below", False)
+    # Para watchlist: rsi_bounced es False por definición (condición de entrada)
+    rsi_bounced_w = (rsi10 > 30 and rsi_p <= 30)
 
-    analisis = generar_analisis(ticker, score, q, epct, ppct, fund)
-
-    tags_line = ""
-    if tags:
-        clean_tags = [t.replace("✅","").replace("📐","").strip() for t in tags]
-        tags_line = "\n🏷 <b>Tags:</b> " + " | ".join(clean_tags) + "\n"
+    analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
+    sugerencia = sugerencia_watchlist(score, rsi10, epct, ppct, fund, div,
+                                      bb_rec, bb_below, rsi_bounced_w)
 
     msg = (
         f"🟡 <b>{ticker} — WATCHLIST {score}/3</b>\n"
@@ -598,12 +705,10 @@ for ticker, score, q, epct, ppct, tags in watchlist_found:
         f"📈 {ema_label_watchlist(epct, q['emaTrend'])}\n"
         f"📦 {poc_label_watchlist(ppct, poc, q['price'])}\n"
         f"🎢 {bb_label_watchlist(q)}\n"
-        f"{tags_line}"
         f"\n🔍 <b>Análisis</b>\n"
         f"{analisis}\n"
         f"\n🛑 <b>Acción sugerida</b>\n"
-        f"NO OPERAR. Esperá que el RSI cruce al alza el nivel de 30 "
-        f"o validación de soporte en el POC."
+        f"{sugerencia}"
     )
     print(f"\n{msg}\n")
     send_telegram(msg)
@@ -640,12 +745,11 @@ def es_radar_valido(q, epct):
 
 radar_lines = []
 radar_filtered = [
-    (t, q, ep, pp, sc, tgs)
-    for t, q, ep, pp, sc, tgs in radar_info
+    (t, q, ep, pp, sc)
+    for t, q, ep, pp, sc in radar_info
     if es_radar_valido(q, ep)
 ]
-# Ordenar por RSI ascendente (más críticos primero), máximo 6
-for ticker, q, epct, ppct, score, tags in sorted(radar_filtered, key=lambda x: x[1]["rsi10"] or 99)[:6]:
+for ticker, q, epct, ppct, score in sorted(radar_filtered, key=lambda x: x[1]["rsi10"] or 99)[:6]:
     rsi = q["rsi10"] or 0
     line = f"• <b>{ticker}</b>: RSI(10) en {rsi}"
 
