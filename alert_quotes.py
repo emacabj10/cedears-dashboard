@@ -24,7 +24,7 @@ YF_MAP = {
 
 BOT_NOTES = [
     "Día de paciencia. El mercado está en fase de digestión.",
-    "RSI promedio en zona neutral — esperar definición.",
+    "RSI promedio del universo en zona neutral — esperar definición.",
     "Los mejores setups suelen venir después de estas fases de compresión.",
     "Sin señales no hay operación. La paciencia es parte de la estrategia.",
     "El mejor trade a veces es no operar. Esperá el setup limpio.",
@@ -250,6 +250,89 @@ def bb_label_watchlist(q):
     else:
         return "BB: Precio dentro de bandas"
 
+def generar_analisis(ticker, score, q, epct, ppct, fund):
+    """
+    Genera un análisis contextual de 2-3 líneas según los valores reales del activo.
+    Cubre: tendencia/contexto, niveles clave y riesgo del setup.
+    """
+    rsi10    = q.get("rsi10") or 50
+    rsi_prev = q.get("rsi_prev") or rsi10
+    ema_trend = q.get("emaTrend") or "lateral"
+    div      = q.get("div_bullish", False)
+    bb_recov = q.get("bb_recov", False)
+    bb_below = q.get("bb_below", False)
+    bb_near  = q.get("bb_near_lo", False)
+    price    = q.get("price") or 0
+    ema200   = q.get("ema200") or 1
+    poc      = q.get("poc_proxy") or 1
+
+    lineas = []
+
+    # ── Línea 1: Contexto de tendencia ───────────────────────────────────────
+    if epct >= 0 and ema_trend == "subiendo":
+        ctx = f"Tendencia alcista de largo plazo intacta (precio {epct:.1f}% sobre EMA200 en ascenso)."
+    elif epct >= 0 and ema_trend == "lateral":
+        ctx = f"Tendencia lateral — precio sobre EMA200 ({epct:.1f}%) pero sin dirección definida."
+    elif epct >= 0 and ema_trend == "bajando":
+        ctx = f"EMA200 en descenso ({epct:.1f}% sobre media) — posible agotamiento de tendencia alcista."
+    elif epct >= -3:
+        ctx = f"Precio testeando la EMA200 ({epct:.1f}%) — zona crítica de soporte dinámico."
+    elif epct >= -10:
+        ctx = f"Precio por debajo de EMA200 ({epct:.1f}%) en corrección. EMA actúa como resistencia dinámica."
+    else:
+        ctx = f"Corrección profunda: precio {abs(epct):.1f}% bajo EMA200. Mercado en tendencia bajista de corto plazo."
+    lineas.append(ctx)
+
+    # ── Línea 2: Niveles clave y estructura de precio ────────────────────────
+    if bb_recov and ppct <= -10:
+        niv = f"Rebotó desde la banda inferior de BB con precio {abs(ppct):.1f}% bajo el POC — zona de alto valor histórico."
+    elif bb_recov and abs(ppct) <= 5:
+        niv = f"Rebote desde BB inferior con precio cerca del POC (${poc:,.0f}) — zona de equilibrio de volumen."
+    elif bb_recov:
+        niv = f"Recuperó la banda inferior de BB. POC en ${poc:,.0f} ({ppct:+.1f}%) — referencia de valor a monitorear."
+    elif bb_below:
+        niv = f"Precio fuera de banda inferior — capitulación en curso. POC en ${poc:,.0f} ({ppct:+.1f}%) aún lejos."
+    elif bb_near:
+        niv = f"Apoyando en banda inferior de BB sin haberla perdido. POC en ${poc:,.0f} ({ppct:+.1f}%)."
+    elif ppct <= -15:
+        niv = f"Precio {abs(ppct):.1f}% bajo el POC (${poc:,.0f}) — zona de valor profundo, históricamente de acumulación."
+    elif ppct <= -5:
+        niv = f"Precio acercándose al POC (${poc:,.0f}, {ppct:.1f}%) — potencial zona de rebote por volumen."
+    elif abs(ppct) <= 3:
+        niv = f"Precio en equilibrio de volumen (POC ${poc:,.0f}) — alta liquidez, zona de decisión."
+    else:
+        niv = f"Precio {ppct:.1f}% sobre el POC (${poc:,.0f}) — extendido respecto al valor justo."
+    lineas.append(niv)
+
+    # ── Línea 3: Riesgo del setup / momentum ─────────────────────────────────
+    riesgo_partes = []
+
+    if div:
+        riesgo_partes.append("Divergencia alcista RSI confirmada — momentum mejora mientras precio cae")
+    elif rsi10 > 30 and rsi_prev <= 30:
+        riesgo_partes.append("RSI cruzó al alza el nivel 30 — momentum cambiando a favor")
+    elif rsi10 <= 28:
+        riesgo_partes.append(f"RSI en oversold extremo ({rsi10}) — zona de máxima presión vendedora")
+    elif rsi10 <= 32:
+        riesgo_partes.append(f"RSI en {rsi10} saliendo de oversold — confirmar con próxima vela")
+
+    if epct < -10 and score == 3:
+        riesgo_partes.append(f"entrada por debajo de EMA200 implica mayor riesgo — ajustá el stop")
+    elif epct >= 0 and score == 3:
+        riesgo_partes.append("EMA200 como soporte activo reduce el riesgo del trade")
+
+    if fund == "excelentes":
+        riesgo_partes.append("fundamentals excelentes respaldan el rebote técnico")
+    elif fund == "controversiales":
+        riesgo_partes.append("fundamentals controversiales — priorizar gestión del riesgo")
+
+    if riesgo_partes:
+        # Primera letra en mayúscula, separar con " · "
+        riesgo_partes[0] = riesgo_partes[0][0].upper() + riesgo_partes[0][1:]
+        lineas.append(" · ".join(riesgo_partes) + ".")
+
+    return "\n".join(lineas)
+
 def sugerencia_signal(score, rsi10, epct, ppct):
     """
     Solo recomienda Entrada cuando score es 3/3 (los 3 puntos técnicos confirmados).
@@ -468,6 +551,7 @@ for ticker, score, q, epct, ppct, fund, poc_max_op, tags in signals_found:
         poc_badge = f"\n⭐ <b>Máxima oportunidad</b> — {ppct:.1f}% bajo POC · Fundamentals excelentes\n"
 
     sugerencia = sugerencia_signal(score, rsi10, epct, ppct)
+    analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
 
     tags_line = ""
     if tags:
@@ -483,6 +567,8 @@ for ticker, score, q, epct, ppct, fund, poc_max_op, tags in signals_found:
         f"📦 {poc_label_signal(ppct, poc)}\n"
         f"🎢 {bb_label_signal(q)}\n"
         f"{tags_line}"
+        f"\n🔍 <b>Análisis</b>\n"
+        f"{analisis}\n"
         f"\n<b>Sugerencia</b>\n"
         f"💡 {sugerencia}"
     )
@@ -495,6 +581,9 @@ for ticker, score, q, epct, ppct, tags in watchlist_found:
     rsi10 = q["rsi10"] or 50
     rsi_p = q["rsi_prev"] or rsi10
     poc   = q["poc_proxy"] or 0
+    fund  = FUND.get(ticker, "buenos")
+
+    analisis = generar_analisis(ticker, score, q, epct, ppct, fund)
 
     tags_line = ""
     if tags:
@@ -510,6 +599,8 @@ for ticker, score, q, epct, ppct, tags in watchlist_found:
         f"📦 {poc_label_watchlist(ppct, poc, q['price'])}\n"
         f"🎢 {bb_label_watchlist(q)}\n"
         f"{tags_line}"
+        f"\n🔍 <b>Análisis</b>\n"
+        f"{analisis}\n"
         f"\n🛑 <b>Acción sugerida</b>\n"
         f"NO OPERAR. Esperá que el RSI cruce al alza el nivel de 30 "
         f"o validación de soporte en el POC."
