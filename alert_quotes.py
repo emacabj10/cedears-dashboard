@@ -1,5 +1,10 @@
 import json, urllib.request, urllib.error, time, os, random
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+# Hora Argentina (UTC-3)
+ARG_TZ = timezone(timedelta(hours=-3))
+def now_arg():
+    return datetime.now(ARG_TZ)
 
 TELEGRAM_TOKEN   = os.environ.get("TELEGRAM_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
@@ -525,7 +530,7 @@ def send_telegram(message):
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 print(f"\n{'='*55}")
-print(f"CEDEARS ALERTAS — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+print(f"CEDEARS ALERTAS — {now_arg().strftime('%d/%m/%Y %H:%M')} (ARG)")
 print(f"{'='*55}\n")
 
 signals_found   = []   # score 3/3  → alerta verde individual
@@ -598,17 +603,17 @@ for ticker, sym in YF_MAP.items():
 # Watchlists ordenadas por RSI ascendente
 watchlist_found.sort(key=lambda x: x[2]["rsi10"] or 99)
 
-now_str  = datetime.now().strftime("%d/%m %H:%M")
-date_str = datetime.now().strftime("%d/%m/%Y")
+now_str  = now_arg().strftime("%d/%m %H:%M")
+date_str = now_arg().strftime("%d/%m/%Y")
 
-# Encabezado dinámico según hora de activación
-_hour = datetime.now().hour
+# Encabezado dinámico según hora de activación (hora Argentina UTC-3)
+_hour = now_arg().hour
 if 9 <= _hour < 13:
-    session_header = f"🔔 APERTURA DE MERCADO — {datetime.now().strftime('%H:%M')}\nIniciando reporte técnico..."
-elif 16 <= _hour < 20:
-    session_header = f"🔔 CIERRE DE MERCADO — {datetime.now().strftime('%H:%M')}\nIniciando reporte técnico..."
+    session_header = f"🔔 APERTURA DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando reporte técnico..."
+elif 13 <= _hour < 18:
+    session_header = f"🔔 CIERRE DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando reporte técnico..."
 else:
-    session_header = f"🔔 REPORTE DE MERCADO — {datetime.now().strftime('%H:%M')}\nIniciando análisis técnico..."
+    session_header = f"🔔 REPORTE DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando análisis técnico..."
 
 send_telegram(session_header)
 time.sleep(0.3)
@@ -624,6 +629,10 @@ for ticker, score, q, epct, ppct, fund in signals_found:
     sugerencia = sugerencia_signal(score, rsi10, epct, fund, div, bb_rec)
     analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
 
+    # Link stocksanalyzer (cripto no tiene página, usa símbolo sin -USD)
+    _sym_sa  = YF_MAP.get(ticker, ticker).replace("-USD", "")
+    _link_sa = f'🔗 <a href="https://www.stocksanalyzer.app/stocks/{_sym_sa}">Ver análisis completo en StocksAnalyzer →</a>'
+
     msg = (
         f"🟢 <b>{ticker} — SEÑAL {score}/3</b>\n"
         f"\n<b>Indicadores</b>\n"
@@ -634,7 +643,8 @@ for ticker, score, q, epct, ppct, fund in signals_found:
         f"\n🔍 <b>Análisis</b>\n"
         f"{analisis}\n"
         f"\n<b>Sugerencia</b>\n"
-        f"💡 {sugerencia}"
+        f"💡 {sugerencia}\n"
+        f"\n{_link_sa}"
     )
     print(f"\n{msg}\n")
     send_telegram(msg)
@@ -656,6 +666,10 @@ for ticker, score, q, epct, ppct in watchlist_found:
     sugerencia = sugerencia_watchlist(score, rsi10, epct, fund, div,
                                       bb_rec, bb_below, rsi_bounced_w)
 
+    # Link stocksanalyzer (cripto no tiene página, usa símbolo sin -USD)
+    _sym_sa_w  = YF_MAP.get(ticker, ticker).replace("-USD", "")
+    _link_sa_w = f'🔗 <a href="https://www.stocksanalyzer.app/stocks/{_sym_sa_w}">Ver análisis completo en StocksAnalyzer →</a>'
+
     msg = (
         f"🟡 <b>{ticker} — WATCHLIST {score}/3</b>\n"
         f"⚠️ <b>Estado:</b> Setup en formación. Aviso previo — monitorear.\n"
@@ -667,7 +681,8 @@ for ticker, score, q, epct, ppct in watchlist_found:
         f"\n🔍 <b>Análisis</b>\n"
         f"{analisis}\n"
         f"\n🛑 <b>Acción sugerida</b>\n"
-        f"{sugerencia}"
+        f"{sugerencia}\n"
+        f"\n{_link_sa_w}"
     )
     print(f"\n{msg}\n")
     send_telegram(msg)
