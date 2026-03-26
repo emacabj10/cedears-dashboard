@@ -96,7 +96,8 @@ def calc_poc_proxy(closes):
     return round(min(window) * 1.15, 2)
 
 def fetch_ticker(sym):
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=1y"
+    # 2y para que la EMA200 tenga suficiente historial y sea precisa
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=2y"
     headers = {"User-Agent":"Mozilla/5.0","Accept":"application/json"}
     req = urllib.request.Request(url, headers=headers)
     try:
@@ -104,7 +105,7 @@ def fetch_ticker(sym):
             data = json.loads(r.read())
         result = data["chart"]["result"][0]
         closes = [c for c in result["indicators"]["quote"][0]["close"] if c is not None]
-        if len(closes) < 30: return None
+        if len(closes) < 210: return None  # mínimo 210 para EMA200 confiable
         price     = round(closes[-1], 2)
         rsi10     = calc_rsi(closes, 10)
         rsi_prev  = calc_rsi(closes[:-1], 10)
@@ -119,8 +120,14 @@ def fetch_ticker(sym):
         poc_proxy = calc_poc_proxy(closes)
         price_prev = closes[-2] if len(closes) >= 2 else price
 
-        # Rebote Bollinger confirmado: ayer cerró por debajo, hoy cerró por encima
-        bb_recov   = (bb_lo_prev is not None and price_prev <= bb_lo_prev and price >= bb_lo) if bb_lo else False
+        # Rebote Bollinger confirmado:
+        # ayer cerró ESTRICTAMENTE debajo de la banda, hoy cerró encima o en ella
+        bb_recov   = (
+            bb_lo_prev is not None
+            and price_prev < bb_lo_prev   # estricto: debajo de banda ayer
+            and bb_lo is not None
+            and price >= bb_lo            # hoy recuperó la banda
+        ) if bb_lo else False
         bb_below   = price < bb_lo if bb_lo else False
         bb_above   = price > bb_hi if bb_hi else False
         bb_squeeze = (bb_wid[0] < bb_wid[1] * 0.85) if bb_wid else False
@@ -394,7 +401,9 @@ for ticker, sym in YF_MAP.items():
     else:
         div_tag = " · DIV✅" if q.get("div_bullish") else ""
         bb_tag  = " · BB↑"   if q.get("bb_recov")   else ""
-        print(f"RSI {q['rsi10']} · ${q['price']}{div_tag}{bb_tag}")
+        ema200_val = q.get("ema200") or 0
+        epct_debug = (q["price"] - ema200_val) / ema200_val * 100 if ema200_val else 0
+        print(f"RSI {q['rsi10']} · ${q['price']} · EMA200=${ema200_val} ({epct_debug:+.1f}%){div_tag}{bb_tag}")
 
     if q.get("_fallback"):
         rsi10 = q["rsi10"] or 50
