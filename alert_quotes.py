@@ -618,19 +618,38 @@ watchlist_found.sort(key=lambda x: x[2]["rsi10"] or 99)
 now_str  = now_arg().strftime("%d/%m %H:%M")
 date_str = now_arg().strftime("%d/%m/%Y")
 
-# Encabezado dinámico según hora de activación (hora Argentina UTC-3)
+# Sesión según hora Argentina
 _hour = now_arg().hour
 if 9 <= _hour < 13:
-    session_header = f"🔔 APERTURA DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando reporte técnico..."
+    session_name = "APERTURA DE MERCADO"
+    is_cierre    = False
 elif 13 <= _hour < 16:
-    session_header = f"🔔 MEDIA RUEDA DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando reporte técnico..."
+    session_name = "MEDIA RUEDA DE MERCADO"
+    is_cierre    = False
 else:
-    session_header = f"🔔 CIERRE DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando análisis técnico..."
+    session_name = "CIERRE DE MERCADO"
+    is_cierre    = True
 
-send_telegram(session_header)
-time.sleep(0.3)
+session_header = (
+    f"🔔 {session_name} — {now_arg().strftime('%H:%M')}\n"
+    f"Iniciando reporte técnico..."
+)
+
+# ── Persistencia de alertas del día en data.json ─────────────────────────────
+# Lee acumulado del día; resetea si cambió la fecha
+_today = now_arg().strftime("%Y-%m-%d")
+_daily = {"date": _today, "signals": [], "watchlist": []}
+try:
+    with open("data.json", "r") as f:
+        _dj = json.load(f)
+    if _dj.get("daily", {}).get("date") == _today:
+        _daily = _dj["daily"]
+except Exception:
+    pass
 
 # ── 1. Señales confirmadas (Score 3/3) → alerta verde individual ──────────────
+_header_sent = False
+
 for ticker, score, q, epct, ppct, fund in signals_found:
     rsi10  = q["rsi10"] or 50
     rsi_p  = q["rsi_prev"] or rsi10
@@ -641,9 +660,13 @@ for ticker, score, q, epct, ppct, fund in signals_found:
     sugerencia = sugerencia_signal(score, rsi10, epct, fund, div, bb_rec)
     analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
 
-    # Link TradingView — disponible para todos los activos incluyendo cripto
     _tv_sym  = TV_MAP.get(ticker, ticker)
     _link_tv = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym}">Ver gráfico en TradingView →</a>'
+
+    if not _header_sent:
+        send_telegram(session_header)
+        time.sleep(0.3)
+        _header_sent = True
 
     msg = (
         f"🟢 <b>{ticker} — SEÑAL {score}/3</b>\n"
@@ -662,6 +685,10 @@ for ticker, score, q, epct, ppct, fund in signals_found:
     send_telegram(msg)
     time.sleep(0.3)
 
+    # Acumular en historial del día
+    if ticker not in _daily["signals"]:
+        _daily["signals"].append(ticker)
+
 # ── 2. Watchlist — Score 2/3 → alerta amarilla individual ────────────────────
 for ticker, score, q, epct, ppct in watchlist_found:
     rsi10    = q["rsi10"] or 50
@@ -671,16 +698,19 @@ for ticker, score, q, epct, ppct in watchlist_found:
     div      = q.get("div_bullish", False)
     bb_rec   = q.get("bb_recov", False)
     bb_below = q.get("bb_below", False)
-    # Para watchlist: rsi_bounced es False por definición (condición de entrada)
     rsi_bounced_w = (rsi10 > 30 and rsi_p <= 30)
 
     analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
     sugerencia = sugerencia_watchlist(score, rsi10, epct, fund, div,
                                       bb_rec, bb_below, rsi_bounced_w)
 
-    # Link TradingView — disponible para todos los activos incluyendo cripto
     _tv_sym_w  = TV_MAP.get(ticker, ticker)
     _link_tv_w = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_w}">Ver gráfico en TradingView →</a>'
+
+    if not _header_sent:
+        send_telegram(session_header)
+        time.sleep(0.3)
+        _header_sent = True
 
     msg = (
         f"🟡 <b>{ticker} — WATCHLIST {score}/3</b>\n"
@@ -700,99 +730,113 @@ for ticker, score, q, epct, ppct in watchlist_found:
     send_telegram(msg)
     time.sleep(0.5)
 
-# ── 3. Resumen Diario / Radar ─────────────────────────────────────────────────
-total_sig   = len(signals_found)
-total_watch = len(watchlist_found)
+    # Acumular en historial del día
+    if ticker not in _daily["watchlist"]:
+        _daily["watchlist"].append(ticker)
 
-if total_sig == 0 and total_watch == 0:
-    intro = "Hoy no se detectaron señales ni watchlists activas."
-else:
-    parts = []
-    if total_sig:
-        sig_tickers = ", ".join(f"<b>{t}</b>" for t, *_ in signals_found)
-        parts.append(f"<b>{total_sig}</b> señal(es) confirmada(s) 🟢 ({sig_tickers})")
-    if total_watch:
-        parts.append(f"<b>{total_watch}</b> watchlist(s) enviada(s) 🟡")
-    intro = " · ".join(parts) + "."
+# ── Guardar historial del día ─────────────────────────────────────────────────
+try:
+    with open("data.json", "r") as f:
+        _dj_full = json.load(f)
+except Exception:
+    _dj_full = {}
+_dj_full["daily"] = _daily
+with open("data.json", "w") as f:
+    json.dump(_dj_full, f)
 
-# ── Radar: solo activos CERCA de dar señal ────────────────────────────────────
-# Filtros:
-#   Zona de Alerta : RSI entre 30 y 35 (aproximándose al suelo)
-#   Zona de Suelo  : RSI < 30 sin rebote confirmado
-#   Cerca de EMA   : precio a menos del 1% de la EMA200 (aunque RSI sea neutral)
-def es_radar_valido(q, epct):
-    rsi = q.get("rsi10") or 99
-    rsi_prev = q.get("rsi_prev") or rsi
-    rsi_bounced = rsi > 30 and rsi_prev <= 30
-    zona_alerta = 30 <= rsi <= 35
-    zona_suelo  = rsi < 30 and not rsi_bounced
-    cerca_ema   = abs(epct) <= 1
-    return zona_alerta or zona_suelo or cerca_ema
+# ── 3. Reporte Diario — SOLO en CIERRE DE MERCADO ────────────────────────────
+if is_cierre:
 
-radar_lines = []
-radar_filtered = [
-    (t, q, ep, pp, sc)
-    for t, q, ep, pp, sc in radar_info
-    if es_radar_valido(q, ep)
-]
-for ticker, q, epct, ppct, score in sorted(radar_filtered, key=lambda x: x[1]["rsi10"] or 99)[:6]:
-    rsi    = q["rsi10"] or 0
-    partes = []
+    # Resumen de alertas del día completo (acumulado)
+    _all_sig   = _daily.get("signals", [])
+    _all_watch = _daily.get("watchlist", [])
 
-    # ── RSI ───────────────────────────────────────────────────────────────────
-    if rsi < 30:
-        partes.append(f"RSI(10) en {rsi} — en zona de suelo (oversold)")
-    elif rsi <= 35:
-        partes.append(f"RSI(10) en {rsi} y bajando hacia 30")
-
-    # ── EMA200 ────────────────────────────────────────────────────────────────
-    if abs(epct) <= 1:
-        partes.append(f"cerca de testear la EMA200 ({epct:+.1f}%)")
-    elif abs(epct) <= 3 and epct < 0:
-        partes.append(f"testeando la EMA200 ({epct:.1f}%)")
-
-    # ── Bollinger ─────────────────────────────────────────────────────────────
-    if q.get("bb_below"):
-        partes.append("Perdió la banda inferior de Bollinger. Sin rebote confirmado")
-    elif q.get("bb_near_lo"):
-        partes.append("apoyando en banda inferior de BB")
-
-    # ── Score si es > 0 ───────────────────────────────────────────────────────
-    if score > 0:
-        partes.append(f"Score: {score}/3")
-
-    # Construir línea
-    if partes:
-        first = partes[0][0].upper() + partes[0][1:]
-        rest  = ". ".join(partes[1:])
-        line  = f"• <b>{ticker}</b>: {first}"
-        line += f". {rest}." if rest else "."
+    if not _all_sig and not _all_watch:
+        intro = "Hoy no se detectaron señales ni watchlists activas."
     else:
-        line = f"• <b>{ticker}</b>: RSI(10) en {rsi}."
+        parts = []
+        if _all_sig:
+            sig_tickers = ", ".join(f"<b>{t}</b>" for t in _all_sig)
+            parts.append(f"<b>{len(_all_sig)}</b> señal(es) confirmada(s) 🟢 ({sig_tickers})")
+        if _all_watch:
+            wat_tickers = ", ".join(f"<b>{t}</b>" for t in _all_watch)
+            parts.append(f"<b>{len(_all_watch)}</b> watchlist(s) 🟡 ({wat_tickers})")
+        intro = " · ".join(parts) + "."
 
-    radar_lines.append(line)
+    # ── Radar ─────────────────────────────────────────────────────────────────
+    def es_radar_valido(q, epct):
+        rsi = q.get("rsi10") or 99
+        rsi_prev = q.get("rsi_prev") or rsi
+        rsi_bounced = rsi > 30 and rsi_prev <= 30
+        zona_alerta = 30 <= rsi <= 35
+        zona_suelo  = rsi < 30 and not rsi_bounced
+        cerca_ema   = abs(epct) <= 1
+        return zona_alerta or zona_suelo or cerca_ema
 
-radar_section = ""
-if radar_lines:
-    radar_section = "\n\nActivos bajo observación:\n\n" + "\n".join(radar_lines)
+    radar_lines = []
+    radar_filtered = [
+        (t, q, ep, pp, sc)
+        for t, q, ep, pp, sc in radar_info
+        if es_radar_valido(q, ep)
+    ]
+    for ticker, q, epct, ppct, score in sorted(radar_filtered, key=lambda x: x[1]["rsi10"] or 99)[:6]:
+        rsi    = q["rsi10"] or 0
+        partes = []
 
-# Nota dinámica del bot
-rsi_values = [q["rsi10"] for _, _, q, _, _ in all_results if q.get("rsi10")]
-avg_rsi = round(sum(rsi_values)/len(rsi_values), 1) if rsi_values else 50
-if avg_rsi < 30:
-    bot_note = f"RSI promedio del panel {avg_rsi} — mercado en oversold generalizado. Momento de máxima atención."
-elif avg_rsi < 40:
-    bot_note = f"RSI promedio del panel {avg_rsi} — mercado en zona de debilidad. Los setups están madurando."
-elif avg_rsi > 65:
-    bot_note = f"RSI promedio del panel {avg_rsi} — mercado sobrecomprado. No es zona de entrada, esperá corrección."
-else:
-    bot_note = random.choice(BOT_NOTES)
+        if rsi < 30:
+            partes.append(f"RSI(10) en {rsi} — en zona de suelo (oversold)")
+        elif rsi <= 35:
+            partes.append(f"RSI(10) en {rsi} y bajando hacia 30")
 
-summary_msg = (
-    f"📅 <b>Resumen Diario de Mercado — [{date_str}]</b>\n\n"
-    f"Resumen: {intro}"
-    f"{radar_section}\n\n"
-    f"💡 <b>Nota del Bot:</b> {bot_note}"
-)
-print(f"\n{summary_msg}\n")
-send_telegram(summary_msg)
+        if abs(epct) <= 1:
+            partes.append(f"cerca de testear la EMA200 ({epct:+.1f}%)")
+        elif abs(epct) <= 3 and epct < 0:
+            partes.append(f"testeando la EMA200 ({epct:.1f}%)")
+
+        if q.get("bb_below"):
+            partes.append("Perdió la banda inferior de Bollinger. Sin rebote confirmado")
+        elif q.get("bb_near_lo"):
+            partes.append("apoyando en banda inferior de BB")
+
+        if score > 0:
+            partes.append(f"Score: {score}/3")
+
+        if partes:
+            first = partes[0][0].upper() + partes[0][1:]
+            rest  = ". ".join(partes[1:])
+            line  = f"• <b>{ticker}</b>: {first}"
+            line += f". {rest}." if rest else "."
+        else:
+            line = f"• <b>{ticker}</b>: RSI(10) en {rsi}."
+
+        radar_lines.append(line)
+
+    radar_section = ""
+    if radar_lines:
+        radar_section = "\n\nActivos bajo observación:\n\n" + "\n".join(radar_lines)
+
+    # Nota dinámica del bot
+    rsi_values = [q["rsi10"] for _, _, q, _, _ in all_results if q.get("rsi10")]
+    avg_rsi = round(sum(rsi_values)/len(rsi_values), 1) if rsi_values else 50
+    if avg_rsi < 30:
+        bot_note = f"RSI promedio del panel {avg_rsi} — mercado en oversold generalizado. Momento de máxima atención."
+    elif avg_rsi < 40:
+        bot_note = f"RSI promedio del panel {avg_rsi} — mercado en zona de debilidad. Los setups están madurando."
+    elif avg_rsi > 65:
+        bot_note = f"RSI promedio del panel {avg_rsi} — mercado sobrecomprado. No es zona de entrada, esperá corrección."
+    else:
+        bot_note = random.choice(BOT_NOTES)
+
+    # El encabezado de cierre va siempre con el reporte (si no se mandó antes)
+    if not _header_sent:
+        send_telegram(session_header)
+        time.sleep(0.3)
+
+    summary_msg = (
+        f"📅 <b>Resumen Diario de Mercado — [{date_str}]</b>\n\n"
+        f"Resumen: {intro}"
+        f"{radar_section}\n\n"
+        f"💡 <b>Nota del Bot:</b> {bot_note}"
+    )
+    print(f"\n{summary_msg}\n")
+    send_telegram(summary_msg)
