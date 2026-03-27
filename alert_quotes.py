@@ -610,12 +610,12 @@ date_str = now_arg().strftime("%d/%m/%Y")
 
 # Encabezado dinámico según hora de activación (hora Argentina UTC-3)
 _hour = now_arg().hour
-if 9 <= _hour < 14:
+if 9 <= _hour < 15:
     session_header = f"🔔 APERTURA DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando reporte técnico..."
-elif 14 <= _hour < 18:
-    session_header = f"🔔 CIERRE DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando reporte técnico..."
+elif 15 <= _hour < 18:
+    session_header = f"🔔 MEDIA RUEDA DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando reporte técnico..."
 else:
-    session_header = f"🔔 REPORTE DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando análisis técnico..."
+    session_header = f"🔔 CIERRE DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando análisis técnico..."
 
 send_telegram(session_header)
 time.sleep(0.3)
