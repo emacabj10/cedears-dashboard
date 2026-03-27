@@ -291,7 +291,7 @@ def generar_analisis(ticker, score, q, epct, ppct, fund):
         ctx = f"Mercado lateralizando — precio {epct:.1f}% sobre EMA200 sin tendencia definida. La corrección actual busca soporte en la media."
     elif epct >= 0 and ema_trend == "bajando":
         ctx = f"EMA200 perdiendo pendiente con precio aún {epct:.1f}% sobre la media — señal de agotamiento de tendencia alcista. Corrección en desarrollo."
-    elif epct >= -3:
+    elif epct >= -5:
         ctx = f"Precio testeando la EMA200 ({epct:.1f}%) — zona de decisión crítica. Un cierre por encima confirma el soporte dinámico."
     elif epct >= -10:
         ctx = f"Corrección moderada — precio {abs(epct):.1f}% bajo EMA200. La media actúa como resistencia dinámica en el corto plazo."
@@ -302,7 +302,7 @@ def generar_analisis(ticker, score, q, epct, ppct, fund):
     # ── Línea 2: Estructura de precio — BB ───────────────────────────────────
     if bb_recov and epct >= 0:
         niv = "Recuperó banda inferior de BB con precio sobre EMA200 — doble confluencia técnica alcista. Rebote confirmado."
-    elif bb_recov and epct >= -3:
+    elif bb_recov and epct >= -5:
         niv = "Recuperó banda inferior de BB testeando la EMA200 — rebote técnico en zona de soporte dinámico."
     elif bb_recov:
         niv = f"Recuperó banda inferior de BB con precio {abs(epct):.1f}% bajo EMA200 — rebote técnico en corrección profunda."
@@ -339,7 +339,7 @@ def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov):
         return "Señal incompleta. Monitorear — no operar aún."
 
     # Entrada completa: divergencia alcista + soporte técnico completo
-    if div and epct >= -3:
+    if div and epct >= -5:
         return (
             "Setup de alta calidad: divergencia alcista confirmada con soporte técnico completo. "
             "Entrada con posición completa. "
@@ -355,7 +355,7 @@ def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov):
         )
 
     # Entrada completa: testeando EMA200 como soporte + BB recuperado
-    if epct >= -3 and bb_recov:
+    if epct >= -5 and bb_recov:
         return (
             "Rebote desde BB con precio en soporte dinámico (EMA200). "
             "Entrada con posición completa. "
@@ -391,7 +391,7 @@ def sugerencia_watchlist(score, rsi10, epct, fund, div, bb_recov, bb_below, rsi_
     Sugerencia para WATCHLIST 2/3. Estrategia de acumulación a largo plazo.
     Siempre indica esperar, pero describe exactamente qué falta y qué vigilar.
     """
-    ema_ok = epct >= -3
+    ema_ok = epct >= -5
     rsi_ok = rsi_bounced
     bb_ok  = bb_recov
 
@@ -490,7 +490,7 @@ def score_signal(ticker, q):
         score += 1
 
     # ── Punto 2: EMA200 — precio encima O a no más del 3% por debajo ────────
-    ema_ok = epct >= -3
+    ema_ok = epct >= -5
     if ema_ok:
         score += 1
 
@@ -601,7 +601,7 @@ for ticker, sym in YF_MAP.items():
     # Watchlist por BB recuperado + EMA ok (aunque RSI no llegó a 30)
     bb_ema_watchlist = (
         q.get("bb_recov", False)
-        and epct >= -3
+        and epct >= -5
         and not rsi_bounced
         and score >= 2
     )
