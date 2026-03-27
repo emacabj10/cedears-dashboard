@@ -598,11 +598,19 @@ for ticker, sym in YF_MAP.items():
 
     rsi10 = q["rsi10"] or 50
 
+    # Watchlist por BB recuperado + EMA ok (aunque RSI no llegó a 30)
+    bb_ema_watchlist = (
+        q.get("bb_recov", False)
+        and epct >= -3
+        and not rsi_bounced
+        and score >= 2
+    )
+
     if score == 3 and rsi_bounced:
         print(f"  >>> SEÑAL 3/3: {ticker} rsi={rsi10} rsi_prev={q.get('rsi_prev')} bb_recov={q.get('bb_recov')} epct={epct:.1f}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
-    elif score == 2 and not rsi_bounced and rsi10 <= 38:
-        print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → watchlist")
+    elif (score == 2 and not rsi_bounced and rsi10 <= 45) or bb_ema_watchlist:
+        print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → watchlist (bb_ema={bb_ema_watchlist})")
         watchlist_found.append((ticker, score, q, epct, ppct))
     elif (rsi10 <= 35) or (rsi10 < 30 and not rsi_bounced) or (abs(epct) <= 1):
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → radar")
