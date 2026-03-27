@@ -137,6 +137,17 @@ def fetch_ticker(sym):
         poc_proxy = calc_poc_proxy(closes)
         price_prev = closes[-2] if len(closes) >= 2 else price
 
+        # ── RSI rebotó desde <30 — ventana de 15 velas ─────────────────────
+        # RSI actual > 30 Y alguna de las últimas 15 velas tuvo RSI ≤ 30
+        rsi_bounced_15 = False
+        if rsi10 is not None and rsi10 > 30:
+            for lookback in range(1, 16):
+                if len(closes) > lookback + 10:
+                    past_rsi = calc_rsi(closes[:-(lookback)], 10)
+                    if past_rsi is not None and past_rsi <= 30:
+                        rsi_bounced_15 = True
+                        break
+
         # ── Rebote Bollinger — ventana de 5 velas ────────────────────────────
         # Alguna de las últimas 4 velas cerró debajo de bb_lo en ese momento,
         # y la vela actual cerró encima (recuperó la banda).
@@ -193,6 +204,7 @@ def fetch_ticker(sym):
             "div_bullish": div_bullish,
             "price_prev": price_prev,
             "bb_lo_prev": bb_lo_prev,
+            "rsi_bounced_15": rsi_bounced_15,
         }
     except Exception as e:
         print(f"  Error: {e}"); return None
@@ -363,8 +375,18 @@ def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov):
     Entrada completa cuando hay confluencia técnica sólida.
     Media posición cuando opera contra la tendencia de fondo.
     """
-    if score != 3:
+    if score not in (2, 3):
         return "Señal incompleta. Monitorear — no operar aún."
+
+    div = div if div is not None else False
+
+    # Señal promovida por divergencia (score 2 + div reemplaza punto faltante)
+    if score == 2 and div:
+        return (
+            "Señal activada por divergencia alcista — reemplaza el punto técnico faltante. "
+            "Entrada con media posición. "
+            "La divergencia sugiere agotamiento vendedor, pero confirmá el setup completo antes de ampliar."
+        )
 
     # Entrada completa: divergencia alcista + soporte técnico completo
     if div and epct >= -5:
@@ -510,8 +532,9 @@ def score_signal(ticker, q):
 
     score = 0
 
-    # ── Punto 1: RSI cruzando al alza el nivel de 30 ─────────────────────────
-    rsi_bounced  = (rsi10 > 30 and rsi_prev <= 30)
+    # ── Punto 1: RSI rebotó desde <30 — ventana 15 velas O cruce exacto ────
+    rsi_bounced_15 = q.get("rsi_bounced_15", False)
+    rsi_bounced  = rsi_bounced_15 or (rsi10 > 30 and rsi_prev <= 30)
     rsi_oversold = rsi10 <= 30
 
     if rsi_bounced:
@@ -749,7 +772,7 @@ for ticker, score, q, epct, ppct in watchlist_found:
     div      = q.get("div_bullish", False)
     bb_rec   = q.get("bb_recov", False)
     bb_below = q.get("bb_below", False)
-    rsi_bounced_w = (rsi10 > 30 and rsi_p <= 30)
+    rsi_bounced_w = q.get("rsi_bounced_15", False) or (rsi10 > 30 and rsi_p <= 30)
 
     analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
     sugerencia = sugerencia_watchlist(score, rsi10, epct, fund, div,
