@@ -137,23 +137,51 @@ def fetch_ticker(sym):
         poc_proxy = calc_poc_proxy(closes)
         price_prev = closes[-2] if len(closes) >= 2 else price
 
-        # Rebote Bollinger confirmado:
-        # ayer cerró ESTRICTAMENTE debajo de la banda, hoy cerró encima o en ella
-        bb_recov   = (
-            bb_lo_prev is not None
-            and price_prev < bb_lo_prev   # estricto: debajo de banda ayer
-            and bb_lo is not None
-            and price >= bb_lo            # hoy recuperó la banda
-        ) if bb_lo else False
+        # ── Rebote Bollinger — ventana de 5 velas ────────────────────────────
+        # Alguna de las últimas 4 velas cerró debajo de bb_lo en ese momento,
+        # y la vela actual cerró encima (recuperó la banda).
+        bb_recov = False
+        if bb_lo is not None and price >= bb_lo:
+            for lookback in range(1, 6):   # velas 1..5 hacia atrás
+                if len(closes) > lookback:
+                    past_close = closes[-(lookback + 1)]
+                    past_bb_lo = calc_bb_lower(closes[:-(lookback)], 20, 2)
+                    if past_bb_lo is not None and past_close < past_bb_lo:
+                        bb_recov = True
+                        break
+
         bb_below   = price < bb_lo if bb_lo else False
         bb_above   = price > bb_hi if bb_hi else False
         bb_squeeze = (bb_wid[0] < bb_wid[1] * 0.85) if bb_wid else False
         bb_near_lo = (not bb_below) and bb_lo and ((price - bb_lo) / bb_lo * 100 < 2)
 
-        # Divergencia alcista: precio hace mínimo más bajo, RSI hace mínimo más alto
+        # ── Divergencia alcista — ventana de 15 velas ────────────────────────
+        # Mínimo de precio reciente más bajo que mínimo anterior,
+        # pero RSI en ese punto más alto que RSI en el mínimo anterior.
         div_bullish = False
-        if rsi10 is not None and rsi_prev is not None:
-            div_bullish = (price < price_prev) and (rsi10 > rsi_prev)
+        if rsi10 is not None and len(closes) >= 30:
+            window = 15
+            # Ventana reciente: últimas 15 velas (sin la actual)
+            rec_closes = closes[-(window + 1):-1]
+            # Ventana anterior: las 15 velas previas a esa
+            ant_closes = closes[-(window * 2 + 1):-(window + 1)]
+
+            if len(rec_closes) == window and len(ant_closes) == window:
+                # Índice del mínimo en cada ventana
+                idx_rec = rec_closes.index(min(rec_closes))
+                idx_ant = ant_closes.index(min(ant_closes))
+
+                min_price_rec = rec_closes[idx_rec]
+                min_price_ant = ant_closes[idx_ant]
+
+                # RSI calculado hasta ese punto en cada ventana
+                rsi_at_rec = calc_rsi(closes[:-(window + 1) + idx_rec + 1], 10)
+                rsi_at_ant = calc_rsi(closes[:-(window * 2 + 1) + idx_ant + 1], 10)
+
+                if (rsi_at_rec is not None and rsi_at_ant is not None
+                        and min_price_rec < min_price_ant   # precio: mínimo más bajo
+                        and rsi_at_rec > rsi_at_ant):       # RSI: mínimo más alto
+                    div_bullish = True
 
         return {
             "price":price,"rsi10":rsi10,"rsi_prev":rsi_prev,
@@ -598,22 +626,37 @@ for ticker, sym in YF_MAP.items():
 
     rsi10 = q["rsi10"] or 50
 
+    div      = q.get("div_bullish", False)
+    bb_recov = q.get("bb_recov", False)
+
     # Watchlist por BB recuperado + EMA ok (aunque RSI no llegó a 30)
     bb_ema_watchlist = (
-        q.get("bb_recov", False)
+        bb_recov
         and epct >= -5
         and not rsi_bounced
         and score >= 2
     )
 
+    # Divergencia alcista: puede promover categoría
+    # score 2 + div → Señal (div reemplaza punto faltante)
+    # score 1 + div + RSI<=40 → Watchlist
+    # score 0 + div + RSI<=35 → Radar con mención
+    div_to_signal   = div and score == 2 and not rsi_bounced
+    div_to_watchlist = div and score == 1 and rsi10 <= 40 and not rsi_bounced
+    div_to_radar    = div and score == 0 and rsi10 <= 35 and not rsi_bounced
+
     if score == 3 and rsi_bounced:
-        print(f"  >>> SEÑAL 3/3: {ticker} rsi={rsi10} rsi_prev={q.get('rsi_prev')} bb_recov={q.get('bb_recov')} epct={epct:.1f}")
+        print(f"  >>> SEÑAL 3/3: {ticker} rsi={rsi10} rsi_prev={q.get('rsi_prev')} bb_recov={bb_recov} epct={epct:.1f}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
-    elif (score == 2 and not rsi_bounced and rsi10 <= 45) or bb_ema_watchlist:
-        print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → watchlist (bb_ema={bb_ema_watchlist})")
+    elif div_to_signal:
+        print(f"  >>> SEÑAL DIV 2/3+div: {ticker} rsi={rsi10} epct={epct:.1f}")
+        signals_found.append((ticker, score, q, epct, ppct, fund))
+    elif (score == 2 and not rsi_bounced and rsi10 <= 45) or bb_ema_watchlist or div_to_watchlist:
+        reason = "bb_ema" if bb_ema_watchlist else ("div" if div_to_watchlist else "score+rsi")
+        print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → watchlist ({reason})")
         watchlist_found.append((ticker, score, q, epct, ppct))
-    elif (rsi10 <= 35) or (rsi10 < 30 and not rsi_bounced) or (abs(epct) <= 1):
-        print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → radar")
+    elif (rsi10 <= 35) or (rsi10 < 30 and not rsi_bounced) or (abs(epct) <= 1) or div_to_radar:
+        print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → radar{' (div)' if div_to_radar else ''}")
         radar_info.append((ticker, q, epct, ppct, score))
     else:
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → ignorado")
