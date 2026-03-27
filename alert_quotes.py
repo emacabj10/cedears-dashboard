@@ -19,7 +19,17 @@ FUND = {
     "MCD":"buenos","BABA":"buenos","PYPL":"buenos","TSLA":"controversiales",
 }
 
-CRYPTO = {"BTC", "ETH", "BNB"}   # tickers cripto — sin link a StocksAnalyzer
+# Mapa TradingView: símbolo exacto para la URL del gráfico
+TV_MAP = {
+    "MSFT":"NASDAQ:MSFT","GOOGL":"NASDAQ:GOOGL","AMZN":"NASDAQ:AMZN",
+    "META":"NASDAQ:META","BRK.B":"NYSE:BRK.B","V":"NYSE:V",
+    "WMT":"NYSE:WMT","MELI":"NASDAQ:MELI","QQQ":"NASDAQ:QQQ",
+    "SPY":"AMEX:SPY","DIA":"AMEX:DIA","AMD":"NASDAQ:AMD",
+    "KO":"NYSE:KO","PEP":"NASDAQ:PEP","MCD":"NYSE:MCD",
+    "BABA":"NYSE:BABA","PYPL":"NASDAQ:PYPL","TSLA":"NASDAQ:TSLA",
+    "GLD":"AMEX:GLD","BTC":"BINANCE:BTCUSDT","ETH":"BINANCE:ETHUSDT",
+    "BNB":"BINANCE:BNBUSDT",
+}
 
 YF_MAP = {
     "AMD":"AMD","AMZN":"AMZN","BABA":"BABA","BNB":"BNB-USD",
@@ -610,9 +620,9 @@ date_str = now_arg().strftime("%d/%m/%Y")
 
 # Encabezado dinámico según hora de activación (hora Argentina UTC-3)
 _hour = now_arg().hour
-if 9 <= _hour < 15:
+if 9 <= _hour < 13:
     session_header = f"🔔 APERTURA DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando reporte técnico..."
-elif 15 <= _hour < 18:
+elif 13 <= _hour < 16:
     session_header = f"🔔 MEDIA RUEDA DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando reporte técnico..."
 else:
     session_header = f"🔔 CIERRE DE MERCADO — {now_arg().strftime('%H:%M')}\nIniciando análisis técnico..."
@@ -631,12 +641,9 @@ for ticker, score, q, epct, ppct, fund in signals_found:
     sugerencia = sugerencia_signal(score, rsi10, epct, fund, div, bb_rec)
     analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
 
-    # Link stocksanalyzer — se omite para cripto
-    if ticker not in CRYPTO:
-        _sym_sa  = YF_MAP.get(ticker, ticker).replace("-USD", "")
-        _link_sa = f'\n🔗 <a href="https://www.stocksanalyzer.app/analyze/{_sym_sa}">Ver análisis completo</a>'
-    else:
-        _link_sa = ""
+    # Link TradingView — disponible para todos los activos incluyendo cripto
+    _tv_sym  = TV_MAP.get(ticker, ticker)
+    _link_tv = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym}">Ver gráfico en TradingView →</a>'
 
     msg = (
         f"🟢 <b>{ticker} — SEÑAL {score}/3</b>\n"
@@ -649,7 +656,7 @@ for ticker, score, q, epct, ppct, fund in signals_found:
         f"{analisis}\n"
         f"\n<b>Sugerencia</b>\n"
         f"💡 {sugerencia}\n"
-        f"\n{_link_sa}"
+        f"\n{_link_tv}"
     )
     print(f"\n{msg}\n")
     send_telegram(msg)
@@ -671,12 +678,9 @@ for ticker, score, q, epct, ppct in watchlist_found:
     sugerencia = sugerencia_watchlist(score, rsi10, epct, fund, div,
                                       bb_rec, bb_below, rsi_bounced_w)
 
-    # Link stocksanalyzer — se omite para cripto
-    if ticker not in CRYPTO:
-        _sym_sa_w  = YF_MAP.get(ticker, ticker).replace("-USD", "")
-        _link_sa_w = f'\n🔗 <a href="https://www.stocksanalyzer.app/analyze/{_sym_sa_w}">Ver análisis completo</a>'
-    else:
-        _link_sa_w = ""
+    # Link TradingView — disponible para todos los activos incluyendo cripto
+    _tv_sym_w  = TV_MAP.get(ticker, ticker)
+    _link_tv_w = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_w}">Ver gráfico en TradingView →</a>'
 
     msg = (
         f"🟡 <b>{ticker} — WATCHLIST {score}/3</b>\n"
@@ -690,7 +694,7 @@ for ticker, score, q, epct, ppct in watchlist_found:
         f"{analisis}\n"
         f"\n🛑 <b>Acción sugerida</b>\n"
         f"{sugerencia}\n"
-        f"\n{_link_sa_w}"
+        f"\n{_link_tv_w}"
     )
     print(f"\n{msg}\n")
     send_telegram(msg)
