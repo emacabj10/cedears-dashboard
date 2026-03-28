@@ -390,7 +390,7 @@ def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov):
             "La EMA200 actúa como soporte dinámico de largo plazo — estructura favorable para acumulación."
         )
 
-    # Entrada completa: testeando EMA200 como soporte + BB recuperado
+    # Entrada completa: testeando EMA200 como soporte + BB recuperado (≤5%)
     if epct >= -5 and bb_recov:
         return (
             "Rebote desde BB con precio en soporte dinámico (EMA200). "
@@ -398,27 +398,27 @@ def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov):
             "Zona de máxima confluencia técnica — favorable para acumulación de largo plazo."
         )
 
+    # Media posición: entre -5% y -15% de EMA (nuevo umbral flexible)
+    if -15 <= epct < -5:
+        return (
+            f"Señal confirmada con precio {abs(epct):.1f}% bajo EMA200 — distancia a la media requiere precaución. "
+            "Entrada con media posición. "
+            "Ampliá a posición completa cuando el precio recupere la EMA200."
+        )
+
     # Media posición: corrección profunda bajo EMA200
-    if epct < -10:
+    if epct < -15:
         return (
             f"Rebote técnico con precio {abs(epct):.1f}% bajo EMA200 — tendencia bajista de corto plazo vigente. "
             "Entrada con media posición. "
             "Acumulación escalonada: ampliá si el precio confirma soporte en las próximas ruedas."
         )
 
-    # Media posición: corrección moderada bajo EMA200
-    if epct < -3:
-        return (
-            f"Precio en corrección moderada ({abs(epct):.1f}% bajo EMA200) — la media actúa como resistencia dinámica. "
-            "Entrada con media posición. "
-            "Ampliá a posición completa si el precio recupera la EMA200 con volumen."
-        )
-
-    # Default: señal técnica completa, contexto neutro
+    # Default: precio cerca o sobre EMA200, setup completo
     return (
-        "Setup técnico completo. "
-        "Entrada con media posición — confirmá tendencia en TradingView antes de ejecutar. "
-        "Ampliá a posición completa si la siguiente vela confirma continuidad alcista."
+        "Setup técnico completo con precio en zona favorable respecto a la EMA200. "
+        "Entrada con posición completa. "
+        "La EMA200 actúa como soporte dinámico de largo plazo — estructura favorable para acumulación."
     )
 
 
@@ -427,7 +427,7 @@ def sugerencia_watchlist(score, rsi10, epct, fund, div, bb_recov, bb_below, rsi_
     Sugerencia para WATCHLIST 2/3. Estrategia de acumulación a largo plazo.
     Siempre indica esperar, pero describe exactamente qué falta y qué vigilar.
     """
-    ema_ok = epct >= -5
+    ema_ok = epct >= -15
     rsi_ok = rsi_bounced
     bb_ok  = bb_recov
 
@@ -526,8 +526,8 @@ def score_signal(ticker, q):
     if rsi_bounced:
         score += 1
 
-    # ── Punto 2: EMA200 — precio encima O a no más del 3% por debajo ────────
-    ema_ok = epct >= -5
+    # ── Punto 2: EMA200 — precio encima O a no más del 15% por debajo ───────
+    ema_ok = epct >= -15
     if ema_ok:
         score += 1
 
@@ -641,7 +641,7 @@ for ticker, sym in YF_MAP.items():
     # Watchlist por BB recuperado + EMA ok (aunque RSI no llegó a 30)
     bb_ema_watchlist = (
         bb_recov
-        and epct >= -5
+        and epct >= -15
         and not rsi_bounced
         and score >= 2
     )
