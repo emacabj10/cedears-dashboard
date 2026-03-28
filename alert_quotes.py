@@ -297,10 +297,9 @@ def bb_label_watchlist(q):
 
 def generar_analisis(ticker, score, q, epct, ppct, fund):
     """
-    Análisis contextual de 2-3 líneas:
-      Línea 1 — Contexto de mercado (tendencia, corrección, lateralización)
-      Línea 2 — Niveles clave BB y EMA (sin POC — referencia visual solamente)
-      Línea 3 — Divergencias y momentum (solo si hay señal real)
+    Contexto compacto sin redundar lo que ya muestran los indicadores.
+    Línea 1 — Contexto de mercado (tendencia, fase)
+    Línea 2 — Dato diferencial: divergencia, impulso RSI o estado de capitulación
     """
     rsi10     = q.get("rsi10") or 50
     rsi_prev  = q.get("rsi_prev") or rsi10
@@ -312,47 +311,34 @@ def generar_analisis(ticker, score, q, epct, ppct, fund):
 
     lineas = []
 
-    # ── Línea 1: Contexto de mercado ─────────────────────────────────────────
+    # ── Línea 1: Contexto de mercado (sin repetir el label de EMA) ───────────
     if epct >= 0 and ema_trend == "subiendo":
-        ctx = f"Tendencia alcista de largo plazo intacta — precio {epct:.1f}% sobre EMA200 en ascenso. Corrección técnica dentro de estructura positiva."
+        ctx = "Tendencia alcista de largo plazo intacta. Corrección técnica dentro de estructura positiva."
     elif epct >= 0 and ema_trend == "lateral":
-        ctx = f"Mercado lateralizando — precio {epct:.1f}% sobre EMA200 sin tendencia definida. La corrección actual busca soporte en la media."
+        ctx = "Mercado lateralizando sobre la EMA200 sin tendencia definida."
     elif epct >= 0 and ema_trend == "bajando":
-        ctx = f"EMA200 perdiendo pendiente con precio aún {epct:.1f}% sobre la media — señal de agotamiento de tendencia alcista. Corrección en desarrollo."
+        ctx = "EMA200 perdiendo pendiente — señal de agotamiento de tendencia alcista. Corrección en desarrollo."
     elif epct >= -5:
-        ctx = f"Precio testeando la EMA200 ({epct:.1f}%) — zona de decisión crítica. Un cierre por encima confirma el soporte dinámico."
+        ctx = "Precio en zona de decisión crítica sobre la EMA200. Un cierre por encima confirma el soporte dinámico."
     elif epct >= -10:
-        ctx = f"Corrección moderada — precio {abs(epct):.1f}% bajo EMA200. La media actúa como resistencia dinámica en el corto plazo."
+        ctx = f"Corrección moderada bajo EMA200. La media actúa como resistencia dinámica en el corto plazo."
     else:
-        ctx = f"Corrección profunda — precio {abs(epct):.1f}% bajo EMA200. Zona de capitulación con tendencia bajista de corto plazo vigente."
+        ctx = f"Corrección profunda ({abs(epct):.1f}% bajo EMA200). Zona de capitulación con tendencia bajista de corto plazo vigente."
     lineas.append(ctx)
 
-    # ── Línea 2: Estructura de precio — BB ───────────────────────────────────
-    if bb_recov and epct >= 0:
-        niv = "Recuperó banda inferior de BB con precio sobre EMA200 — doble confluencia técnica alcista. Rebote confirmado."
-    elif bb_recov and epct >= -5:
-        niv = "Recuperó banda inferior de BB testeando la EMA200 — rebote técnico en zona de soporte dinámico."
-    elif bb_recov:
-        niv = f"Recuperó banda inferior de BB con precio {abs(epct):.1f}% bajo EMA200 — rebote técnico en corrección profunda."
-    elif bb_below:
-        niv = "Precio fuera de la banda inferior de BB — extremo de volatilidad bajista. Sin rebote confirmado aún."
-    elif bb_near:
-        niv = "Apoyando en banda inferior de BB sin perderla — zona de posible capitulación y rebote técnico."
-    elif epct >= 0:
-        niv = f"Precio {epct:.1f}% sobre EMA200 dentro de bandas — estructura técnica positiva de largo plazo."
-    else:
-        niv = f"Precio {abs(epct):.1f}% bajo EMA200 dentro de bandas — corrección en curso sin señales de capitulación."
-    lineas.append(niv)
-
-    # ── Línea 3: Divergencias y momentum ─────────────────────────────────────
+    # ── Línea 2: Dato diferencial (impulso, divergencia, capitulación) ───────
     if div:
-        lineas.append(f"Divergencia alcista confirmada — RSI({rsi10}) marcando mínimo más alto mientras el precio hace mínimo más bajo. Cambio de momentum favorable.")
+        lineas.append(f"Divergencia alcista confirmada — precio hace mínimo más bajo pero el RSI marca mínimo más alto. Cambio de impulso favorable.")
     elif rsi10 > 30 and rsi_prev <= 30:
-        lineas.append(f"RSI cruzó al alza el nivel 30 (de {rsi_prev} a {rsi10}) — momentum girando a favor del comprador.")
+        lineas.append(f"RSI cruzó al alza el nivel 30 desde {rsi_prev} — impulso girando a favor del comprador.")
+    elif bb_recov and bb_below:
+        lineas.append("Recuperó la banda inferior de BB luego de haberla perdido — capitulación resuelta.")
     elif rsi10 <= 28:
-        lineas.append(f"RSI en oversold extremo ({rsi10}) — presión vendedora en máximos, históricamente precede rebotes técnicos.")
+        lineas.append(f"RSI en oversold extremo ({rsi10}) — presión vendedora en máximos, históricamente precede rebotes.")
     elif rsi10 <= 32 and rsi10 > rsi_prev:
-        lineas.append(f"RSI en {rsi10} con pendiente alcista desde {rsi_prev} — momentum comenzando a recuperarse desde zona de suelo.")
+        lineas.append(f"RSI en {rsi10} con pendiente alcista desde {rsi_prev} — impulso recuperándose desde zona de suelo.")
+    elif bb_near:
+        lineas.append("Apoyando en banda inferior de BB — zona de posible capitulación y rebote técnico.")
 
     return "\n".join(lineas)
 
@@ -908,17 +894,18 @@ for ticker, score, q, epct, ppct in watchlist_found:
         time.sleep(0.3)
         _header_sent = True
 
+    _price_fmt_w = f"${q['price']:,.2f}"
     msg = (
-        f"🟡 <b>{ticker} — WATCHLIST {score}/3</b>\n"
+        f"🟡 <b>{ticker} {_price_fmt_w} — WATCHLIST {score}/3</b>\n"
         f"⚠️ <b>Estado:</b> Setup en formación. Aviso previo — monitorear.\n"
         f"\n<b>Indicadores</b>\n"
         f"📉 {rsi_label_watchlist(rsi10, rsi_p)}\n"
         f"📈 {ema_label_watchlist(epct, q['emaTrend'])}\n"
         f"📦 {poc_label_watchlist(ppct, poc, q['price'])}\n"
         f"🎢 {bb_label_watchlist(q)}\n"
-        f"\n🔍 <b>Análisis</b>\n"
+        f"\n🔍 <b>Contexto</b>\n"
         f"{analisis}\n"
-        f"\n🛑 <b>Acción sugerida</b>\n"
+        f"\n💡 <b>Acción</b>\n"
         f"{sugerencia}\n"
         f"\n{_link_tv_w}"
     )
