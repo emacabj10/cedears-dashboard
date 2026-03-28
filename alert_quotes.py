@@ -155,6 +155,18 @@ def fetch_ticker(sym):
         bb_squeeze = (bb_wid[0] < bb_wid[1] * 0.85) if bb_wid else False
         bb_near_lo = (not bb_below) and bb_lo and ((price - bb_lo) / bb_lo * 100 < 2)
 
+        # ── Rebote RSI — ventana de 15 velas ─────────────────────────────────
+        # Alguna de las últimas 15 velas tuvo RSI <= 30,
+        # y la vela actual tiene RSI > 30 (rebote confirmado en ventana amplia).
+        rsi_bounced_15 = False
+        if rsi10 is not None and rsi10 > 30:
+            for lookback in range(1, 16):  # velas 1..15 hacia atrás
+                if len(closes) > lookback:
+                    past_rsi = calc_rsi(closes[:-(lookback)], 10)
+                    if past_rsi is not None and past_rsi <= 30:
+                        rsi_bounced_15 = True
+                        break
+
         # ── Divergencia alcista — ventana de 15 velas ────────────────────────
         # Mínimo de precio reciente más bajo que mínimo anterior,
         # pero RSI en ese punto más alto que RSI en el mínimo anterior.
@@ -193,6 +205,7 @@ def fetch_ticker(sym):
             "div_bullish": div_bullish,
             "price_prev": price_prev,
             "bb_lo_prev": bb_lo_prev,
+            "rsi_bounced_15": rsi_bounced_15,
         }
     except Exception as e:
         print(f"  Error: {e}"); return None
@@ -476,11 +489,12 @@ def score_signal(ticker, q):
 
     score = 0
 
-    # ── Punto 1: RSI cruzando al alza el nivel de 30 ─────────────────────────
-    rsi_bounced  = (rsi10 > 30 and rsi_prev <= 30)
-    rsi_oversold = rsi10 <= 30
+    # ── Punto 1: RSI cruzando al alza el nivel de 30 — ventana 15 velas ────────
+    rsi_bounced    = (rsi10 > 30 and rsi_prev <= 30)           # 1 vela (fallback)
+    rsi_bounced_15 = q.get("rsi_bounced_15", rsi_bounced)      # 15 velas (preciso)
+    rsi_oversold   = rsi10 <= 30
 
-    if rsi_bounced:
+    if rsi_bounced_15:
         score += 1
 
     # ── Punto 2: EMA200 — precio encima O a no más del 3% por debajo ────────
@@ -493,10 +507,10 @@ def score_signal(ticker, q):
         score += 1
 
     # Setup en formación: RSI ≤ 38 sin rebote confirmado
-    forming_rsi_zone = (rsi10 <= 38 and not rsi_bounced)
+    forming_rsi_zone = (rsi10 <= 38 and not rsi_bounced_15)
     forming = forming_rsi_zone
 
-    return score, forming, epct, ppct, fund, rsi_bounced, rsi_oversold
+    return score, forming, epct, ppct, fund, rsi_bounced_15, rsi_oversold
 
 def send_telegram(message):
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
@@ -860,7 +874,7 @@ for ticker, score, q, epct, ppct in watchlist_found:
     div      = q.get("div_bullish", False)
     bb_rec   = q.get("bb_recov", False)
     bb_below = q.get("bb_below", False)
-    rsi_bounced_w = (rsi10 > 30 and rsi_p <= 30)
+    rsi_bounced_w = q.get("rsi_bounced_15", (rsi10 > 30 and rsi_p <= 30))
 
     analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
     sugerencia = sugerencia_watchlist(score, rsi10, epct, fund, div,
