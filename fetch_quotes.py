@@ -6,7 +6,7 @@ YF_MAP = {
     "AMD":"AMD","AMZN":"AMZN","BABA":"BABA","BNB":"BNB-USD",
     "BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD",
     "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
-    "MSFT":"MSFT","GLD":"GLD","PEP":"PEP","PYPL":"PYPL","QQQ":"QQQ",
+    "MSFT":"MSFT","PEP":"PEP","PYPL":"PYPL","QQQ":"QQQ",
     "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT",
     "GLD":"GLD","NVDA":"NVDA","AAPL":"AAPL","NFLX":"NFLX",
     "COIN":"COIN","ARKK":"ARKK","XOM":"XOM","JPM":"JPM",
