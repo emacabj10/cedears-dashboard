@@ -641,7 +641,6 @@ def handle_operado(ticker_cmd):
     send_telegram(
         f"✅ <b>{ticker_cmd}</b> marcado como operado.\n"
         f"El bot silenciará alertas de Señal/Watchlist para este activo.\n"
-        f"El ciclo se reiniciará automáticamente cuando RSI &gt; 50 → RSI &lt; 45 → rebote técnico."
     )
 
 # Procesar comando operado — soporta dos fuentes:
