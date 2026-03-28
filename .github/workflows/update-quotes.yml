@@ -6,13 +6,6 @@ on:
     - cron: '30 16 * * 1-5'
     - cron: '30 19 * * 1-5'
   workflow_dispatch:
-    inputs:
-      cmd_operado:
-        required: false
-        default: ''
-      callback_query_id:
-        required: false
-        default: ''
 
 jobs:
   fetch:
