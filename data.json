@@ -185,62 +185,6 @@
       "ema200": 250.97,
       "emaTrend": "lateral"
     },
-    "NFLX": {
-      "price": 93.43,
-      "rsi10": 53.95,
-      "rsiPrev": 53.54,
-      "rsiW": 48.6,
-      "ema200": 98.99,
-      "emaTrend": "lateral"
-    },
-    "COIN": {
-      "price": 161.14,
-      "rsi10": 29.23,
-      "rsiPrev": 35.27,
-      "rsiW": 34.68,
-      "ema200": 245.67,
-      "emaTrend": "bajando"
-    },
-    "ARKK": {
-      "price": 64.63,
-      "rsi10": 30.44,
-      "rsiPrev": 36.56,
-      "rsiW": 33.24,
-      "ema200": 73.38,
-      "emaTrend": "lateral"
-    },
-    "XOM": {
-      "price": 170.99,
-      "rsi10": 79.55,
-      "rsiPrev": 73.18,
-      "rsiW": 87.8,
-      "ema200": 128.51,
-      "emaTrend": "subiendo"
-    },
-    "JPM": {
-      "price": 282.84,
-      "rsi10": 35.36,
-      "rsiPrev": 48.84,
-      "rsiW": 35.34,
-      "ema200": 294.86,
-      "emaTrend": "lateral"
-    },
-    "BAC": {
-      "price": 46.97,
-      "rsi10": 36.99,
-      "rsiPrev": 46.85,
-      "rsiW": 33.08,
-      "ema200": 50.1,
-      "emaTrend": "lateral"
-    },
-    "UBER": {
-      "price": 69.18,
-      "rsi10": 33.88,
-      "rsiPrev": 37.23,
-      "rsiW": 30.04,
-      "ema200": 82.28,
-      "emaTrend": "lateral"
-    },
     "ABNB": {
       "price": 122.87,
       "rsi10": 35.66,
@@ -249,23 +193,6 @@
       "ema200": 128.95,
       "emaTrend": "lateral"
     },
-    "SHOP": {
-      "price": 111.85,
-      "rsi10": 35.25,
-      "rsiPrev": 39.17,
-      "rsiW": 36.69,
-      "ema200": 133.8,
-      "emaTrend": "lateral"
-    },
-    "PYPL": {
-      "price": 43.59,
-      "rsi10": 41.49,
-      "rsiPrev": 50.4,
-      "rsiW": 29.95,
-      "ema200": 58.74,
-      "emaTrend": "bajando"
-    }
-  },
   "cycles": {},
   "daily": {}
 }
