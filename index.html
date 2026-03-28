@@ -918,42 +918,63 @@ async function fetchAllQuotes(){
   const btn=document.getElementById("fetch-btn");
   const status=document.getElementById("fetch-status");
   btn.disabled=true; btn.textContent="Actualizando...";
-  status.style.color="#58a6ff"; status.textContent="Obteniendo datos...";
+  status.style.color="#58a6ff"; status.textContent="Leyendo data.json del repo...";
 
-  let updated=0, failed=0;
-  const failedTickers=[];
+  try{
+    // Lee data.json directo del repo via GitHub API (no depende de proxies)
+    const token=getGhToken();
+    let dj=null;
 
-  for(const s of data){
-    if(!YF_MAP[s.t]&&!s.t.endsWith("-USD")) continue;
-    status.textContent=`Actualizando ${s.t}...`;
-    const q=await fetchQuote(s.t);
-    if(q.ok){
-      s.price=q.price;
-      if(q.rsi10!==null) s.rsi10=q.rsi10;
-      if(q.rsiW!==null)  s.rsiW=q.rsiW;
-      if(q.ema200!==null){s.ema200=q.ema200; s.emaTrend=q.emaTrend;}
-      if(q.rsiPrev!==null) s.rsiPrev=q.rsiPrev;
-      updated++;
-    } else {
-      failed++;
-      failedTickers.push(s.t);
+    if(token){
+      // Con token: usa GitHub API autenticada
+      const r=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/data.json`,{
+        headers:{"Authorization":`Bearer ${token}`,"Accept":"application/vnd.github+json"}
+      });
+      if(r.ok){
+        const d=await r.json();
+        const raw=atob(d.content.replace(/\n/g,""));
+        const bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));
+        dj=JSON.parse(new TextDecoder("utf-8").decode(bytes));
+      }
     }
-    await new Promise(r=>setTimeout(r,200));
-  }
 
-  saveToStorage();
-  renderCards();
-  btn.disabled=false; btn.textContent="↻ Actualizar cotizaciones";
+    if(!dj){
+      // Sin token: intenta via raw.githubusercontent.com (público)
+      const r=await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/data.json`);
+      if(r.ok) dj=await r.json();
+    }
 
-  const now=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
-  if(failed===0){
+    if(!dj||!dj.quotes) throw new Error("No se pudo leer data.json");
+
+    let updated=0, notFound=0;
+    for(const s of data){
+      const q=dj.quotes[s.t];
+      if(q){
+        if(q.price)    s.price=q.price;
+        if(q.rsi10)    s.rsi10=q.rsi10;
+        if(q.rsiW)     s.rsiW=q.rsiW;
+        if(q.ema200)   {s.ema200=q.ema200; s.emaTrend=q.emaTrend||s.emaTrend;}
+        if(q.rsiPrev)  s.rsiPrev=q.rsiPrev;
+        updated++;
+      } else {
+        notFound++;
+      }
+    }
+
+    saveToStorage();
+    renderCards();
+    btn.disabled=false; btn.textContent="↻ Actualizar cotizaciones";
+    const now=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+    const updMsg=dj.updated?` · datos del repo: ${dj.updated.replace("T"," ").slice(0,16)} UTC`:"";
     status.style.color="#2ea043";
-    status.textContent=`✓ ${updated} tickers actualizados · ${now}`;
-  } else {
-    status.style.color="#ba7517";
-    status.textContent=`${updated} ok · ${failed} fallaron (${failedTickers.join(", ")}) · ${now}`;
+    status.textContent=`✓ ${updated} tickers actualizados${updMsg}`;
+    try{localStorage.setItem(FETCH_KEY,now);}catch(e){}
+
+  }catch(e){
+    btn.disabled=false; btn.textContent="↻ Actualizar cotizaciones";
+    status.style.color="#da3633";
+    status.textContent=`Error: ${e.message} — corré el workflow de GitHub primero`;
   }
-  try{localStorage.setItem(FETCH_KEY,now);}catch(e){}
 }
 
 // Show last fetch time on load
