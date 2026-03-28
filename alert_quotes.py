@@ -14,7 +14,7 @@ FUND = {
     "META":"excelentes","BRK.B":"excelentes","V":"excelentes",
     "WMT":"excelentes","MELI":"excelentes","QQQ":"excelentes",
     "SPY":"excelentes","DIA":"excelentes","BTC":"excelentes",
-    "ETH":"excelentes","BNB":"excelentes","GLD":"excelentes",
+    "ETH":"buenos","BNB":"buenos","GLD":"excelentes",
     "AMD":"buenos","KO":"buenos","PEP":"buenos",
     "MCD":"buenos","BABA":"buenos","PYPL":"buenos","TSLA":"controversiales",
 }
