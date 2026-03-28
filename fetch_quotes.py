@@ -120,10 +120,22 @@ for ticker, sym in all_tickers.items():
             print(f"  FAIL — sin datos previos, omitiendo")
     time.sleep(0.5)
 
-# ── Guardar resultado ────────────────────────────────────────────────────────
+# ── Guardar resultado — preservar cycles y daily ─────────────────────────────
+existing_cycles = {}
+existing_daily = {}
+try:
+    with open("data.json", "r") as f:
+        _prev = json.load(f)
+        existing_cycles = _prev.get("cycles", {})
+        existing_daily  = _prev.get("daily", {})
+except Exception:
+    pass
+
 output = {
     "updated": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-    "quotes": results
+    "quotes":  results,
+    "cycles":  existing_cycles,
+    "daily":   existing_daily,
 }
 with open("data.json", "w") as f:
     json.dump(output, f, indent=2)
