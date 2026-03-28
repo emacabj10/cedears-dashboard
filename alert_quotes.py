@@ -137,17 +137,6 @@ def fetch_ticker(sym):
         poc_proxy = calc_poc_proxy(closes)
         price_prev = closes[-2] if len(closes) >= 2 else price
 
-        # ── RSI rebotó desde <30 — ventana de 15 velas ─────────────────────
-        # RSI actual > 30 Y alguna de las últimas 15 velas tuvo RSI ≤ 30
-        rsi_bounced_15 = False
-        if rsi10 is not None and rsi10 > 30:
-            for lookback in range(1, 16):
-                if len(closes) > lookback + 10:
-                    past_rsi = calc_rsi(closes[:-(lookback)], 10)
-                    if past_rsi is not None and past_rsi <= 30:
-                        rsi_bounced_15 = True
-                        break
-
         # ── Rebote Bollinger — ventana de 5 velas ────────────────────────────
         # Alguna de las últimas 4 velas cerró debajo de bb_lo en ese momento,
         # y la vela actual cerró encima (recuperó la banda).
@@ -204,7 +193,6 @@ def fetch_ticker(sym):
             "div_bullish": div_bullish,
             "price_prev": price_prev,
             "bb_lo_prev": bb_lo_prev,
-            "rsi_bounced_15": rsi_bounced_15,
         }
     except Exception as e:
         print(f"  Error: {e}"); return None
@@ -309,9 +297,10 @@ def bb_label_watchlist(q):
 
 def generar_analisis(ticker, score, q, epct, ppct, fund):
     """
-    Contexto compacto sin redundar lo que ya muestran los indicadores.
-    Línea 1 — Contexto de mercado (tendencia, fase)
-    Línea 2 — Dato diferencial: divergencia, impulso RSI o estado de capitulación
+    Análisis contextual de 2-3 líneas:
+      Línea 1 — Contexto de mercado (tendencia, corrección, lateralización)
+      Línea 2 — Niveles clave BB y EMA (sin POC — referencia visual solamente)
+      Línea 3 — Divergencias y momentum (solo si hay señal real)
     """
     rsi10     = q.get("rsi10") or 50
     rsi_prev  = q.get("rsi_prev") or rsi10
@@ -323,34 +312,47 @@ def generar_analisis(ticker, score, q, epct, ppct, fund):
 
     lineas = []
 
-    # ── Línea 1: Contexto de mercado (sin repetir el label de EMA) ───────────
+    # ── Línea 1: Contexto de mercado ─────────────────────────────────────────
     if epct >= 0 and ema_trend == "subiendo":
-        ctx = f"Tendencia alcista de largo plazo intacta. Corrección técnica dentro de estructura positiva."
+        ctx = f"Tendencia alcista de largo plazo intacta — precio {epct:.1f}% sobre EMA200 en ascenso. Corrección técnica dentro de estructura positiva."
     elif epct >= 0 and ema_trend == "lateral":
-        ctx = f"Mercado lateralizando sobre la EMA200 sin tendencia definida."
+        ctx = f"Mercado lateralizando — precio {epct:.1f}% sobre EMA200 sin tendencia definida. La corrección actual busca soporte en la media."
     elif epct >= 0 and ema_trend == "bajando":
-        ctx = f"EMA200 perdiendo pendiente — señal de agotamiento de tendencia alcista. Corrección en desarrollo."
+        ctx = f"EMA200 perdiendo pendiente con precio aún {epct:.1f}% sobre la media — señal de agotamiento de tendencia alcista. Corrección en desarrollo."
     elif epct >= -5:
-        ctx = f"Precio en zona de decisión crítica sobre la EMA200. Un cierre por encima confirma el soporte dinámico."
+        ctx = f"Precio testeando la EMA200 ({epct:.1f}%) — zona de decisión crítica. Un cierre por encima confirma el soporte dinámico."
     elif epct >= -10:
-        ctx = f"Corrección moderada bajo EMA200. La media actúa como resistencia dinámica en el corto plazo."
+        ctx = f"Corrección moderada — precio {abs(epct):.1f}% bajo EMA200. La media actúa como resistencia dinámica en el corto plazo."
     else:
-        ctx = f"Corrección profunda ({abs(epct):.1f}% bajo EMA200). Zona de capitulación con tendencia bajista de corto plazo vigente."
+        ctx = f"Corrección profunda — precio {abs(epct):.1f}% bajo EMA200. Zona de capitulación con tendencia bajista de corto plazo vigente."
     lineas.append(ctx)
 
-    # ── Línea 2: Dato diferencial (impulso, divergencia, capitulación) ───────
-    if div:
-        lineas.append(f"Divergencia alcista confirmada — precio hace mínimo más bajo pero el RSI marca mínimo más alto. Cambio de impulso favorable.")
-    elif rsi10 > 30 and rsi_prev <= 30:
-        lineas.append(f"RSI cruzó al alza el nivel 30 desde {rsi_prev} — impulso girando a favor del comprador.")
-    elif bb_recov and bb_below:
-        lineas.append("Recuperó la banda inferior de BB luego de haberla perdido — capitulación resuelta.")
-    elif rsi10 <= 28:
-        lineas.append(f"RSI en oversold extremo ({rsi10}) — presión vendedora en máximos, históricamente precede rebotes.")
-    elif rsi10 <= 32 and rsi10 > rsi_prev:
-        lineas.append(f"RSI en {rsi10} con pendiente alcista desde {rsi_prev} — impulso recuperándose desde zona de suelo.")
+    # ── Línea 2: Estructura de precio — BB ───────────────────────────────────
+    if bb_recov and epct >= 0:
+        niv = "Recuperó banda inferior de BB con precio sobre EMA200 — doble confluencia técnica alcista. Rebote confirmado."
+    elif bb_recov and epct >= -5:
+        niv = "Recuperó banda inferior de BB testeando la EMA200 — rebote técnico en zona de soporte dinámico."
+    elif bb_recov:
+        niv = f"Recuperó banda inferior de BB con precio {abs(epct):.1f}% bajo EMA200 — rebote técnico en corrección profunda."
+    elif bb_below:
+        niv = "Precio fuera de la banda inferior de BB — extremo de volatilidad bajista. Sin rebote confirmado aún."
     elif bb_near:
-        lineas.append("Apoyando en banda inferior de BB — zona de posible capitulación y rebote técnico.")
+        niv = "Apoyando en banda inferior de BB sin perderla — zona de posible capitulación y rebote técnico."
+    elif epct >= 0:
+        niv = f"Precio {epct:.1f}% sobre EMA200 dentro de bandas — estructura técnica positiva de largo plazo."
+    else:
+        niv = f"Precio {abs(epct):.1f}% bajo EMA200 dentro de bandas — corrección en curso sin señales de capitulación."
+    lineas.append(niv)
+
+    # ── Línea 3: Divergencias y momentum ─────────────────────────────────────
+    if div:
+        lineas.append(f"Divergencia alcista confirmada — RSI({rsi10}) marcando mínimo más alto mientras el precio hace mínimo más bajo. Cambio de momentum favorable.")
+    elif rsi10 > 30 and rsi_prev <= 30:
+        lineas.append(f"RSI cruzó al alza el nivel 30 (de {rsi_prev} a {rsi10}) — momentum girando a favor del comprador.")
+    elif rsi10 <= 28:
+        lineas.append(f"RSI en oversold extremo ({rsi10}) — presión vendedora en máximos, históricamente precede rebotes técnicos.")
+    elif rsi10 <= 32 and rsi10 > rsi_prev:
+        lineas.append(f"RSI en {rsi10} con pendiente alcista desde {rsi_prev} — momentum comenzando a recuperarse desde zona de suelo.")
 
     return "\n".join(lineas)
 
@@ -361,18 +363,8 @@ def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov):
     Entrada completa cuando hay confluencia técnica sólida.
     Media posición cuando opera contra la tendencia de fondo.
     """
-    if score not in (2, 3):
+    if score != 3:
         return "Señal incompleta. Monitorear — no operar aún."
-
-    div = div if div is not None else False
-
-    # Señal promovida por divergencia (score 2 + div reemplaza punto faltante)
-    if score == 2 and div:
-        return (
-            "Señal activada por divergencia alcista — reemplaza el punto técnico faltante. "
-            "Entrada con media posición. "
-            "La divergencia sugiere agotamiento vendedor, pero confirmá el setup completo antes de ampliar."
-        )
 
     # Entrada completa: divergencia alcista + soporte técnico completo
     if div and epct >= -5:
@@ -390,7 +382,7 @@ def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov):
             "La EMA200 actúa como soporte dinámico de largo plazo — estructura favorable para acumulación."
         )
 
-    # Entrada completa: testeando EMA200 como soporte + BB recuperado (≤5%)
+    # Entrada completa: testeando EMA200 como soporte + BB recuperado
     if epct >= -5 and bb_recov:
         return (
             "Rebote desde BB con precio en soporte dinámico (EMA200). "
@@ -398,27 +390,27 @@ def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov):
             "Zona de máxima confluencia técnica — favorable para acumulación de largo plazo."
         )
 
-    # Media posición: entre -5% y -15% de EMA (nuevo umbral flexible)
-    if -15 <= epct < -5:
-        return (
-            f"Señal confirmada con precio {abs(epct):.1f}% bajo EMA200 — distancia a la media requiere precaución. "
-            "Entrada con media posición. "
-            "Ampliá a posición completa cuando el precio recupere la EMA200."
-        )
-
     # Media posición: corrección profunda bajo EMA200
-    if epct < -15:
+    if epct < -10:
         return (
             f"Rebote técnico con precio {abs(epct):.1f}% bajo EMA200 — tendencia bajista de corto plazo vigente. "
             "Entrada con media posición. "
             "Acumulación escalonada: ampliá si el precio confirma soporte en las próximas ruedas."
         )
 
-    # Default: precio cerca o sobre EMA200, setup completo
+    # Media posición: corrección moderada bajo EMA200
+    if epct < -3:
+        return (
+            f"Precio en corrección moderada ({abs(epct):.1f}% bajo EMA200) — la media actúa como resistencia dinámica. "
+            "Entrada con media posición. "
+            "Ampliá a posición completa si el precio recupera la EMA200 con volumen."
+        )
+
+    # Default: señal técnica completa, contexto neutro
     return (
-        "Setup técnico completo con precio en zona favorable respecto a la EMA200. "
-        "Entrada con posición completa. "
-        "La EMA200 actúa como soporte dinámico de largo plazo — estructura favorable para acumulación."
+        "Setup técnico completo. "
+        "Entrada con media posición — confirmá tendencia en TradingView antes de ejecutar. "
+        "Ampliá a posición completa si la siguiente vela confirma continuidad alcista."
     )
 
 
@@ -427,7 +419,7 @@ def sugerencia_watchlist(score, rsi10, epct, fund, div, bb_recov, bb_below, rsi_
     Sugerencia para WATCHLIST 2/3. Estrategia de acumulación a largo plazo.
     Siempre indica esperar, pero describe exactamente qué falta y qué vigilar.
     """
-    ema_ok = epct >= -15
+    ema_ok = epct >= -5
     rsi_ok = rsi_bounced
     bb_ok  = bb_recov
 
@@ -518,16 +510,15 @@ def score_signal(ticker, q):
 
     score = 0
 
-    # ── Punto 1: RSI rebotó desde <30 — ventana 15 velas O cruce exacto ────
-    rsi_bounced_15 = q.get("rsi_bounced_15", False)
-    rsi_bounced  = rsi_bounced_15 or (rsi10 > 30 and rsi_prev <= 30)
+    # ── Punto 1: RSI cruzando al alza el nivel de 30 ─────────────────────────
+    rsi_bounced  = (rsi10 > 30 and rsi_prev <= 30)
     rsi_oversold = rsi10 <= 30
 
     if rsi_bounced:
         score += 1
 
-    # ── Punto 2: EMA200 — precio encima O a no más del 15% por debajo ───────
-    ema_ok = epct >= -15
+    # ── Punto 2: EMA200 — precio encima O a no más del 3% por debajo ────────
+    ema_ok = epct >= -5
     if ema_ok:
         score += 1
 
@@ -540,6 +531,72 @@ def score_signal(ticker, q):
     forming = forming_rsi_zone
 
     return score, forming, epct, ppct, fund, rsi_bounced, rsi_oversold
+
+def handle_operado(ticker_cmd):
+    """
+    Llamado cuando el usuario responde !operado TICKER desde Telegram.
+    Silencia el ticker y registra la entrada en data.json.
+    """
+    ticker_cmd = ticker_cmd.strip().upper()
+    if ticker_cmd not in YF_MAP:
+        print(f"  [OPERADO] {ticker_cmd} no reconocido")
+        return
+
+    try:
+        with open("data.json", "r") as f:
+            dj = json.load(f)
+    except Exception:
+        dj = {}
+
+    # Activar silencio
+    cycs = dj.get("cycles", {})
+    cycs[ticker_cmd] = {"is_silenced": True, "rsi_hit_50": False, "rsi_reset": False}
+    dj["cycles"] = cycs
+
+    # Registrar entrada del día
+    today = now_arg().strftime("%Y-%m-%d")
+    daily = dj.get("daily", {"date": today, "signals": [], "watchlist": [], "entradas": []})
+    if "entradas" not in daily:
+        daily["entradas"] = []
+
+    # Buscar precio del ticker en quotes si está disponible
+    price_str = ""
+    quotes = dj.get("quotes", {})
+    if ticker_cmd in quotes:
+        price_str = f"${quotes[ticker_cmd].get('price', 0):,.2f}"
+
+    hora_str = now_arg().strftime("%H:%M")
+    entrada = {"ticker": ticker_cmd, "price": price_str, "hora": hora_str}
+    if not any(e["ticker"] == ticker_cmd for e in daily["entradas"]):
+        daily["entradas"].append(entrada)
+    dj["daily"] = daily
+
+    with open("data.json", "w") as f:
+        json.dump(dj, f)
+
+    print(f"  [OPERADO] {ticker_cmd} silenciado. Ciclo iniciado.")
+    send_telegram(
+        f"✅ <b>{ticker_cmd}</b> marcado como operado.\n"
+        f"El bot silenciará alertas de Señal/Watchlist para este activo.\n"
+        f"El ciclo se reiniciará automáticamente cuando RSI &gt; 50 → RSI &lt; 45 → rebote técnico."
+    )
+
+# Procesar comando operado — soporta dos fuentes:
+# 1. Botón inline: CMD_OPERADO=operado:GLD  (callback_data del botón)
+# 2. Texto manual: CMD_OPERADO=!operado GLD (fallback por texto)
+_cmd_operado = os.environ.get("CMD_OPERADO", "").strip()
+_cbq_id      = os.environ.get("CALLBACK_QUERY_ID", "").strip()  # para answerCallbackQuery
+
+if _cmd_operado.lower().startswith("operado:"):
+    # Formato botón inline: operado:GLD
+    _ticker_op = _cmd_operado.split(":", 1)[1]
+    handle_operado(_ticker_op)
+    if _cbq_id:
+        answer_callback_query(_cbq_id, "✅ Entrada registrada")
+elif _cmd_operado.lower().startswith("!operado "):
+    # Formato texto manual: !operado GLD
+    _ticker_op = _cmd_operado.split(" ", 1)[1]
+    handle_operado(_ticker_op)
 
 def send_telegram(message):
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
@@ -577,6 +634,52 @@ def send_telegram(message):
     except Exception as e:
         print(f"  Telegram plain error: {e}")
 
+def send_telegram_with_button(message, ticker):
+    """Envía mensaje con botón inline ✅ Operada que manda callback_data=operado:TICKER"""
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        print("Sin credenciales:\n" + message); return
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+
+    keyboard = {
+        "inline_keyboard": [[
+            {"text": "✅ Operada", "callback_data": f"operado:{ticker}"}
+        ]]
+    }
+    payload = json.dumps({
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message,
+        "parse_mode": "HTML",
+        "reply_markup": keyboard
+    }).encode()
+    req = urllib.request.Request(url, data=payload,
+                                 headers={"Content-Type":"application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            print(f"  Telegram+button OK ({r.status})")
+            return
+    except Exception as e:
+        print(f"  Telegram button error: {e}")
+        print(f"  MSG DUMP: {repr(message[:300])}")
+        # Fallback sin botón
+        send_telegram(message)
+
+def answer_callback_query(callback_query_id, text="✅ Registrado"):
+    """Confirma el tap del botón para que Telegram quite el loader del botón"""
+    if not TELEGRAM_TOKEN: return
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery"
+    payload = json.dumps({
+        "callback_query_id": callback_query_id,
+        "text": text,
+        "show_alert": False
+    }).encode()
+    req = urllib.request.Request(url, data=payload,
+                                 headers={"Content-Type":"application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            print(f"  answerCallback OK ({r.status})")
+    except Exception as e:
+        print(f"  answerCallback error: {e}")
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 print(f"\n{'='*55}")
 print(f"CEDEARS ALERTAS — {now_arg().strftime('%d/%m/%Y %H:%M')} (ARG)")
@@ -588,11 +691,26 @@ radar_info      = []   # score 0-1  → solo en reporte de cierre
 all_results     = []
 
 existing = {}
+cycles   = {}   # ciclos de acumulación por ticker
 try:
     with open("data.json","r") as f:
         dj = json.load(f)
-        existing = dj.get("quotes",{})
+        existing = dj.get("quotes", {})
+        cycles   = dj.get("cycles", {})
 except: pass
+
+def get_cycle(ticker):
+    """Devuelve el estado del ciclo para un ticker.
+    Estructura: {is_silenced, rsi_hit_50, rsi_reset}
+    """
+    return cycles.get(ticker, {
+        "is_silenced": False,
+        "rsi_hit_50":  False,
+        "rsi_reset":   False,
+    })
+
+def save_cycle(ticker, state):
+    cycles[ticker] = state
 
 for ticker, sym in YF_MAP.items():
     print(f"Analizando {ticker}...", end=" ", flush=True)
@@ -638,23 +756,56 @@ for ticker, sym in YF_MAP.items():
     div      = q.get("div_bullish", False)
     bb_recov = q.get("bb_recov", False)
 
-    # Watchlist por BB recuperado + EMA ok (aunque RSI no llegó a 30)
+    # ── Ciclo de Acumulación Inteligente ─────────────────────────────────────
+    cyc = get_cycle(ticker)
+    is_silenced = cyc["is_silenced"]
+    rsi_hit_50  = cyc["rsi_hit_50"]
+    rsi_reset   = cyc["rsi_reset"]
+
+    # Fase 2: Detectar cruce RSI > 50 mientras está silenciado
+    if is_silenced and not rsi_hit_50 and rsi10 > 50:
+        cyc["rsi_hit_50"] = True
+        rsi_hit_50 = True
+        print(f"  [CICLO] {ticker}: RSI cruzó 50 ({rsi10}) → rsi_hit_50=True")
+        save_cycle(ticker, cyc)
+
+    # Fase 3: RSI_hit_50 confirmado + RSI vuelve a caer bajo 45 → rsi_reset
+    if is_silenced and rsi_hit_50 and not rsi_reset and rsi10 < 45:
+        cyc["rsi_reset"] = True
+        rsi_reset = True
+        print(f"  [CICLO] {ticker}: RSI bajó de 45 ({rsi10}) → rsi_reset=True")
+        save_cycle(ticker, cyc)
+
+    # Fase 4: rsi_reset activo + nuevo rebote técnico válido → despertar
+    rebote_valido = rsi_bounced and bb_recov
+    if is_silenced and rsi_reset and rebote_valido:
+        cyc["is_silenced"] = False
+        cyc["rsi_hit_50"]  = False
+        cyc["rsi_reset"]   = False
+        is_silenced = False
+        print(f"  [CICLO] {ticker}: DESPERTAR — ciclo completado, silencio levantado")
+        save_cycle(ticker, cyc)
+
+    # ── Clasificación normal (respetando silencio) ────────────────────────────
     bb_ema_watchlist = (
         bb_recov
-        and epct >= -15
+        and epct >= -5
         and not rsi_bounced
         and score >= 2
     )
 
-    # Divergencia alcista: puede promover categoría
-    # score 2 + div → Señal (div reemplaza punto faltante)
-    # score 1 + div + RSI<=40 → Watchlist
-    # score 0 + div + RSI<=35 → Radar con mención
-    div_to_signal   = div and score == 2 and not rsi_bounced
+    div_to_signal    = div and score == 2 and not rsi_bounced
     div_to_watchlist = div and score == 1 and rsi10 <= 40 and not rsi_bounced
-    div_to_radar    = div and score == 0 and rsi10 <= 35 and not rsi_bounced
+    div_to_radar     = div and score == 0 and rsi10 <= 35 and not rsi_bounced
 
-    if score == 3 and rsi_bounced:
+    # Activo silenciado: solo puede aparecer en radar si rsi_reset=True y RSI < 45
+    if is_silenced:
+        if rsi_reset and rsi10 < 45:
+            print(f"  [CICLO] {ticker}: silenciado en radar (rsi_reset, RSI={rsi10})")
+            radar_info.append((ticker, q, epct, ppct, score))
+        else:
+            print(f"  [CICLO] {ticker}: silenciado — ignorado (RSI={rsi10} hit50={rsi_hit_50} reset={rsi_reset})")
+    elif score == 3 and rsi_bounced:
         print(f"  >>> SEÑAL 3/3: {ticker} rsi={rsi10} rsi_prev={q.get('rsi_prev')} bb_recov={bb_recov} epct={epct:.1f}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
     elif div_to_signal:
@@ -698,12 +849,14 @@ session_header = (
 # ── Persistencia de alertas del día en data.json ─────────────────────────────
 # Lee acumulado del día; resetea si cambió la fecha
 _today = now_arg().strftime("%Y-%m-%d")
-_daily = {"date": _today, "signals": [], "watchlist": []}
+_daily = {"date": _today, "signals": [], "watchlist": [], "entradas": []}
 try:
     with open("data.json", "r") as f:
         _dj = json.load(f)
     if _dj.get("daily", {}).get("date") == _today:
         _daily = _dj["daily"]
+        if "entradas" not in _daily:
+            _daily["entradas"] = []
 except Exception:
     pass
 
@@ -728,8 +881,9 @@ for ticker, score, q, epct, ppct, fund in signals_found:
         time.sleep(0.3)
         _header_sent = True
 
+    _price_fmt = f"${q['price']:,.2f}"
     msg = (
-        f"🟢 <b>{ticker} ${q['price']:,.2f} — SEÑAL {score}/3</b>\n"
+        f"🟢 <b>{ticker} {_price_fmt} — SEÑAL {score}/3</b>\n"
         f"\n<b>Indicadores</b>\n"
         f"📉 {rsi_label_signal(rsi10, rsi_p)}\n"
         f"📈 {ema_label_signal(epct, q['emaTrend'], q['ema200'])}\n"
@@ -742,7 +896,7 @@ for ticker, score, q, epct, ppct, fund in signals_found:
         f"\n{_link_tv}"
     )
     print(f"\n{msg}\n")
-    send_telegram(msg)
+    send_telegram_with_button(msg, ticker)
     time.sleep(0.3)
 
     # Acumular en historial del día
@@ -758,7 +912,7 @@ for ticker, score, q, epct, ppct in watchlist_found:
     div      = q.get("div_bullish", False)
     bb_rec   = q.get("bb_recov", False)
     bb_below = q.get("bb_below", False)
-    rsi_bounced_w = q.get("rsi_bounced_15", False) or (rsi10 > 30 and rsi_p <= 30)
+    rsi_bounced_w = (rsi10 > 30 and rsi_p <= 30)
 
     analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
     sugerencia = sugerencia_watchlist(score, rsi10, epct, fund, div,
@@ -773,16 +927,16 @@ for ticker, score, q, epct, ppct in watchlist_found:
         _header_sent = True
 
     msg = (
-        f"🟡 <b>{ticker} ${q['price']:,.2f} — WATCHLIST {score}/3</b>\n"
+        f"🟡 <b>{ticker} — WATCHLIST {score}/3</b>\n"
         f"⚠️ <b>Estado:</b> Setup en formación. Aviso previo — monitorear.\n"
         f"\n<b>Indicadores</b>\n"
         f"📉 {rsi_label_watchlist(rsi10, rsi_p)}\n"
         f"📈 {ema_label_watchlist(epct, q['emaTrend'])}\n"
         f"📦 {poc_label_watchlist(ppct, poc, q['price'])}\n"
         f"🎢 {bb_label_watchlist(q)}\n"
-        f"\n🔍 <b>Contexto</b>\n"
+        f"\n🔍 <b>Análisis</b>\n"
         f"{analisis}\n"
-        f"\n💡 <b>Acción</b>\n"
+        f"\n🛑 <b>Acción sugerida</b>\n"
         f"{sugerencia}\n"
         f"\n{_link_tv_w}"
     )
@@ -794,13 +948,14 @@ for ticker, score, q, epct, ppct in watchlist_found:
     if ticker not in _daily["watchlist"]:
         _daily["watchlist"].append(ticker)
 
-# ── Guardar historial del día ─────────────────────────────────────────────────
+# ── Guardar historial del día + ciclos ───────────────────────────────────────
 try:
     with open("data.json", "r") as f:
         _dj_full = json.load(f)
 except Exception:
     _dj_full = {}
-_dj_full["daily"] = _daily
+_dj_full["daily"]  = _daily
+_dj_full["cycles"] = cycles
 with open("data.json", "w") as f:
     json.dump(_dj_full, f)
 
@@ -840,31 +995,35 @@ if is_cierre:
         if es_radar_valido(q, ep)
     ]
     for ticker, q, epct, ppct, score in sorted(radar_filtered, key=lambda x: x[1]["rsi10"] or 99)[:6]:
-        rsi  = round(q["rsi10"] or 0, 1)
+        rsi    = q["rsi10"] or 0
+        partes = []
 
-        # Nivel de oversold
-        if rsi < 20:
-            rsi_label = "oversold extremo"
-        elif rsi < 30:
-            rsi_label = "oversold"
-        else:
-            rsi_label = "cerca de oversold"
+        if rsi < 30:
+            partes.append(f"RSI(10) en {rsi} — en zona de suelo (oversold)")
+        elif rsi <= 35:
+            partes.append(f"RSI(10) en {rsi} y bajando hacia 30")
 
-        # Estado BB
+        if abs(epct) <= 1:
+            partes.append(f"cerca de testear la EMA200 ({epct:+.1f}%)")
+        elif abs(epct) <= 3 and epct < 0:
+            partes.append(f"testeando la EMA200 ({epct:.1f}%)")
+
         if q.get("bb_below"):
-            bb_label = ", BB perdida"
+            partes.append("Perdió la banda inferior de Bollinger. Sin rebote confirmado")
         elif q.get("bb_near_lo"):
-            bb_label = ", cerca de BB"
+            partes.append("apoyando en banda inferior de BB")
+
+        if score > 0:
+            partes.append(f"Score: {score}/3")
+
+        if partes:
+            first = partes[0][0].upper() + partes[0][1:]
+            rest  = ". ".join(partes[1:])
+            line  = f"• <b>{ticker}</b>: {first}"
+            line += f". {rest}." if rest else "."
         else:
-            bb_label = ""
+            line = f"• <b>{ticker}</b>: RSI(10) en {rsi}."
 
-        # Score solo si es relevante
-        score_label = f", Score {score}/3" if score > 0 else ""
-
-        # Divergencia
-        div_label = ", div ✅" if q.get("div_bullish") else ""
-
-        line = f"• <b>{ticker}</b> RSI {rsi} — {rsi_label}{bb_label}{score_label}{div_label} ({epct:+.1f}% EMA)"
         radar_lines.append(line)
 
     radar_section = ""
@@ -888,9 +1047,17 @@ if is_cierre:
         send_telegram(session_header)
         time.sleep(0.3)
 
+    # Sección entradas del día (activos marcados como operados)
+    _entradas = _daily.get("entradas", [])
+    entradas_section = ""
+    if _entradas:
+        entradas_lines = ", ".join(f"<b>{e['ticker']}</b> {e['price']} ({e['hora']})" for e in _entradas)
+        entradas_section = f"\n\n📌 <b>Entradas del día:</b> {entradas_lines}"
+
     summary_msg = (
         f"📅 <b>Resumen Diario de Mercado — [{date_str}]</b>\n\n"
         f"Resumen: {intro}"
+        f"{entradas_section}"
         f"{radar_section}\n\n"
         f"💡 <b>Nota del Bot:</b> {bot_note}"
     )
