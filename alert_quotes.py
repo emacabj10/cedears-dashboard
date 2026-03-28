@@ -840,26 +840,31 @@ if is_cierre:
         if es_radar_valido(q, ep)
     ]
     for ticker, q, epct, ppct, score in sorted(radar_filtered, key=lambda x: x[1]["rsi10"] or 99)[:6]:
-        rsi  = q["rsi10"] or 0
-        partes = [f"RSI {rsi}", f"{epct:+.1f}% EMA"]
+        rsi  = round(q["rsi10"] or 0, 1)
+
+        # Nivel de oversold
+        if rsi < 20:
+            rsi_label = "oversold extremo"
+        elif rsi < 30:
+            rsi_label = "oversold"
+        else:
+            rsi_label = "cerca de oversold"
 
         # Estado BB
         if q.get("bb_below"):
-            partes.append("oversold · BB perdida")
+            bb_label = ", BB perdida"
         elif q.get("bb_near_lo"):
-            partes.append("oversold · cerca BB")
-        elif rsi <= 35:
-            partes.append("oversold")
+            bb_label = ", cerca de BB"
+        else:
+            bb_label = ""
 
         # Score solo si es relevante
-        if score > 0:
-            partes.append(f"{score}/3")
+        score_label = f", Score {score}/3" if score > 0 else ""
 
         # Divergencia
-        if q.get("div_bullish"):
-            partes.append("div ✅")
+        div_label = ", div ✅" if q.get("div_bullish") else ""
 
-        line = "• <b>" + ticker + "</b> · " + " · ".join(partes)
+        line = f"• <b>{ticker}</b> RSI {rsi} — {rsi_label}{bb_label}{score_label}{div_label} ({epct:+.1f}% EMA)"
         radar_lines.append(line)
 
     radar_section = ""
