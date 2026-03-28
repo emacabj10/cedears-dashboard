@@ -128,16 +128,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="dash">
 <div class="topbar">
   <div>
-    <div class="ttl">Panel de alertas â Cedears</div>
-    <div class="tsub">BB(20,2) Â· EMA200 Â· RSI(10) diario Â· RSI semanal Â· FRVP/POC Â· Temporalidad diaria</div>
+    <div class="ttl">Panel de alertas — Cedears</div>
+    <div class="tsub">BB(20,2) · EMA200 · RSI(10) diario · RSI semanal · FRVP/POC · Temporalidad diaria</div>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <button onclick="fetchAllQuotes()" id="fetch-btn" style="font-size:11px;padding:3px 10px;cursor:pointer;background:#0d2340;border:0.5px solid #1f6feb;border-radius:6px;color:#58a6ff;font-weight:500">&#8635; Actualizar cotizaciones</button>
     <button onclick="openAddTicker()" style="font-size:11px;padding:3px 10px;cursor:pointer;background:transparent;border:0.5px solid #30363d;border-radius:6px;color:#e6edf3">+ Agregar ticker</button>
-    <button onclick="openGithubConfig()" id="gh-btn" style="font-size:11px;padding:3px 10px;cursor:pointer;background:transparent;border:0.5px solid #30363d;border-radius:6px;color:#6e7681">â GitHub</button>
+    <button onclick="openGithubConfig()" id="gh-btn" style="font-size:11px;padding:3px 10px;cursor:pointer;background:transparent;border:0.5px solid #30363d;border-radius:6px;color:#6e7681">⚙ GitHub</button>
     <div id="save-indicator" style="display:none;align-items:center;gap:8px">
-      <span style="font-size:11px;color:#2ea043">â Guardado</span>
-      <button onclick="if(confirm('Â¿Restablecer todos los valores originales?'))clearStorage();" style="font-size:11px;padding:3px 10px;cursor:pointer;background:transparent;border:0.5px solid #30363d;border-radius:6px;color:#6e7681">Restablecer</button>
+      <span style="font-size:11px;color:#2ea043">● Guardado</span>
+      <button onclick="if(confirm('¿Restablecer todos los valores originales?'))clearStorage();" style="font-size:11px;padding:3px 10px;cursor:pointer;background:transparent;border:0.5px solid #30363d;border-radius:6px;color:#6e7681">Restablecer</button>
     </div>
     <span id="fetch-status" style="font-size:10px;color:#6e7681"></span>
   </div>
@@ -185,8 +185,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <div id="gh-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
   <div style="background:#0d1117;border:0.5px solid #30363d;border-radius:12px;padding:1.25rem;width:420px;max-width:90vw">
-    <div style="font-size:14px;font-weight:500;color:#e6edf3;margin-bottom:4px">ConfiguraciÃ³n GitHub</div>
-    <div style="font-size:11px;color:#6e7681;margin-bottom:14px">El token permite sincronizar tickers con tu repo automÃ¡ticamente.</div>
+    <div style="font-size:14px;font-weight:500;color:#e6edf3;margin-bottom:4px">Configuración GitHub</div>
+    <div style="font-size:11px;color:#6e7681;margin-bottom:14px">El token permite sincronizar tickers con tu repo automáticamente.</div>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
       <label style="font-size:10px;color:#8b949e">Personal Access Token (ghp_...)</label>
       <input id="gh-token-input" type="password" placeholder="ghp_..." style="font-size:12px;padding:7px 10px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3;width:100%">
@@ -201,94 +201,94 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <div class="summary">
-  <div class="sc"><div class="sl">Acumular â posiciÃ³n completa</div><div class="sv ok" id="c1">0</div></div>
-  <div class="sc"><div class="sl">Acumular â media posiciÃ³n</div><div class="sv warn" id="c2">0</div></div>
+  <div class="sc"><div class="sl">Acumular — posición completa</div><div class="sv ok" id="c1">0</div></div>
+  <div class="sc"><div class="sl">Acumular — media posición</div><div class="sv warn" id="c2">0</div></div>
   <div class="sc"><div class="sl">Esperar setup</div><div class="sv neu" id="c3">0</div></div>
-  <div class="sc"><div class="sl">PrecauciÃ³n / No entrar</div><div class="sv ng" id="c4">0</div></div>
+  <div class="sc"><div class="sl">Precaución / No entrar</div><div class="sv ng" id="c4">0</div></div>
 </div>
 <div class="ref-toggle" onclick="toggleRef()">
   <div class="ref-toggle-left">
     <div class="ref-icon">?</div>
-    <div><div class="ref-title">GuÃ­a de condiciones â cÃ³mo leer cada seÃ±al</div><div class="ref-sub">Rebote RSI Â· Divergencias Â· BB Â· EMA lateral Â· RSI semanal Â· POC</div></div>
+    <div><div class="ref-title">Guía de condiciones — cómo leer cada señal</div><div class="ref-sub">Rebote RSI · Divergencias · BB · EMA lateral · RSI semanal · POC</div></div>
   </div>
-  <div class="ref-arrow" id="refArrow">â¼</div>
+  <div class="ref-arrow" id="refArrow">▼</div>
 </div>
 <div class="ref-panel" id="refPanel">
   <div class="ref-grid">
     <div class="ref-card">
-      <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px;background:#0f3320;color:#2ea043">â</div>RebotÃ³ desde &lt;30 â RSI(10)</div>
-      <div class="ref-card-sub">El RSI cruzÃ³ por debajo de 30 y luego volviÃ³ a cruzar hacia arriba.</div>
-      <div class="ref-section">Marcar SÃ cuando</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">RSI cruzÃ³ el 30 hacia arriba hace <strong>menos de 15 velas</strong></div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Label <strong>"Bull"</strong> del RSI Divergence dentro de las Ãºltimas 15 velas</div></div>
+      <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px;background:#0f3320;color:#2ea043">✓</div>Rebotó desde &lt;30 — RSI(10)</div>
+      <div class="ref-card-sub">El RSI cruzó por debajo de 30 y luego volvió a cruzar hacia arriba.</div>
+      <div class="ref-section">Marcar SÍ cuando</div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">RSI cruzó el 30 hacia arriba hace <strong>menos de 15 velas</strong></div></div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Label <strong>"Bull"</strong> del RSI Divergence dentro de las últimas 15 velas</div></div>
       <div class="ref-section">Marcar NO cuando</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">RSI nunca llegÃ³ a 30 o el cruce fue hace mÃ¡s de <strong>15 velas</strong></div></div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">RSI nunca llegó a 30 o el cruce fue hace más de <strong>15 velas</strong></div></div>
     </div>
     <div class="ref-card">
-      <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px;background:#0f3320;color:#2ea043">Ã·</div>Divergencias RSI(10)</div>
-      <div class="ref-card-sub">Una sola lÃ­nea: sin divergencia / bullish / bearish.</div>
-      <div class="ref-section">Bullish â suma a la seÃ±al</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio mÃ­nimo mÃ¡s bajo, RSI mÃ­nimo mÃ¡s alto Â· label <strong>"Bull"</strong> â¤15 velas</div></div>
-      <div class="ref-section">Bearish â cancela entrada</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Precio mÃ¡ximo mÃ¡s alto, RSI mÃ¡ximo mÃ¡s bajo Â· label <strong>"Bear"</strong> â¤15 velas</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Si estÃ¡ activa â tamaÃ±o pasa a <strong>"No entrar"</strong> automÃ¡ticamente</div></div>
+      <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px;background:#0f3320;color:#2ea043">÷</div>Divergencias RSI(10)</div>
+      <div class="ref-card-sub">Una sola línea: sin divergencia / bullish / bearish.</div>
+      <div class="ref-section">Bullish — suma a la señal</div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio mínimo más bajo, RSI mínimo más alto · label <strong>"Bull"</strong> ≤15 velas</div></div>
+      <div class="ref-section">Bearish — cancela entrada</div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Precio máximo más alto, RSI máximo más bajo · label <strong>"Bear"</strong> ≤15 velas</div></div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Si está activa → tamaño pasa a <strong>"No entrar"</strong> automáticamente</div></div>
     </div>
     <div class="ref-card">
-      <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px;background:#0f3320;color:#2ea043">â</div>Vela recuperÃ³ BB inferior</div>
-      <div class="ref-card-sub">Una vela cerrÃ³ fuera de la banda inferior y una posterior cerrÃ³ dentro.</div>
-      <div class="ref-section">Marcar SÃ cuando</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una vela <strong>cerrÃ³</strong> bajo la banda inferior (no solo tocÃ³)</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una posterior cerrÃ³ dentro â todo en las Ãºltimas <strong>5 velas</strong></div></div>
+      <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px;background:#0f3320;color:#2ea043">✓</div>Vela recuperó BB inferior</div>
+      <div class="ref-card-sub">Una vela cerró fuera de la banda inferior y una posterior cerró dentro.</div>
+      <div class="ref-section">Marcar SÍ cuando</div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una vela <strong>cerró</strong> bajo la banda inferior (no solo tocó)</div></div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una posterior cerró dentro — todo en las últimas <strong>5 velas</strong></div></div>
     </div>
     <div class="ref-card">
-      <div class="ref-card-title"><div class="ci ci-w" style="width:16px;height:16px;font-size:10px;background:#2d1f00;color:#f0a500">â</div>EMA200 lateral â cÃ³mo afecta</div>
-      <div class="ref-card-sub">Cuando la EMA200 no tiene direcciÃ³n clara, la condiciÃ³n se evalÃºa distinto.</div>
+      <div class="ref-card-title"><div class="ci ci-w" style="width:16px;height:16px;font-size:10px;background:#2d1f00;color:#f0a500">→</div>EMA200 lateral — cómo afecta</div>
+      <div class="ref-card-sub">Cuando la EMA200 no tiene dirección clara, la condición se evalúa distinto.</div>
       <div class="ref-section">Precio sobre EMA + lateral</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Igual que "subiendo" â condiciÃ³n ok</div></div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Igual que "subiendo" — condición ok</div></div>
       <div class="ref-section">Precio bajo EMA + lateral</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text">Fundamentals excelentes â warn ~ (mÃ¡s favorable que bajando)</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text">Fundamentals buenos â warn ~ si distancia â¤ 10%</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Distancia &gt;15% + lateral â condiciÃ³n no</div></div>
-      <div class="ref-section">InterpretaciÃ³n</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-neu"></div><div class="ref-text">EMA lateral = indecisiÃ³n. Precio puede definir direcciÃ³n pronto.</div></div>
+      <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text">Fundamentals excelentes → warn ~ (más favorable que bajando)</div></div>
+      <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text">Fundamentals buenos → warn ~ si distancia ≤ 10%</div></div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Distancia &gt;15% + lateral → condición no</div></div>
+      <div class="ref-section">Interpretación</div>
+      <div class="ref-row"><div class="ref-dot ref-dot-neu"></div><div class="ref-text">EMA lateral = indecisión. Precio puede definir dirección pronto.</div></div>
     </div>
     <div class="ref-card">
-      <div class="ref-card-title"><div class="ci ci-w" style="width:16px;height:16px;font-size:10px;background:#2d1f00;color:#f0a500">S</div>RSI semanal â informativo</div>
-      <div class="ref-card-sub">No afecta el score. Es contexto para que vos decidas el tamaÃ±o final.</div>
-      <div class="ref-section">CÃ³mo interpretarlo</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text"><strong>â¥ 40</strong> â tendencia semanal saludable, seÃ±al diaria mÃ¡s confiable</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>25â39</strong> â tendencia dÃ©bil, considerÃ¡ reducir el tamaÃ±o manualmente</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text"><strong>&lt; 25</strong> â tendencia muy bajista. PrecauciÃ³n, aunque...</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Con <strong>fundamentals excelentes</strong>, RSI semanal &lt;25 histÃ³ricamente marca zonas de acumulaciÃ³n de largo plazo muy atractivas. PosiciÃ³n gradual y pequeÃ±a.</div></div>
+      <div class="ref-card-title"><div class="ci ci-w" style="width:16px;height:16px;font-size:10px;background:#2d1f00;color:#f0a500">S</div>RSI semanal — informativo</div>
+      <div class="ref-card-sub">No afecta el score. Es contexto para que vos decidas el tamaño final.</div>
+      <div class="ref-section">Cómo interpretarlo</div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text"><strong>≥ 40</strong> — tendencia semanal saludable, señal diaria más confiable</div></div>
+      <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>25–39</strong> — tendencia débil, considerá reducir el tamaño manualmente</div></div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text"><strong>&lt; 25</strong> — tendencia muy bajista. Precaución, aunque...</div></div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Con <strong>fundamentals excelentes</strong>, RSI semanal &lt;25 históricamente marca zonas de acumulación de largo plazo muy atractivas. Posición gradual y pequeña.</div></div>
     </div>
     <div class="ref-card">
-      <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px;background:#0f3320;color:#2ea043">%</div>% distancia al POC â FRVP anual</div>
-      <div class="ref-card-sub">Cuanto mÃ¡s negativo, mÃ¡s barata estÃ¡ la acciÃ³n vs su historia reciente.</div>
+      <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px;background:#0f3320;color:#2ea043">%</div>% distancia al POC — FRVP anual</div>
+      <div class="ref-card-sub">Cuanto más negativo, más barata está la acción vs su historia reciente.</div>
       <table class="poc-table">
-        <tr><th>Distancia</th><th>SeÃ±al</th></tr>
-        <tr><td class="td-pct poc-ok">MÃ¡s de -15%</td><td class="poc-ok">Fuerte â</td></tr>
+        <tr><th>Distancia</th><th>Señal</th></tr>
+        <tr><td class="td-pct poc-ok">Más de -15%</td><td class="poc-ok">Fuerte ✓</td></tr>
         <tr><td class="td-pct poc-warn">-5% a -15%</td><td class="poc-warn">Moderada ~</td></tr>
-        <tr><td class="td-pct poc-neu">0% a -5%</td><td class="poc-neu">Neutral â</td></tr>
-        <tr><td class="td-pct poc-ng">Por encima</td><td class="poc-ng">No suma â</td></tr>
+        <tr><td class="td-pct poc-neu">0% a -5%</td><td class="poc-neu">Neutral —</td></tr>
+        <tr><td class="td-pct poc-ng">Por encima</td><td class="poc-ng">No suma —</td></tr>
       </table>
       <div class="ref-section">Regla clave</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Siempre FRVP fijado en los <strong>Ãºltimos 12 meses</strong></div></div>
+      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Siempre FRVP fijado en los <strong>últimos 12 meses</strong></div></div>
     </div>
   </div>
 </div>
 <div class="filters">
   <button class="fbtn active" onclick="filt('all',this)">Todos</button>
   <button class="fbtn" onclick="filt('buy',this)">Acumular</button>
-  <button class="fbtn" onclick="filt('watch',this)">Media posiciÃ³n</button>
-  <button class="fbtn" onclick="filt('forming',this)">Setup en formaciÃ³n</button>
+  <button class="fbtn" onclick="filt('watch',this)">Media posición</button>
+  <button class="fbtn" onclick="filt('forming',this)">Setup en formación</button>
   <button class="fbtn" onclick="filt('hold',this)">Esperar</button>
-  <button class="fbtn" onclick="filt('caution',this)">PrecauciÃ³n</button>
+  <button class="fbtn" onclick="filt('caution',this)">Precaución</button>
 </div>
 <div class="sort-bar">
   <span class="sort-lbl">Ordenar:</span>
-  <button class="sbtn active" onclick="sortBy('az',this)">AâZ</button>
-  <button class="sbtn" onclick="sortBy('rsi',this)">RSI mÃ¡s bajo</button>
-  <button class="sbtn" onclick="sortBy('signal',this)">Por seÃ±al</button>
+  <button class="sbtn active" onclick="sortBy('az',this)">A–Z</button>
+  <button class="sbtn" onclick="sortBy('rsi',this)">RSI más bajo</button>
+  <button class="sbtn" onclick="sortBy('signal',this)">Por señal</button>
   <button class="sbtn" onclick="sortBy('poc',this)">Mayor distancia POC</button>
 </div>
 <div class="grid" id="grid"></div>
@@ -304,25 +304,26 @@ let data=[
   {t:"BNB",co:"Binance Coin",sec:"Criptomoneda",rsi10:60.54,rsiW:35.47,ema200:796.86,price:659.99,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:644.25,rsiPrev:null},
   {t:"BRK.B",co:"Berkshire Hathaway",sec:"Finanzas",rsi10:44.42,rsiW:45.71,ema200:491.69,price:490.03,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:496.91,rsiPrev:null},
   {t:"BTC",co:"Bitcoin",sec:"Criptomoneda",rsi10:59.29,rsiW:33.5,ema200:87840.01,price:71510,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:108327,rsiPrev:null},
-  {t:"DIA",co:"Dow Jones ETF",sec:"ETF Ã­ndice",rsi10:22.82,rsiW:37.84,ema200:467.32,price:466.41,emaTrend:"subiendo",bbState:"below",bbRecov:false,rsiBounce:false,divState:"none",poc:491.12,rsiPrev:null},
+  {t:"DIA",co:"Dow Jones ETF",sec:"ETF índice",rsi10:22.82,rsiW:37.84,ema200:467.32,price:466.41,emaTrend:"subiendo",bbState:"below",bbRecov:false,rsiBounce:false,divState:"none",poc:491.12,rsiPrev:null},
   {t:"ETH",co:"Ethereum",sec:"Criptomoneda",rsi10:57.4,rsiW:32.09,ema200:2843.1,price:2095.3,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:3103,rsiPrev:null},
-  {t:"GOOGL",co:"Alphabet",sec:"TecnologÃ­a",rsi10:39.33,rsiW:49.88,ema200:269.28,price:301.46,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:true,divState:"bull",poc:164.8,rsiPrev:null},
+  {t:"GOOGL",co:"Alphabet",sec:"Tecnología",rsi10:39.33,rsiW:49.88,ema200:269.28,price:301.46,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:true,divState:"bull",poc:164.8,rsiPrev:null},
   {t:"KO",co:"Coca-Cola",sec:"Consumo defensivo",rsi10:41.92,rsiW:60.33,ema200:71.81,price:77.34,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:70.55,rsiPrev:null},
   {t:"MCD",co:"McDonald's",sec:"Consumo/Food",rsi10:46.48,rsiW:58.47,ema200:311.02,price:326.46,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"bear",poc:306.74,rsiPrev:null},
   {t:"MELI",co:"MercadoLibre",sec:"E-commerce LatAm",rsi10:28.92,rsiW:29.31,ema200:2095.88,price:1670,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:true,divState:"none",poc:2074,rsiPrev:null},
   {t:"META",co:"Meta Platforms",sec:"Redes sociales",rsi10:30.89,rsiW:40.23,ema200:662.08,price:613.71,emaTrend:"lateral",bbState:"below",bbRecov:false,rsiBounce:false,divState:"none",poc:644,rsiPrev:null},
-  {t:"MSFT",co:"Microsoft",sec:"TecnologÃ­a",rsi10:37.93,rsiW:28.85,ema200:459.12,price:395.55,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:true,divState:"bull",poc:507,rsiPrev:null},
+  {t:"MSFT",co:"Microsoft",sec:"Tecnología",rsi10:37.93,rsiW:28.85,ema200:459.12,price:395.55,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:true,divState:"bull",poc:507,rsiPrev:null},
   {t:"PEP",co:"PepsiCo",sec:"Consumo defensivo",rsi10:41.83,rsiW:56.19,ema200:150.57,price:159.88,emaTrend:"subiendo",bbState:"inside",bbRecov:true,rsiBounce:false,divState:"none",poc:130.35,rsiPrev:null},
-  {t:"QQQ",co:"Nasdaq 100 ETF",sec:"ETF Ã­ndice",rsi10:37.06,rsiW:41.27,ema200:490.73,price:491.72,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:603.47,rsiPrev:null},
-  {t:"SPY",co:"S&P500 ETF",sec:"ETF Ã­ndice",rsi10:29.3,rsiW:38.65,ema200:564.89,price:565.73,emaTrend:"subiendo",bbState:"below",bbRecov:false,rsiBounce:true,divState:"none",poc:584.63,rsiPrev:null},
+  {t:"PYPL",co:"PayPal",sec:"Fintech",rsi10:45.89,rsiW:30.46,ema200:84.25,price:62.29,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:68.47,rsiPrev:null},
+  {t:"QQQ",co:"Nasdaq 100 ETF",sec:"ETF índice",rsi10:37.06,rsiW:41.27,ema200:490.73,price:491.72,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:603.47,rsiPrev:null},
+  {t:"SPY",co:"S&P500 ETF",sec:"ETF índice",rsi10:29.3,rsiW:38.65,ema200:564.89,price:565.73,emaTrend:"subiendo",bbState:"below",bbRecov:false,rsiBounce:true,divState:"none",poc:584.63,rsiPrev:null},
   {t:"TSLA",co:"Tesla",sec:"Autos/Tech",rsi10:38.59,rsiW:39.04,ema200:395.85,price:391.2,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"bull",poc:334.22,rsiPrev:null},
   {t:"V",co:"Visa",sec:"Finanzas/Pagos",rsi10:31.3,rsiW:286.05,ema200:333.08,price:307.14,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:348.59,rsiPrev:null},
   {t:"WMT",co:"Walmart",sec:"Retail defensivo",rsi10:53.77,rsiW:60.92,ema200:109.57,price:126.52,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:97,rsiPrev:null},
-  {t:"GLD",co:"Gold Shares ETF",sec:"ETF Ã­ndice",rsi10:21.7,rsiW:44.91,ema200:380,price:413,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:304,rsiPrev:null},
+  {t:"GLD",co:"Gold Shares ETF",sec:"ETF índice",rsi10:21.7,rsiW:44.91,ema200:380,price:413,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:304,rsiPrev:null},
 ];
 function emaPct(p,e){return e>0?((p-e)/e*100):0;}
 function pocPct(p,c){return c>0?((p-c)/c*100):0;}
-function rsiWLabel(v){if(v>=40)return{txt:`RSI sem. ${v} â tendencia saludable`,col:"ok"};if(v>=25)return{txt:`RSI sem. ${v} â tendencia dÃ©bil`,col:"warn"};return{txt:`RSI sem. ${v} â tendencia muy bajista`,col:"ng"};}
+function rsiWLabel(v){if(v>=40)return{txt:`RSI sem. ${v} — tendencia saludable`,col:"ok"};if(v>=25)return{txt:`RSI sem. ${v} — tendencia débil`,col:"warn"};return{txt:`RSI sem. ${v} — tendencia muy bajista`,col:"ng"};}
 function emaCondition(epct,emaTrend,fundEx,fundOk){
   if(epct>=0)return"ok";
   if(emaTrend==="subiendo"){if(epct>=-5)return"warn";if(fundEx&&epct>=-20)return"warn";return"no";}
@@ -331,29 +332,29 @@ function emaCondition(epct,emaTrend,fundEx,fundOk){
 }
 function buildAutoNote(s,epct,ppct){
   const fund=CUSTOM_FUND[s.t]||FUND[s.t]||"buenos";const fundEx=fund==="excelentes";const lines=[];
-  if(s.divState==="bear")lines.push({col:"ng",txt:"Divergencia bearish activa â seÃ±al de debilidad. CancelÃ¡ la entrada hasta que caduque."});
-  if(s.rsi10<=30&&!s.rsiBounce)lines.push({col:"warn",txt:`RSI(10) ${s.rsi10} â en oversold, sin rebote confirmado aÃºn.`});
-  else if(s.rsiBounce)lines.push({col:"ok",txt:`RSI(10) ${s.rsi10} â rebotÃ³ desde oversold (â¤15 velas).`});
-  else if(s.rsi10<=40)lines.push({col:"neu",txt:`RSI(10) ${s.rsi10} â zona baja, acercÃ¡ndose a oversold.`});
-  else lines.push({col:"neu",txt:`RSI(10) ${s.rsi10} â zona neutral. Esperar que baje a <30.`});
-  if(s.divState==="bull")lines.push({col:"ok",txt:"Divergencia bullish activa â confirma debilidad del movimiento bajista."});
-  if(s.bbRecov&&s.bbState!=="below"&&s.bbState!=="above")lines.push({col:"ok",txt:"Vela saliÃ³ y recuperÃ³ banda inferior BB en las Ãºltimas 5 velas â reversiÃ³n confirmada."});
-  else if(s.bbState==="below"&&!s.bbRecov)lines.push({col:"warn",txt:"Precio bajo banda inferior BB â esperando vela de recuperaciÃ³n."});
-  else if(s.bbState==="above")lines.push({col:"ng",txt:"Precio sobre banda superior BB â zona de sobrecompra, no es entrada."});
-  else lines.push({col:"neu",txt:"Precio dentro de bandas BB â sin salida reciente."});
-  if(epct>=0){lines.push({col:"ok",txt:`Precio $${s.price} estÃ¡ ${epct.toFixed(1)}% sobre EMA200 ($${s.ema200}) Â· EMA ${s.emaTrend}.`});}
+  if(s.divState==="bear")lines.push({col:"ng",txt:"Divergencia bearish activa — señal de debilidad. Cancelá la entrada hasta que caduque."});
+  if(s.rsi10<=30&&!s.rsiBounce)lines.push({col:"warn",txt:`RSI(10) ${s.rsi10} — en oversold, sin rebote confirmado aún.`});
+  else if(s.rsiBounce)lines.push({col:"ok",txt:`RSI(10) ${s.rsi10} — rebotó desde oversold (≤15 velas).`});
+  else if(s.rsi10<=40)lines.push({col:"neu",txt:`RSI(10) ${s.rsi10} — zona baja, acercándose a oversold.`});
+  else lines.push({col:"neu",txt:`RSI(10) ${s.rsi10} — zona neutral. Esperar que baje a <30.`});
+  if(s.divState==="bull")lines.push({col:"ok",txt:"Divergencia bullish activa — confirma debilidad del movimiento bajista."});
+  if(s.bbRecov&&s.bbState!=="below"&&s.bbState!=="above")lines.push({col:"ok",txt:"Vela salió y recuperó banda inferior BB en las últimas 5 velas — reversión confirmada."});
+  else if(s.bbState==="below"&&!s.bbRecov)lines.push({col:"warn",txt:"Precio bajo banda inferior BB — esperando vela de recuperación."});
+  else if(s.bbState==="above")lines.push({col:"ng",txt:"Precio sobre banda superior BB — zona de sobrecompra, no es entrada."});
+  else lines.push({col:"neu",txt:"Precio dentro de bandas BB — sin salida reciente."});
+  if(epct>=0){lines.push({col:"ok",txt:`Precio $${s.price} está ${epct.toFixed(1)}% sobre EMA200 ($${s.ema200}) · EMA ${s.emaTrend}.`});}
   else if(s.emaTrend==="lateral"){
-    if(Math.abs(epct)<=5)lines.push({col:"warn",txt:`Precio $${s.price} estÃ¡ ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}). EMA lateral â indecisiÃ³n, precio puede definir direcciÃ³n pronto.`});
-    else if(fundEx&&Math.abs(epct)<=15)lines.push({col:"warn",txt:`Precio $${s.price} estÃ¡ ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}). EMA lateral â mÃ¡s favorable que bajando; fundamentals compensan.`});
-    else lines.push({col:"ng",txt:`Precio $${s.price} estÃ¡ ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}). EMA lateral pero distancia elevada.`});
-  } else if(epct>=-5){lines.push({col:"warn",txt:`Precio $${s.price} estÃ¡ ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}), muy cerca Â· EMA ${s.emaTrend}.`});}
-  else if(epct>=-15){lines.push({col:"warn",txt:`Precio $${s.price} estÃ¡ ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}) Â· EMA ${s.emaTrend}${fundEx?" â fundamentals compensan":""}.`});}
-  else{lines.push({col:"ng",txt:`Precio $${s.price} estÃ¡ ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}) Â· EMA ${s.emaTrend} â distancia elevada.`});}
-  if(ppct<=-15)lines.push({col:"ok",txt:`Precio ${ppct.toFixed(1)}% bajo POC ($${s.poc.toLocaleString()}) â zona de alto valor histÃ³rico.`});
-  else if(ppct<=-5)lines.push({col:"warn",txt:`Precio ${ppct.toFixed(1)}% bajo POC ($${s.poc.toLocaleString()}) â zona moderada de valor.`});
-  else if(ppct<0)lines.push({col:"neu",txt:`Precio ${ppct.toFixed(1)}% bajo POC ($${s.poc.toLocaleString()}) â cerca del valor justo.`});
-  else lines.push({col:"ng",txt:`Precio ${ppct.toFixed(1)}% sobre POC ($${s.poc.toLocaleString()}) â sobre el valor justo.`});
-  const rw=rsiWLabel(s.rsiW);const rwExtra=s.rsiW<25&&fundEx?" Con fundamentals excelentes, puede ser zona de acumulaciÃ³n gradual.":"";
+    if(Math.abs(epct)<=5)lines.push({col:"warn",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}). EMA lateral — indecisión, precio puede definir dirección pronto.`});
+    else if(fundEx&&Math.abs(epct)<=15)lines.push({col:"warn",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}). EMA lateral — más favorable que bajando; fundamentals compensan.`});
+    else lines.push({col:"ng",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}). EMA lateral pero distancia elevada.`});
+  } else if(epct>=-5){lines.push({col:"warn",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}), muy cerca · EMA ${s.emaTrend}.`});}
+  else if(epct>=-15){lines.push({col:"warn",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}) · EMA ${s.emaTrend}${fundEx?" — fundamentals compensan":""}.`});}
+  else{lines.push({col:"ng",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}) · EMA ${s.emaTrend} — distancia elevada.`});}
+  if(ppct<=-15)lines.push({col:"ok",txt:`Precio ${ppct.toFixed(1)}% bajo POC ($${s.poc.toLocaleString()}) — zona de alto valor histórico.`});
+  else if(ppct<=-5)lines.push({col:"warn",txt:`Precio ${ppct.toFixed(1)}% bajo POC ($${s.poc.toLocaleString()}) — zona moderada de valor.`});
+  else if(ppct<0)lines.push({col:"neu",txt:`Precio ${ppct.toFixed(1)}% bajo POC ($${s.poc.toLocaleString()}) — cerca del valor justo.`});
+  else lines.push({col:"ng",txt:`Precio ${ppct.toFixed(1)}% sobre POC ($${s.poc.toLocaleString()}) — sobre el valor justo.`});
+  const rw=rsiWLabel(s.rsiW);const rwExtra=s.rsiW<25&&fundEx?" Con fundamentals excelentes, puede ser zona de acumulación gradual.":"";
   lines.push({col:rw.col,txt:`${rw.txt}.${rwExtra}`});
   return lines;
 }
@@ -365,38 +366,38 @@ function scoreSignal(s){
   const c3st=(!s.bbRecov&&s.bbState==="above")?"no":(s.bbRecov&&s.bbState!=="below"&&s.bbState!=="above")?"ok":(s.bbState==="below"&&!s.bbRecov)?"warn":"no";
   const c4st=emaCondition(epct,s.emaTrend,fundEx,fundOk);
   const c5st=ppct<=-15?"ok":(ppct<=-5?"warn":"no");
-  const divTxt=s.divState==="bull"?"Divergencia bullish activa (â¤15 velas)":s.divState==="bear"?"Divergencia bearish activa â no entrar":"Sin divergencia detectada";
+  const divTxt=s.divState==="bull"?"Divergencia bullish activa (≤15 velas)":s.divState==="bear"?"Divergencia bearish activa — no entrar":"Sin divergencia detectada";
   const conds=[
-    {lbl:"RSI(10) rebotÃ³ desde <30",st:c1st,txt:s.rsiBounce?`RSI(10) ${s.rsi10} â rebotÃ³ desde oversold`:(s.rsi10<=30?`RSI(10) ${s.rsi10} â en oversold, sin rebote aÃºn`:`RSI(10) ${s.rsi10} â fuera de zona oversold`)},
+    {lbl:"RSI(10) rebotó desde <30",st:c1st,txt:s.rsiBounce?`RSI(10) ${s.rsi10} — rebotó desde oversold`:(s.rsi10<=30?`RSI(10) ${s.rsi10} — en oversold, sin rebote aún`:`RSI(10) ${s.rsi10} — fuera de zona oversold`)},
     {lbl:"Divergencia RSI(10)",st:c2st,txt:divTxt},
-    {lbl:"Vela cerrÃ³ bajo BB + recuperÃ³",st:c3st,txt:(s.bbRecov&&s.bbState!=="below"&&s.bbState!=="above")?"Vela saliÃ³ y recuperÃ³ banda BB (â¤5 velas)":(s.bbState==="below"?"Precio bajo BB â sin recuperaciÃ³n aÃºn":s.bbState==="above"?"Precio sobre BB superior â no es zona de entrada":"Precio dentro de BB â sin salida reciente")},
-    {lbl:"EMA200 â distancia y tendencia",st:c4st,txt:`${epct>=0?"+":""}${epct.toFixed(1)}% ${epct>=0?"sobre":"bajo"} EMA200 Â· EMA ${s.emaTrend}`},
-    {lbl:"POC â distancia precio (FRVP)",st:c5st,txt:`${ppct.toFixed(1)}% ${ppct<0?"bajo":"sobre"} POC ($${s.poc.toLocaleString()})`},
+    {lbl:"Vela cerró bajo BB + recuperó",st:c3st,txt:(s.bbRecov&&s.bbState!=="below"&&s.bbState!=="above")?"Vela salió y recuperó banda BB (≤5 velas)":(s.bbState==="below"?"Precio bajo BB — sin recuperación aún":s.bbState==="above"?"Precio sobre BB superior — no es zona de entrada":"Precio dentro de BB — sin salida reciente")},
+    {lbl:"EMA200 — distancia y tendencia",st:c4st,txt:`${epct>=0?"+":""}${epct.toFixed(1)}% ${epct>=0?"sobre":"bajo"} EMA200 · EMA ${s.emaTrend}`},
+    {lbl:"POC — distancia precio (FRVP)",st:c5st,txt:`${ppct.toFixed(1)}% ${ppct<0?"bajo":"sobre"} POC ($${s.poc.toLocaleString()})`},
   ];
   const pts=conds.filter(c=>c.st==="ok").length;
   const isBear=s.divState==="bear";
   const trendBajista=s.emaTrend==="bajando"&&epct<-15&&!fundOk;
 
-  // ââ Zona mÃ¡xima oportunidad POC ââââââââââââââââââââââââââ
+  // ── Zona máxima oportunidad POC ──────────────────────────
   const pocMaxOp=fundEx&&ppct<=-25&&ppct>=-40;
   const pocExtremo=ppct<-40;
 
-  // ââ Alerta setup en formaciÃ³n ââââââââââââââââââââââââââââ
+  // ── Alerta setup en formación ────────────────────────────
   const setupForming=!s.rsiBounce&&s.rsi10>25&&s.rsi10<=35&&s.rsiPrev&&s.rsiPrev>s.rsi10;
 
-  // ââ TamaÃ±o base por score ââââââââââââââââââââââââââââââââ
+  // ── Tamaño base por score ────────────────────────────────
   let sig,bdg,posBdg,posSize,posCls;
   if(isBear||trendBajista){
-    sig="caution";bdg="PrecauciÃ³n";posBdg="No entrar";
+    sig="caution";bdg="Precaución";posBdg="No entrar";
     posSize=isBear?"Divergencia bearish activa":"Tendencia bajista fuerte";posCls="ps-no";
   } else if(pts>=4){
-    sig="buy";bdg="Acumular";posBdg="100%";posSize="PosiciÃ³n completa";posCls="ps-full";
+    sig="buy";bdg="Acumular";posBdg="100%";posSize="Posición completa";posCls="ps-full";
   } else if(pts===3){
-    sig="watch";bdg="Media posiciÃ³n";posBdg="50%";posSize="50% de la posiciÃ³n";posCls="ps-half";
+    sig="watch";bdg="Media posición";posBdg="50%";posSize="50% de la posición";posCls="ps-half";
   } else if(setupForming){
-    sig="forming";bdg="Setup en formaciÃ³n";posBdg="â";posSize="RSI acercÃ¡ndose a 30 â";posCls="ps-forming";
+    sig="forming";bdg="Setup en formación";posBdg="—";posSize="RSI acercándose a 30 ↓";posCls="ps-forming";
   } else{
-    sig="hold";bdg="Esperar setup";posBdg="â";posSize="No entrar aÃºn";posCls="ps-wait";
+    sig="hold";bdg="Esperar setup";posBdg="—";posSize="No entrar aún";posCls="ps-wait";
   }
 
   return{conds,pts,sig,bdg,posBdg,posSize,posCls,epct,ppct,fund,pocMaxOp,pocExtremo,setupForming};
@@ -404,15 +405,15 @@ function scoreSignal(s){
 function scolor(pts){return pts>=4?"#2ea043":pts>=3?"#ef9f27":"#444441";}
 function calcEmaHint(p,e){if(!e||!p)return"";const pct=((p-e)/e*100);const col=pct>=0?"#2ea043":pct>=-8?"#ba7517":"#da3633";return`<span style="color:${col}">${pct>=0?"+":""}${pct.toFixed(1)}% ${pct>=0?"sobre":"bajo"} EMA</span>`;}
 function calcPocHint(p,c){if(!c||!p)return"";const pct=((p-c)/c*100);const col=pct<=-15?"#2ea043":pct<=-5?"#ba7517":pct<0?"#6e7681":"#da3633";return`<span style="color:${col}">${pct.toFixed(1)}% ${pct<0?"bajo":"sobre"} POC</span>`;}
-function rsiWHint(v){if(v>=40)return`<span style="color:#2ea043">â¥40 â tendencia saludable</span>`;if(v>=25)return`<span style="color:#ba7517">25-39 â tendencia dÃ©bil</span>`;return`<span style="color:#da3633">&lt;25 â muy bajista</span>`;}
+function rsiWHint(v){if(v>=40)return`<span style="color:#2ea043">≥40 — tendencia saludable</span>`;if(v>=25)return`<span style="color:#ba7517">25-39 — tendencia débil</span>`;return`<span style="color:#da3633">&lt;25 — muy bajista</span>`;}
 function buildEditPanel(i){
   const s=data[i];
   return`<div class="ep-sec">RSI(10) diario</div>
   <div class="f2e"><div class="fld"><label>Valor RSI(10)</label><input type="number" id="ep_rsi_${i}" value="${s.rsi10}" min="0" max="100" step="0.1"></div>
-  <div class="fld"><label>RebotÃ³ desde &lt;30 (â¤15 velas)</label><select id="ep_bnc_${i}"><option value="false" ${!s.rsiBounce?"selected":""}>No</option><option value="true" ${s.rsiBounce?"selected":""}>SÃ­</option></select></div></div>
+  <div class="fld"><label>Rebotó desde &lt;30 (≤15 velas)</label><select id="ep_bnc_${i}"><option value="false" ${!s.rsiBounce?"selected":""}>No</option><option value="true" ${s.rsiBounce?"selected":""}>Sí</option></select></div></div>
   <div class="sep"></div>
   <div class="ep-sec">Divergencia RSI(10)</div>
-  <div class="f2e"><div class="fld"><label>Estado (â¤15 velas)</label>
+  <div class="f2e"><div class="fld"><label>Estado (≤15 velas)</label>
     <select id="ep_div_${i}">
       <option value="none" ${s.divState==="none"?"selected":""}>Sin divergencia detectada</option>
       <option value="bull" ${s.divState==="bull"?"selected":""}>Divergencia bullish activa</option>
@@ -424,7 +425,7 @@ function buildEditPanel(i){
   <div class="sep"></div>
   <div class="ep-sec">Bandas de Bollinger</div>
   <div class="f2e"><div class="fld"><label>Estado actual</label><select id="ep_bb_${i}"><option value="inside" ${s.bbState==="inside"?"selected":""}>Dentro de BB</option><option value="below" ${s.bbState==="below"?"selected":""}>Bajo BB inferior</option><option value="above" ${s.bbState==="above"?"selected":""}>Sobre BB superior</option></select></div>
-  <div class="fld"><label>Vela recuperÃ³ BB (â¤5 velas)</label><select id="ep_bbr_${i}"><option value="false" ${!s.bbRecov?"selected":""}>No</option><option value="true" ${s.bbRecov?"selected":""}>SÃ­</option></select></div></div>
+  <div class="fld"><label>Vela recuperó BB (≤5 velas)</label><select id="ep_bbr_${i}"><option value="false" ${!s.bbRecov?"selected":""}>No</option><option value="true" ${s.bbRecov?"selected":""}>Sí</option></select></div></div>
   <div class="sep"></div>
   <div class="ep-sec">EMA 200</div>
   <div class="f3e"><div class="fld"><label>Precio actual</label><input type="number" id="ep_px_${i}" value="${s.price}" step="0.01" oninput="liveCalc(${i})"></div>
@@ -436,7 +437,7 @@ function buildEditPanel(i){
       <option value="bajando" ${s.emaTrend==="bajando"?"selected":""}>Bajando</option>
     </select></div></div>
   <div class="sep"></div>
-  <div class="ep-sec">FRVP â POC Ãºltimo aÃ±o</div>
+  <div class="ep-sec">FRVP — POC último año</div>
   <div class="f2e"><div class="fld"><label>Valor del POC</label><input type="number" id="ep_poc_${i}" value="${s.poc}" step="0.01" oninput="liveCalc(${i})"><span class="chint" id="ep_pocc_${i}">${calcPocHint(s.price,s.poc)}</span></div></div>
   <button class="ep-apply" onclick="applyOne(${i})">Aplicar cambios</button>`;
 }
@@ -518,8 +519,8 @@ function applyOne(i){
 function togglePanel(type,i){
   const dp=document.getElementById(`dp_${i}`),ep=document.getElementById(`ep_${i}`);
   const ab=document.getElementById(`abtn_${i}`),eb=document.getElementById(`ebtn_${i}`);
-  if(type==="analysis"){const was=dp.classList.contains("open");dp.classList.toggle("open");ep.classList.remove("open");ab.textContent=was?"Ver anÃ¡lisis":"Cerrar anÃ¡lisis";eb.textContent="Editar";}
-  else{const was=ep.classList.contains("open");ep.classList.toggle("open");if(!was)ep.innerHTML=buildEditPanel(i);dp.classList.remove("open");eb.textContent=was?"Editar":"Cerrar ediciÃ³n";ab.textContent="Ver anÃ¡lisis";}
+  if(type==="analysis"){const was=dp.classList.contains("open");dp.classList.toggle("open");ep.classList.remove("open");ab.textContent=was?"Ver análisis":"Cerrar análisis";eb.textContent="Editar";}
+  else{const was=ep.classList.contains("open");ep.classList.toggle("open");if(!was)ep.innerHTML=buildEditPanel(i);dp.classList.remove("open");eb.textContent=was?"Editar":"Cerrar edición";ab.textContent="Ver análisis";}
 }
 function toggleRef(){const p=document.getElementById("refPanel"),a=document.getElementById("refArrow");p.classList.toggle("open");a.classList.toggle("open");}
 let curFilt="all",curSort="az";
@@ -543,39 +544,39 @@ function renderCards(){
     const emaDisCls=epct>=0?"ok":epct>=-8?"warn":"ng";
     const pocDisCls=ppct<=-15?"ok":ppct<=-5?"warn":ppct<0?"neu":"ng";
     const trendCls=s.emaTrend==="subiendo"?"trend-up":s.emaTrend==="lateral"?"trend-lat":"trend-dn";
-    const trendTxt=s.emaTrend==="subiendo"?"â² alcista":s.emaTrend==="lateral"?"â lateral":"â¼ bajista";
-    const condsH=conds.map(c=>`<div class="crow"><div class="ci ${ciMap[c.st]||'ci-no'}">${c.st==="ok"?"â":c.st==="warn"?"~":c.st==="ng"?"!":"â"}</div><span>${c.txt}</span></div>`).join("");
+    const trendTxt=s.emaTrend==="subiendo"?"▲ alcista":s.emaTrend==="lateral"?"→ lateral":"▼ bajista";
+    const condsH=conds.map(c=>`<div class="crow"><div class="ci ${ciMap[c.st]||'ci-no'}">${c.st==="ok"?"✓":c.st==="warn"?"~":c.st==="ng"?"!":"—"}</div><span>${c.txt}</span></div>`).join("");
     const noteLines=buildAutoNote(s,epct,ppct);
     const colMap={ok:"#2ea043",warn:"#ba7517",ng:"#da3633",neu:"#6e7681"};
-    const noteLinesH=noteLines.map(l=>`<div class="auto-line"><span class="auto-line-dot" style="color:${colMap[l.col]}">â</span><span>${l.txt}</span></div>`).join("");
-    const bearAlert=s.divState==="bear"?`<div class="bear-alert">! Divergencia bearish activa â entrada cancelada</div>`:"";
-    const pocMaxBadge=pocMaxOp?`<div style="margin:4px 0;padding:4px 8px;background:#0d2340;border:0.5px solid #58a6ff;border-radius:6px;font-size:10px;color:#58a6ff">â Zona mÃ¡xima oportunidad â precio ${ppct.toFixed(1)}% bajo POC Â· fund. excelentes</div>`:pocExtremo?`<div style="margin:4px 0;padding:4px 8px;background:#0d2340;border:0.5px solid #e3b341;border-radius:6px;font-size:10px;color:#e3b341">â  Precio >40% bajo POC â verificar fundamentals antes de entrar</div>`:"";
-    const setupBadge=setupForming?`<div style="margin:4px 0;padding:4px 8px;background:#2d2200;border:0.5px solid #e3b341;border-radius:6px;font-size:10px;color:#e3b341">â³ RSI(10) ${s.rsi10} bajando hacia 30 â setup en formaciÃ³n</div>`:"";
+    const noteLinesH=noteLines.map(l=>`<div class="auto-line"><span class="auto-line-dot" style="color:${colMap[l.col]}">◆</span><span>${l.txt}</span></div>`).join("");
+    const bearAlert=s.divState==="bear"?`<div class="bear-alert">! Divergencia bearish activa — entrada cancelada</div>`:"";
+    const pocMaxBadge=pocMaxOp?`<div style="margin:4px 0;padding:4px 8px;background:#0d2340;border:0.5px solid #58a6ff;border-radius:6px;font-size:10px;color:#58a6ff">★ Zona máxima oportunidad — precio ${ppct.toFixed(1)}% bajo POC · fund. excelentes</div>`:pocExtremo?`<div style="margin:4px 0;padding:4px 8px;background:#0d2340;border:0.5px solid #e3b341;border-radius:6px;font-size:10px;color:#e3b341">⚠ Precio >40% bajo POC — verificar fundamentals antes de entrar</div>`:"";
+    const setupBadge=setupForming?`<div style="margin:4px 0;padding:4px 8px;background:#2d2200;border:0.5px solid #e3b341;border-radius:6px;font-size:10px;color:#e3b341">⟳ RSI(10) ${s.rsi10} bajando hacia 30 — setup en formación</div>`:"";
     const card=document.createElement("div");card.className=`card s-${sig}`;card.dataset.sig=sig;
-    card.innerHTML=`<div class="card-head"><div><div class="tkr">${s.t}<span class="trend-tag ${trendCls}">${trendTxt}</span></div><div class="co">${s.co} Â· ${s.sec}</div></div><div class="badge ${bCls}">${bdg}</div></div>
+    card.innerHTML=`<div class="card-head"><div><div class="tkr">${s.t}<span class="trend-tag ${trendCls}">${trendTxt}</span></div><div class="co">${s.co} · ${s.sec}</div></div><div class="badge ${bCls}">${bdg}</div></div>
     ${bearAlert}${pocMaxBadge}${setupBadge}
     <div class="metrics">
       <div class="met"><div class="ml">RSI(10)</div><div class="mv ${rsiCls}">${s.rsi10}</div><div class="ms">${s.rsi10<=30?"oversold":"neutral"}</div></div>
-      <div class="met"><div class="ml">RSI sem.</div><div class="mv ${rsiWCls}">${s.rsiW}</div><div class="ms">${s.rsiW>=40?"ok":s.rsiW>=25?"dÃ©bil":"bajo"}</div></div>
+      <div class="met"><div class="ml">RSI sem.</div><div class="mv ${rsiWCls}">${s.rsiW}</div><div class="ms">${s.rsiW>=40?"ok":s.rsiW>=25?"débil":"bajo"}</div></div>
       <div class="met"><div class="ml">vs EMA200</div><div class="mv ${emaDisCls}">${epct>=0?"+":""}${epct.toFixed(1)}%</div><div class="ms">${s.emaTrend}</div></div>
       <div class="met"><div class="ml">vs POC</div><div class="mv ${pocDisCls}">${ppct.toFixed(1)}%</div><div class="ms">FRVP</div></div>
       <div class="met"><div class="ml">Fund.</div><div class="mv" style="font-size:10px;color:#6e7681">${fund}</div><div class="ms">fijo</div></div>
     </div>
     <div class="conds">${condsH}</div>
-    <div class="sbar"><span class="slbl">SeÃ±al</span><div class="strack"><div class="sfill" style="width:${pct}%;background:${scolor(pts)}"></div></div><span class="snum">${pts}/5</span></div>
-    <div class="pos-row"><span class="ps-lbl">TamaÃ±o sugerido</span><span class="ps-badge ${posCls}">${posBdg}</span><span class="ps-val">${posSize}</span></div>
-    <div class="card-btns"><button class="cbtn" id="abtn_${i}" onclick="togglePanel('analysis',${i})">Ver anÃ¡lisis</button><button class="cbtn" id="ebtn_${i}" onclick="togglePanel('edit',${i})">Editar</button><button class="cbtn" onclick="deleteTicker('${s.t}')" style="flex:0;padding:6px 10px;color:#da3633;border-color:#da363340">â</button></div>
+    <div class="sbar"><span class="slbl">Señal</span><div class="strack"><div class="sfill" style="width:${pct}%;background:${scolor(pts)}"></div></div><span class="snum">${pts}/5</span></div>
+    <div class="pos-row"><span class="ps-lbl">Tamaño sugerido</span><span class="ps-badge ${posCls}">${posBdg}</span><span class="ps-val">${posSize}</span></div>
+    <div class="card-btns"><button class="cbtn" id="abtn_${i}" onclick="togglePanel('analysis',${i})">Ver análisis</button><button class="cbtn" id="ebtn_${i}" onclick="togglePanel('edit',${i})">Editar</button><button class="cbtn" onclick="deleteTicker('${s.t}')" style="flex:0;padding:6px 10px;color:#da3633;border-color:#da363340">✕</button></div>
     <div class="dpanel" id="dp_${i}">
       <div class="drow"><span>Precio actual</span><span>$${s.price.toLocaleString()}</span></div>
       <div class="drow"><span>EMA200</span><span>$${s.ema200.toLocaleString()} (${epct>=0?"+":""}${epct.toFixed(1)}%)</span></div>
       <div class="drow"><span>Pendiente EMA200</span><span>${s.emaTrend}</span></div>
       <div class="drow"><span>POC (FRVP anual)</span><span>$${s.poc.toLocaleString()} (${ppct.toFixed(1)}%)</span></div>
       <div class="drow"><span>RSI(10) diario</span><span>${s.rsi10}</span></div>
-      <div class="drow"><span>RSI semanal</span><span>${s.rsiW} â ${rsiWLabel(s.rsiW).txt.split("â")[1].trim()}</span></div>
-      <div class="drow"><span>Divergencia</span><span>${s.divState==="bull"?"Bullish activa":s.divState==="bear"?"Bearish activa â ":"Sin divergencia"}</span></div>
+      <div class="drow"><span>RSI semanal</span><span>${s.rsiW} — ${rsiWLabel(s.rsiW).txt.split("—")[1].trim()}</span></div>
+      <div class="drow"><span>Divergencia</span><span>${s.divState==="bull"?"Bullish activa":s.divState==="bear"?"Bearish activa ⚠":"Sin divergencia"}</span></div>
       <div class="drow"><span>Estado BB</span><span>${s.bbState==="below"?"Bajo inferior":s.bbState==="above"?"Sobre superior":"Dentro"}</span></div>
       <div class="drow"><span>Fundamentals</span><span>${fund}</span></div>
-      <div class="auto-note"><div class="auto-note-title">AnÃ¡lisis automÃ¡tico</div><div class="auto-note-lines">${noteLinesH}</div></div>
+      <div class="auto-note"><div class="auto-note-title">Análisis automático</div><div class="auto-note-lines">${noteLinesH}</div></div>
     </div>
     <div class="epanel" id="ep_${i}"></div>`;
     g.appendChild(card);
@@ -614,7 +615,7 @@ function deleteTicker(ticker){
   const dataIdx=data.findIndex(d=>d.t===ticker);
   if(dataIdx===-1)return;
   const s=data[dataIdx];
-  if(!confirm(`Â¿Eliminar ${s.t} del dashboard? No volverÃ¡ a aparecer.`))return;
+  if(!confirm(`¿Eliminar ${s.t} del dashboard? No volverá a aparecer.`))return;
   DELETED_TICKERS.add(s.t);
   data.splice(dataIdx,1);
   delete CUSTOM_FUND[s.t];
@@ -625,7 +626,7 @@ function deleteTicker(ticker){
 }
 function filt(sig,btn){curFilt=sig;document.querySelectorAll(".fbtn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderCards();}
 function sortBy(type,btn){curSort=type;document.querySelectorAll(".sbtn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderCards();}
-// ââ GitHub API Integration âââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── GitHub API Integration ───────────────────────────────────────────────────
 const GH_TOKEN_KEY="cedears_gh_token";
 const GH_REPO="emacabj10/cedears-dashboard";
 
@@ -636,8 +637,8 @@ function openGithubConfig(){
   const status=document.getElementById("gh-token-status");
   if(modal){modal.style.display="flex";}
   const t=getGhToken();
-  if(input) input.value=t?"ââââââââââââ":"";
-  if(status) status.textContent=t?"Token guardado â listo para sincronizar":"Sin token â las acciones solo se guardan localmente";
+  if(input) input.value=t?"●●●●●●●●●●●●":"";
+  if(status) status.textContent=t?"Token guardado — listo para sincronizar":"Sin token — las acciones solo se guardan localmente";
   if(status) status.style.color=t?"#2ea043":"#6e7681";
 }
 function closeGithubConfig(){const m=document.getElementById("gh-modal");if(m)m.style.display="none";}
@@ -645,9 +646,9 @@ function saveGithubToken(){
   const input=document.getElementById("gh-token-input");
   const status=document.getElementById("gh-token-status");
   const val=input?input.value.trim():"";
-  if(!val||val==="ââââââââââââ"){status.textContent="IngresÃ¡ el token primero";status.style.color="#da3633";return;}
+  if(!val||val==="●●●●●●●●●●●●"){status.textContent="Ingresá el token primero";status.style.color="#da3633";return;}
   try{localStorage.setItem(GH_TOKEN_KEY,val);}catch(e){}
-  if(status){status.textContent="â Token guardado correctamente";status.style.color="#2ea043";}
+  if(status){status.textContent="✓ Token guardado correctamente";status.style.color="#2ea043";}
   const btn=document.getElementById("gh-btn");
   if(btn){btn.style.color="#2ea043";btn.style.borderColor="#2ea04360";}
 }
@@ -667,7 +668,10 @@ async function getFileSha(token, path){
   });
   if(!r.ok) return null;
   const d=await r.json();
-  return{sha:d.sha, content:atob(d.content.replace(/\n/g,""))};
+  const raw=atob(d.content.replace(/\n/g,""));
+  const bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));
+  const decoded=new TextDecoder("utf-8").decode(bytes);
+  return{sha:d.sha, content:decoded};
 }
 
 async function updateGithubFile(token, path, newContent, message){
@@ -692,7 +696,7 @@ function buildIndexHtml(){
 
 function buildFetchPy(){
   const base=`import json, urllib.request, urllib.error, time\nfrom datetime import datetime\n\nYF_MAP = {\n`;
-  const allTickers=Object.assign({},{"AMD":"AMD","AMZN":"AMZN","BABA":"BABA","BNB":"BNB-USD","BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD","GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META","MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ","SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD"});
+  const allTickers=Object.assign({},{"AMD":"AMD","AMZN":"AMZN","BABA":"BABA","BNB":"BNB-USD","BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD","GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META","MSFT":"MSFT","PEP":"PEP","PYPL":"PYPL","QQQ":"QQQ","SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD"});
   data.forEach(d=>{if(!allTickers[d.t]){allTickers[d.t]=d.t.replace(".","-");}});
   // Remove deleted tickers
   DELETED_TICKERS.forEach(t=>{delete allTickers[t];});
@@ -703,7 +707,7 @@ function buildFetchPy(){
 async function syncToGithub(action, tickerName){
   const token=getGhToken();
   if(!token){
-    alert("ConfigurÃ¡ tu token de GitHub primero (botÃ³n â GitHub)");
+    alert("Configurá tu token de GitHub primero (botón ⚙ GitHub)");
     return false;
   }
   const status=document.getElementById("fetch-status");
@@ -721,7 +725,7 @@ async function syncToGithub(action, tickerName){
       if(!s) throw new Error("Ticker no encontrado en data");
       const newLine=`  {t:"${s.t}",co:"${s.co}",sec:"${s.sec}",rsi10:${s.rsi10},rsiW:${s.rsiW},ema200:${s.ema200},price:${s.price},emaTrend:"${s.emaTrend}",bbState:"${s.bbState}",bbRecov:${s.bbRecov},rsiBounce:${s.rsiBounce},divState:"${s.divState}",poc:${s.poc},rsiPrev:null}`;
       const insertIdx=html.lastIndexOf("\n];");
-      if(insertIdx===-1) throw new Error("No se encontrÃ³ el cierre del array data");
+      if(insertIdx===-1) throw new Error("No se encontró el cierre del array data");
       html=html.substring(0,insertIdx)+",\n"+newLine+html.substring(insertIdx);
       const yfSym=tickerName.replace(".","-");
       html=html.replace('"WMT":"WMT"','"WMT":"WMT","'+tickerName+'":"'+yfSym+'"');
@@ -740,7 +744,7 @@ async function syncToGithub(action, tickerName){
 
     if(status){
       status.style.color="#2ea043";
-      status.textContent=`â ${tickerName} ${action==="add"?"agregado":"eliminado"} en GitHub Â· CorrÃ© el workflow para actualizar cotizaciones`;
+      status.textContent=`✓ ${tickerName} ${action==="add"?"agregado":"eliminado"} en GitHub · Corré el workflow para actualizar cotizaciones`;
     }
     return true;
   }catch(e){
@@ -751,14 +755,14 @@ async function syncToGithub(action, tickerName){
 
 loadFromStorage().then(()=>{renderCards();if(getGhToken()){const b=document.getElementById('gh-btn');if(b){b.style.color='#2ea043';b.style.borderColor='#2ea04360';}}});
 
-// ââ Yahoo Finance Auto-fetch âââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Yahoo Finance Auto-fetch ─────────────────────────────────────────────────
 
-// Map ticker â Yahoo Finance symbol
+// Map ticker → Yahoo Finance symbol
 const YF_MAP={
   "AMD":"AMD","AMZN":"AMZN","B":"GOLD","BABA":"BABA","BNB":"BNB-USD",
   "BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD",
   "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
-  "MSFT":"MSFT","NKE":"NKE","PEP":"PEP","QQQ":"QQQ",
+  "MSFT":"MSFT","NKE":"NKE","PEP":"PEP","PYPL":"PYPL","QQQ":"QQQ",
   "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT"
 };
 
@@ -883,15 +887,15 @@ async function fetchAllQuotes(){
 
   saveToStorage();
   renderCards();
-  btn.disabled=false; btn.textContent="â» Actualizar cotizaciones";
+  btn.disabled=false; btn.textContent="↻ Actualizar cotizaciones";
 
   const now=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
   if(failed===0){
     status.style.color="#2ea043";
-    status.textContent=`â ${updated} tickers actualizados Â· ${now}`;
+    status.textContent=`✓ ${updated} tickers actualizados · ${now}`;
   } else {
     status.style.color="#ba7517";
-    status.textContent=`${updated} ok Â· ${failed} fallaron (${failedTickers.join(", ")}) Â· ${now}`;
+    status.textContent=`${updated} ok · ${failed} fallaron (${failedTickers.join(", ")}) · ${now}`;
   }
   try{localStorage.setItem(FETCH_KEY,now);}catch(e){}
 }
@@ -901,7 +905,7 @@ try{
   const last=localStorage.getItem(FETCH_KEY);
   if(last){
     const s=document.getElementById("fetch-status");
-    if(s){s.textContent="Ãltima actualizaciÃ³n: "+last;s.style.color="#6e7681";}
+    if(s){s.textContent="Última actualización: "+last;s.style.color="#6e7681";}
   }
 }catch(e){}
 </script>
