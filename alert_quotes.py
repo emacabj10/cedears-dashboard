@@ -749,16 +749,20 @@ for ticker, sym in YF_MAP.items():
         save_cycle(ticker, cyc)
 
     # ── Clasificación normal (respetando silencio) ────────────────────────────
+
+    # Fix 2: bb_ema_watchlist sin condición redundante de score
+    # (bb_recov + epct >= -5 ya garantiza score >= 2)
     bb_ema_watchlist = (
         bb_recov
         and epct >= -5
         and not rsi_bounced
-        and score >= 2
     )
 
-    div_to_signal    = div and score == 2 and not rsi_bounced
-    div_to_watchlist = div and score == 1 and rsi10 <= 40 and not rsi_bounced
-    div_to_radar     = div and score == 0 and rsi10 <= 35 and not rsi_bounced
+    # Fix 1: div_to_signal ahora incluye score 2 con O sin rsi_bounced
+    # Fix 3: div_to_radar cubre score >= 0 (no solo score == 0)
+    div_to_signal    = div and score >= 2
+    div_to_watchlist = div and score == 1 and rsi10 <= 40
+    div_to_radar     = div and score == 0 and rsi10 <= 35
 
     # Activo silenciado: solo puede aparecer en radar si rsi_reset=True y RSI < 45
     if is_silenced:
@@ -771,14 +775,16 @@ for ticker, sym in YF_MAP.items():
         print(f"  >>> SEÑAL 3/3: {ticker} rsi={rsi10} rsi_prev={q.get('rsi_prev')} bb_recov={bb_recov} epct={epct:.1f}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
     elif div_to_signal:
-        print(f"  >>> SEÑAL DIV 2/3+div: {ticker} rsi={rsi10} epct={epct:.1f}")
+        print(f"  >>> SEÑAL DIV {score}/3+div: {ticker} rsi={rsi10} epct={epct:.1f}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
     elif (score == 2 and not rsi_bounced and rsi10 <= 45) or bb_ema_watchlist or div_to_watchlist:
         reason = "bb_ema" if bb_ema_watchlist else ("div" if div_to_watchlist else "score+rsi")
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → watchlist ({reason})")
         watchlist_found.append((ticker, score, q, epct, ppct))
     elif (rsi10 <= 35) or (rsi10 < 30 and not rsi_bounced) or (abs(epct) <= 1) or div_to_radar:
-        print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → radar{' (div)' if div_to_radar else ''}")
+        # Fix 3: agregar div explícitamente al radar cuando score > 0 y RSI <= 35
+        has_div = div and rsi10 <= 35
+        print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → radar{' (div)' if has_div else ''}")
         radar_info.append((ticker, q, epct, ppct, score))
     else:
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → ignorado")
