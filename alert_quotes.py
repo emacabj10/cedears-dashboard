@@ -840,35 +840,26 @@ if is_cierre:
         if es_radar_valido(q, ep)
     ]
     for ticker, q, epct, ppct, score in sorted(radar_filtered, key=lambda x: x[1]["rsi10"] or 99)[:6]:
-        rsi    = q["rsi10"] or 0
-        partes = []
+        rsi  = q["rsi10"] or 0
+        partes = [f"RSI {rsi}", f"{epct:+.1f}% EMA"]
 
-        if rsi < 30:
-            partes.append(f"RSI(10) en {rsi} — en zona de suelo (oversold)")
-        elif rsi <= 35:
-            partes.append(f"RSI(10) en {rsi} y bajando hacia 30")
-
-        if abs(epct) <= 1:
-            partes.append(f"cerca de testear la EMA200 ({epct:+.1f}%)")
-        elif abs(epct) <= 3 and epct < 0:
-            partes.append(f"testeando la EMA200 ({epct:.1f}%)")
-
+        # Estado BB
         if q.get("bb_below"):
-            partes.append("Perdió la banda inferior de Bollinger. Sin rebote confirmado")
+            partes.append("oversold · BB perdida")
         elif q.get("bb_near_lo"):
-            partes.append("apoyando en banda inferior de BB")
+            partes.append("oversold · cerca BB")
+        elif rsi <= 35:
+            partes.append("oversold")
 
+        # Score solo si es relevante
         if score > 0:
-            partes.append(f"Score: {score}/3")
+            partes.append(f"{score}/3")
 
-        if partes:
-            first = partes[0][0].upper() + partes[0][1:]
-            rest  = ". ".join(partes[1:])
-            line  = f"• <b>{ticker}</b>: {first}"
-            line += f". {rest}." if rest else "."
-        else:
-            line = f"• <b>{ticker}</b>: RSI(10) en {rsi}."
+        # Divergencia
+        if q.get("div_bullish"):
+            partes.append("div ✅")
 
+        line = "• <b>" + ticker + "</b> · " + " · ".join(partes)
         radar_lines.append(line)
 
     radar_section = ""
