@@ -59,7 +59,7 @@ def calc_ema_trend(closes, period=200):
     return "lateral"
 
 def fetch_ticker(sym):
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=1y"
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=2y"
     headers = {"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
     req = urllib.request.Request(url, headers=headers)
     try:
