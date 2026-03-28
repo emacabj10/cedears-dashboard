@@ -345,65 +345,56 @@ def generar_analisis(ticker, score, q, epct, ppct, fund):
 
 def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov):
     """
-    Sugerencia para SEÑAL 3/3. Estrategia de acumulación a largo plazo.
-    Entrada completa cuando hay confluencia técnica sólida.
-    Media posición cuando opera contra la tendencia de fondo.
+    Solo decisión operativa — sin repetir datos técnicos que ya están en Contexto.
     """
     if score != 3:
         return "Señal incompleta. Monitorear — no operar aún."
 
-    # Entrada completa: divergencia alcista + soporte técnico completo
+    # Con divergencia: entrada más conservadora
     if div and epct >= -5:
         return (
-            "Setup de alta calidad: divergencia alcista confirmada con soporte técnico completo. "
             "Entrada con posición completa. "
-            "La divergencia sugiere agotamiento vendedor — favorable para acumulación de largo plazo."
+            "Ampliá si la siguiente vela confirma continuidad alcista."
         )
 
-    # Entrada completa: sobre EMA200 + BB recuperado (setup limpio)
+    # Precio sobre EMA200 + BB: setup limpio
     if epct >= 0 and bb_recov:
         return (
-            "Setup limpio: RSI rebotó, precio sobre EMA200 y recuperó banda BB. "
             "Entrada con posición completa. "
-            "La EMA200 actúa como soporte dinámico de largo plazo — estructura favorable para acumulación."
+            "La EMA200 actúa como soporte dinámico de largo plazo."
         )
 
-    # Entrada completa: testeando EMA200 como soporte + BB recuperado
+    # Testeando EMA200 + BB recuperado
     if epct >= -5 and bb_recov:
         return (
-            "Rebote desde BB con precio en soporte dinámico (EMA200). "
             "Entrada con posición completa. "
-            "Zona de máxima confluencia técnica — favorable para acumulación de largo plazo."
+            "Zona de confluencia técnica — favorable para acumulación."
         )
 
-    # Media posición: corrección profunda bajo EMA200
-    if epct < -10:
+    # Entre -5% y -15% de EMA: precaución por distancia
+    if -15 <= epct < -5:
         return (
-            f"Rebote técnico con precio {abs(epct):.1f}% bajo EMA200 — tendencia bajista de corto plazo vigente. "
+            f"Entrada con media posición ({abs(epct):.1f}% bajo EMA200). "
+            "Ampliá a posición completa cuando el precio recupere la media."
+        )
+
+    # Corrección profunda bajo -15%
+    if epct < -15:
+        return (
             "Entrada con media posición. "
             "Acumulación escalonada: ampliá si el precio confirma soporte en las próximas ruedas."
         )
 
-    # Media posición: corrección moderada bajo EMA200
-    if epct < -3:
-        return (
-            f"Precio en corrección moderada ({abs(epct):.1f}% bajo EMA200) — la media actúa como resistencia dinámica. "
-            "Entrada con media posición. "
-            "Ampliá a posición completa si el precio recupera la EMA200 con volumen."
-        )
-
-    # Default: señal técnica completa, contexto neutro
+    # Default
     return (
-        "Setup técnico completo. "
-        "Entrada con media posición — confirmá tendencia en TradingView antes de ejecutar. "
-        "Ampliá a posición completa si la siguiente vela confirma continuidad alcista."
+        "Entrada con media posición. "
+        "Confirmá tendencia en TradingView antes de ejecutar."
     )
 
 
 def sugerencia_watchlist(score, rsi10, epct, fund, div, bb_recov, bb_below, rsi_bounced):
     """
-    Sugerencia para WATCHLIST 2/3. Estrategia de acumulación a largo plazo.
-    Siempre indica esperar, pero describe exactamente qué falta y qué vigilar.
+    Solo indica qué falta y qué hacer — sin repetir datos técnicos ya visibles en Contexto.
     """
     ema_ok = epct >= -5
     rsi_ok = rsi_bounced
@@ -412,64 +403,38 @@ def sugerencia_watchlist(score, rsi10, epct, fund, div, bb_recov, bb_below, rsi_
     # Caso 1: EMA + BB confirmados, falta RSI
     if ema_ok and bb_ok and not rsi_ok:
         if rsi10 <= 30:
-            return (
-                "Esperá el cruce del RSI sobre 30 para confirmar la entrada. "
-                f"RSI en {rsi10} — en oversold pero sin rebote confirmado aún. "
-                "Cuando cruce, los 3 puntos estarán completos: entrada con posición completa."
-            )
+            return "Esperá el cruce del RSI sobre 30. Cuando cruce, los 3 puntos estarán completos: entrada con posición completa."
         else:
-            return (
-                "EMA200 y BB recuperados — dos de tres puntos confirmados. "
-                f"RSI en {rsi10}, aún no bajó a oversold. Esperá que baje y rebote sobre 30. "
-                "El setup puede madurar en las próximas ruedas."
-            )
+            return f"Falta que el RSI baje a oversold y rebote sobre 30. El setup puede madurar en las próximas ruedas."
 
     # Caso 2: RSI + EMA confirmados, falta BB
     if rsi_ok and ema_ok and not bb_ok:
         if bb_below:
-            return (
-                "RSI rebotó y precio sobre EMA200, pero el precio sigue fuera de la banda inferior de BB. "
-                "Esperá que cierre dentro de las bandas — es la confirmación que falta. "
-                "Cuando BB se recupere, setup completo: entrada con posición completa."
-            )
+            return "Esperá que el precio cierre dentro de las bandas de BB — es la confirmación que falta."
         else:
-            return (
-                "RSI rebotó y precio sobre EMA200. Falta el rebote desde la banda inferior de BB. "
-                "El precio aún no tocó la banda — monitorear. "
-                "Si en las próximas ruedas presiona BB y rebota, setup completo."
-            )
+            return "Falta el rebote desde la banda inferior de BB. Monitorear: si presiona y rebota, setup completo."
 
-    # Caso 3: RSI + BB confirmados, falta EMA (precio bajo la media)
+    # Caso 3: RSI + BB confirmados, falta EMA
     if rsi_ok and bb_ok and not ema_ok:
         return (
-            f"RSI y BB confirmados, pero precio {abs(epct):.1f}% bajo EMA200 — opera contra la tendencia de largo plazo. "
-            "Cuando complete la señal, entrada con media posición (acumulación escalonada). "
-            "Ampliá a posición completa si el precio recupera la EMA200."
+            f"Falta recuperar la EMA200 (precio {abs(epct):.1f}% abajo). "
+            "Cuando complete, entrada con media posición — ampliá si el precio recupera la media."
         )
 
-    # Caso 4: divergencia activa → prioridad máxima
+    # Caso 4: divergencia activa
     if div:
         falta = "RSI" if not rsi_ok else ("BB" if not bb_ok else "EMA")
         return (
-            "Divergencia alcista activa — setup de alta prioridad para acumulación. "
             f"Falta confirmar {falta} para completar la señal. "
-            "Monitorear de cerca: cuando se complete, entrada con posición completa."
+            "Cuando se complete, entrada con posición completa."
         )
 
-    # Caso 5: RSI cerca de oversold, setup madurando
+    # Caso 5: RSI cerca de oversold
     if rsi10 <= 35:
-        return (
-            f"Setup en formación con RSI en {rsi10} aproximándose a oversold. "
-            "Esperá las confirmaciones técnicas faltantes antes de entrar. "
-            "Si completa los 3 puntos desde esta zona, será entrada de acumulación de alta calidad."
-        )
+        return "Esperá las confirmaciones faltantes. Si completa los 3 puntos desde esta zona, entrada de alta calidad."
 
     # Default
-    return (
-        "Setup en formación — falta al menos una confirmación técnica para entrar. "
-        "Cuando los 3 puntos estén completos, entrada según el contexto de precio. "
-        "Paciencia: los mejores setups de acumulación se confirman, no se anticipan."
-    )
+    return "Esperá que los 3 puntos se confirmen antes de entrar. No anticipar el setup."
 
 # ── Scoring — NUEVO SISTEMA 3/3 ───────────────────────────────────────────────
 def score_signal(ticker, q):
