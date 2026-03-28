@@ -346,11 +346,26 @@ def generar_analisis(ticker, score, q, epct, ppct, fund):
 def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov):
     """
     Solo decisión operativa — sin repetir datos técnicos que ya están en Contexto.
+    score 3   = señal completa
+    score 2   = señal promovida por divergencia (div reemplaza punto faltante)
     """
-    if score != 3:
+    if score not in (2, 3):
         return "Señal incompleta. Monitorear — no operar aún."
 
-    # Con divergencia: entrada más conservadora
+    # Señal promovida por divergencia (score 2): más conservador
+    if score == 2 and div:
+        if epct >= -5:
+            return (
+                "Entrada con media posición. "
+                "Ampliá a posición completa cuando el setup complete los 3 puntos."
+            )
+        else:
+            return (
+                f"Entrada con media posición ({abs(epct):.1f}% bajo EMA200). "
+                "Esperá confirmación adicional antes de ampliar."
+            )
+
+    # Con divergencia en señal 3/3: entrada reforzada
     if div and epct >= -5:
         return (
             "Entrada con posición completa. "
