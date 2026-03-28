@@ -93,7 +93,7 @@
       "price": 1599.52,
       "rsi10": 31.93,
       "rsiPrev": 35.36,
-      "rsiW": 27.0,
+      "rsiW": 27,
       "ema200": 2053.94,
       "emaTrend": "bajando"
     },
@@ -192,6 +192,14 @@
       "rsiW": 44.44,
       "ema200": 128.95,
       "emaTrend": "lateral"
+    },
+    "INTC": {
+      "price": 43.13,
+      "rsi10": 42.68,
+      "rsiPrev": 50,
+      "rsiW": 52.14,
+      "ema200": 37.29,
+      "emaTrend": "subiendo"
     }
   },
   "cycles": {},
