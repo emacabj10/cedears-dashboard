@@ -313,7 +313,6 @@ let data=[
   {t:"META",co:"Meta Platforms",sec:"Redes sociales",rsi10:30.89,rsiW:40.23,ema200:662.08,price:613.71,emaTrend:"lateral",bbState:"below",bbRecov:false,rsiBounce:false,divState:"none",poc:644,rsiPrev:null},
   {t:"MSFT",co:"Microsoft",sec:"Tecnología",rsi10:37.93,rsiW:28.85,ema200:459.12,price:395.55,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:true,divState:"bull",poc:507,rsiPrev:null},
   {t:"PEP",co:"PepsiCo",sec:"Consumo defensivo",rsi10:41.83,rsiW:56.19,ema200:150.57,price:159.88,emaTrend:"subiendo",bbState:"inside",bbRecov:true,rsiBounce:false,divState:"none",poc:130.35,rsiPrev:null},
-  {t:"PYPL",co:"PayPal",sec:"Fintech",rsi10:45.89,rsiW:30.46,ema200:84.25,price:62.29,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:68.47,rsiPrev:null},
   {t:"QQQ",co:"Nasdaq 100 ETF",sec:"ETF índice",rsi10:37.06,rsiW:41.27,ema200:490.73,price:491.72,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:603.47,rsiPrev:null},
   {t:"SPY",co:"S&P500 ETF",sec:"ETF índice",rsi10:29.3,rsiW:38.65,ema200:564.89,price:565.73,emaTrend:"subiendo",bbState:"below",bbRecov:false,rsiBounce:true,divState:"none",poc:584.63,rsiPrev:null},
   {t:"TSLA",co:"Tesla",sec:"Autos/Tech",rsi10:38.59,rsiW:39.04,ema200:395.85,price:391.2,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"bull",poc:334.22,rsiPrev:null},
@@ -696,7 +695,7 @@ function buildIndexHtml(){
 
 function buildFetchPy(){
   const base=`import json, urllib.request, urllib.error, time\nfrom datetime import datetime\n\nYF_MAP = {\n`;
-  const allTickers=Object.assign({},{"AMD":"AMD","AMZN":"AMZN","BABA":"BABA","BNB":"BNB-USD","BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD","GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META","MSFT":"MSFT","PEP":"PEP","PYPL":"PYPL","QQQ":"QQQ","SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD"});
+  const allTickers=Object.assign({},{"AMD":"AMD","AMZN":"AMZN","BABA":"BABA","BNB":"BNB-USD","BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD","GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META","MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ","SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD"});
   data.forEach(d=>{if(!allTickers[d.t]){allTickers[d.t]=d.t.replace(".","-");}});
   // Remove deleted tickers
   DELETED_TICKERS.forEach(t=>{delete allTickers[t];});
@@ -762,7 +761,7 @@ const YF_MAP={
   "AMD":"AMD","AMZN":"AMZN","B":"GOLD","BABA":"BABA","BNB":"BNB-USD",
   "BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD",
   "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
-  "MSFT":"MSFT","NKE":"NKE","PEP":"PEP","PYPL":"PYPL","QQQ":"QQQ",
+  "MSFT":"MSFT","NKE":"NKE","PEP":"PEP","QQQ":"QQQ",
   "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT"
 };
 
