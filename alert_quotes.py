@@ -532,6 +532,69 @@ def score_signal(ticker, q):
 
     return score, forming, epct, ppct, fund, rsi_bounced, rsi_oversold
 
+def send_telegram(message):
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        print("Sin credenciales:\n" + message); return
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    payload = json.dumps({
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message,
+        "parse_mode": "HTML"
+    }).encode()
+    req = urllib.request.Request(url, data=payload,
+                                 headers={"Content-Type":"application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            print(f"  Telegram OK ({r.status})")
+            return
+    except Exception as e:
+        print(f"  Telegram HTML error: {e}")
+        print(f"  MSG DUMP: {repr(message[:300])}")
+    import re
+    plain = re.sub(r"<[^>]+>", "", message)
+    payload2 = json.dumps({"chat_id": TELEGRAM_CHAT_ID, "text": plain}).encode()
+    req2 = urllib.request.Request(url, data=payload2,
+                                  headers={"Content-Type":"application/json"})
+    try:
+        with urllib.request.urlopen(req2, timeout=10) as r:
+            print(f"  Telegram OK plain ({r.status})")
+    except Exception as e:
+        print(f"  Telegram plain error: {e}")
+
+def send_telegram_with_button(message, ticker):
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        print("Sin credenciales:\n" + message); return
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    keyboard = {"inline_keyboard": [[{"text": "✅ Operada", "callback_data": f"operado:{ticker}"}]]}
+    payload = json.dumps({
+        "chat_id": TELEGRAM_CHAT_ID, "text": message,
+        "parse_mode": "HTML", "reply_markup": keyboard
+    }).encode()
+    req = urllib.request.Request(url, data=payload,
+                                 headers={"Content-Type":"application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            print(f"  Telegram+button OK ({r.status})")
+            return
+    except Exception as e:
+        print(f"  Telegram button error: {e}")
+        send_telegram(message)
+
+def answer_callback_query(callback_query_id, text="✅ Registrado"):
+    if not TELEGRAM_TOKEN: return
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery"
+    payload = json.dumps({
+        "callback_query_id": callback_query_id,
+        "text": text, "show_alert": False
+    }).encode()
+    req = urllib.request.Request(url, data=payload,
+                                 headers={"Content-Type":"application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            print(f"  answerCallback OK ({r.status})")
+    except Exception as e:
+        print(f"  answerCallback error: {e}")
+
 def handle_operado(ticker_cmd):
     """
     Llamado cuando el usuario responde !operado TICKER desde Telegram.
@@ -599,88 +662,6 @@ elif _cmd_operado.lower().startswith("!operado "):
     _ticker_op = _cmd_operado.split(" ", 1)[1]
     handle_operado(_ticker_op)
     import sys; sys.exit(0)
-
-def send_telegram(message):
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        print("Sin credenciales:\n" + message); return
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-
-    # Intento 1: con HTML
-    payload = json.dumps({
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": message,
-        "parse_mode": "HTML"
-    }).encode()
-    req = urllib.request.Request(url, data=payload,
-                                 headers={"Content-Type":"application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=10) as r:
-            print(f"  Telegram OK ({r.status})")
-            return
-    except Exception as e:
-        print(f"  Telegram HTML error: {e}")
-        print(f"  MSG DUMP: {repr(message[:300])}")
-
-    # Intento 2: sin parse_mode (texto plano, borra tags HTML)
-    import re
-    plain = re.sub(r"<[^>]+>", "", message)
-    payload2 = json.dumps({
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": plain,
-    }).encode()
-    req2 = urllib.request.Request(url, data=payload2,
-                                  headers={"Content-Type":"application/json"})
-    try:
-        with urllib.request.urlopen(req2, timeout=10) as r:
-            print(f"  Telegram OK plain ({r.status})")
-    except Exception as e:
-        print(f"  Telegram plain error: {e}")
-
-def send_telegram_with_button(message, ticker):
-    """Envía mensaje con botón inline ✅ Operada que manda callback_data=operado:TICKER"""
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        print("Sin credenciales:\n" + message); return
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-
-    keyboard = {
-        "inline_keyboard": [[
-            {"text": "✅ Operada", "callback_data": f"operado:{ticker}"}
-        ]]
-    }
-    payload = json.dumps({
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": message,
-        "parse_mode": "HTML",
-        "reply_markup": keyboard
-    }).encode()
-    req = urllib.request.Request(url, data=payload,
-                                 headers={"Content-Type":"application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=10) as r:
-            print(f"  Telegram+button OK ({r.status})")
-            return
-    except Exception as e:
-        print(f"  Telegram button error: {e}")
-        print(f"  MSG DUMP: {repr(message[:300])}")
-        # Fallback sin botón
-        send_telegram(message)
-
-def answer_callback_query(callback_query_id, text="✅ Registrado"):
-    """Confirma el tap del botón para que Telegram quite el loader del botón"""
-    if not TELEGRAM_TOKEN: return
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery"
-    payload = json.dumps({
-        "callback_query_id": callback_query_id,
-        "text": text,
-        "show_alert": False
-    }).encode()
-    req = urllib.request.Request(url, data=payload,
-                                 headers={"Content-Type":"application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=10) as r:
-            print(f"  answerCallback OK ({r.status})")
-    except Exception as e:
-        print(f"  answerCallback error: {e}")
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 print(f"\n{'='*55}")
