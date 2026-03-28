@@ -713,11 +713,12 @@ async function syncToGithub(action, tickerName){
   if(status){status.style.color="#58a6ff";status.textContent=`Sincronizando ${tickerName} con GitHub...`;}
 
   try{
-    // Get current index.html from GitHub
+    // ── 1. Actualizar index.html ──────────────────────────────────────────────
     const file=await getFileSha(token,"index.html");
-    if(!file){throw new Error("No se pudo leer index.html del repo");}
-
+    if(!file) throw new Error("No se pudo leer index.html del repo");
     let html=file.content;
+    const yfSym=tickerName.replace(".","_").replace(".","-");
+    const yfSymClean=tickerName.replace(".","-");
 
     if(action==="add"){
       const s=data.find(d=>d.t===tickerName);
@@ -726,24 +727,80 @@ async function syncToGithub(action, tickerName){
       const insertIdx=html.lastIndexOf("\n];");
       if(insertIdx===-1) throw new Error("No se encontró el cierre del array data");
       html=html.substring(0,insertIdx)+",\n"+newLine+html.substring(insertIdx);
-      const yfSym=tickerName.replace(".","-");
-      html=html.replace('"WMT":"WMT"','"WMT":"WMT","'+tickerName+'":"'+yfSym+'"');
-
+      // Add to YF_MAP in index.html
+      html=html.replace(/"GLD":"GLD"/,`"GLD":"GLD","${tickerName}":"${yfSymClean}"`);
     } else if(action==="delete"){
-      // Remove ticker line from data array
       const regex=new RegExp(`  \\{t:"${tickerName}",[^\n]+\\},?\n`,"g");
       html=html.replace(regex,"");
-      // Remove from YF_MAP
       const yfRegex=new RegExp(`"${tickerName}":"[^"]*",?`,"g");
       html=html.replace(yfRegex,"");
     }
+    const okIndex=await updateGithubFile(token,"index.html",html,`${action==="add"?"Agregar":"Eliminar"} ticker ${tickerName} desde dashboard`);
+    if(!okIndex) throw new Error("Error al actualizar index.html");
 
-    const ok=await updateGithubFile(token,"index.html",html,`${action==="add"?"Agregar":"Eliminar"} ticker ${tickerName} desde dashboard`);
-    if(!ok) throw new Error("Error al actualizar index.html");
+    // ── 2. Actualizar fetch_quotes.py ─────────────────────────────────────────
+    if(status) status.textContent=`Actualizando fetch_quotes.py...`;
+    const fetchFile=await getFileSha(token,"fetch_quotes.py");
+    if(fetchFile){
+      let fetchPy=fetchFile.content;
+      if(action==="add"){
+        // Add to YF_MAP in fetch_quotes.py
+        fetchPy=fetchPy.replace(/"GLD":"GLD",/,`"GLD":"GLD",\n    "${tickerName}":"${yfSymClean}",`);
+      } else if(action==="delete"){
+        const regex=new RegExp(`\s+"${tickerName}":"[^"]*",?\n?`,"g");
+        fetchPy=fetchPy.replace(regex,"\n");
+      }
+      await updateGithubFile(token,"fetch_quotes.py",fetchPy,`${action==="add"?"Agregar":"Eliminar"} ticker ${tickerName}`);
+    }
+
+    // ── 3. Actualizar alert_quotes.py ─────────────────────────────────────────
+    if(status) status.textContent=`Actualizando alert_quotes.py...`;
+    const alertFile=await getFileSha(token,"alert_quotes.py");
+    if(alertFile){
+      let alertPy=alertFile.content;
+      const s=data.find(d=>d.t===tickerName);
+      const fund=CUSTOM_FUND[tickerName]||(s?"buenos":"buenos");
+      if(action==="add"){
+        // Add to FUND
+        alertPy=alertPy.replace(/"TSLA":"controversiales",/,`"TSLA":"controversiales","${tickerName}":"${fund}",`);
+        // Add to TV_MAP
+        const tvSym=`${tickerName.includes("BTC")||tickerName.includes("ETH")||tickerName.includes("BNB")?"BINANCE":"NASDAQ"}:${tickerName}`;
+        alertPy=alertPy.replace(/"BNB":"BINANCE:BNBUSDT",/,`"BNB":"BINANCE:BNBUSDT","${tickerName}":"${tvSym}",`);
+        // Add to YF_MAP
+        alertPy=alertPy.replace(/"GLD":"GLD",/,`"GLD":"GLD","${tickerName}":"${yfSymClean}",`);
+      } else if(action==="delete"){
+        // Remove from FUND, TV_MAP, YF_MAP
+        const regexFund=new RegExp(`"${tickerName}":"[^"]*",?`,"g");
+        alertPy=alertPy.replace(regexFund,"");
+      }
+      await updateGithubFile(token,"alert_quotes.py",alertPy,`${action==="add"?"Agregar":"Eliminar"} ticker ${tickerName}`);
+    }
+
+    // ── 4. Actualizar data.json ───────────────────────────────────────────────
+    if(status) status.textContent=`Actualizando data.json...`;
+    const dataFile=await getFileSha(token,"data.json");
+    if(dataFile){
+      try{
+        const dj=JSON.parse(dataFile.content);
+        if(action==="add"){
+          if(!dj.quotes) dj.quotes={};
+          const s=data.find(d=>d.t===tickerName);
+          dj.quotes[tickerName]={
+            price:s?.price||0, rsi10:s?.rsi10||50,
+            rsiPrev:s?.rsiPrev||50, rsiW:s?.rsiW||50,
+            ema200:s?.ema200||0, emaTrend:s?.emaTrend||"lateral"
+          };
+        } else if(action==="delete"){
+          if(dj.quotes) delete dj.quotes[tickerName];
+          if(dj.cycles) delete dj.cycles[tickerName];
+        }
+        await updateGithubFile(token,"data.json",JSON.stringify(dj,null,2),`${action==="add"?"Agregar":"Eliminar"} ticker ${tickerName}`);
+      }catch(e){ console.warn("data.json parse error",e); }
+    }
 
     if(status){
       status.style.color="#2ea043";
-      status.textContent=`✓ ${tickerName} ${action==="add"?"agregado":"eliminado"} en GitHub · Corré el workflow para actualizar cotizaciones`;
+      status.textContent=`✓ ${tickerName} ${action==="add"?"agregado":"eliminado"} en todos los archivos · Corré el workflow para activar alertas`;
     }
     return true;
   }catch(e){
