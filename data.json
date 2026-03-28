@@ -282,20 +282,7 @@
       "emaTrend": "bajando"
     }
   },
-  "cycles": {
-    "PEP": {
-      "is_silenced": true,
-      "rsi_hit_50": false,
-      "rsi_reset": false
-    }
-  },
+  "cycles": {}
   "daily": {
-    "entradas": [
-      {
-        "ticker": "PEP",
-        "price": "$153.04",
-        "hora": "14:58"
-      }
-    ]
-  }
+    "entradas": []
 }
