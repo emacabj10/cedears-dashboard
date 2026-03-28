@@ -8,9 +8,7 @@ YF_MAP = {
     "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
     "MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ",
     "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT",
-    "GLD":"GLD","NVDA":"NVDA","AAPL":"AAPL","NFLX":"NFLX",
-    "COIN":"COIN","ARKK":"ARKK","XOM":"XOM","JPM":"JPM",
-    "BAC":"BAC","UBER":"UBER","ABNB":"ABNB","SHOP":"SHOP",
+    "GLD":"GLD","NVDA":"NVDA","AAPL":"AAPL","ABNB":"ABNB",
 }
 
 def calc_rsi(closes, period=10):
