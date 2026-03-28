@@ -593,10 +593,12 @@ if _cmd_operado.lower().startswith("operado:"):
     handle_operado(_ticker_op)
     if _cbq_id:
         answer_callback_query(_cbq_id, "✅ Entrada registrada")
+    import sys; sys.exit(0)
 elif _cmd_operado.lower().startswith("!operado "):
     # Formato texto manual: !operado GLD
     _ticker_op = _cmd_operado.split(" ", 1)[1]
     handle_operado(_ticker_op)
+    import sys; sys.exit(0)
 
 def send_telegram(message):
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
