@@ -9,7 +9,6 @@ YF_MAP = {
     "MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ",
     "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT",
     "GLD":"GLD",
-    "INTC":"INTC","NVDA":"NVDA","AAPL":"AAPL","ABNB":"ABNB",
 }
 
 def calc_rsi(closes, period=10):
