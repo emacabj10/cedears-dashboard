@@ -168,30 +168,6 @@
       "rsiW": 46.57,
       "ema200": 387.28,
       "emaTrend": "lateral"
-    },
-    "NVDA": {
-      "price": 167.52,
-      "rsi10": 32.26,
-      "rsiPrev": 36.25,
-      "rsiW": 40.19,
-      "ema200": 173.83,
-      "emaTrend": "lateral"
-    },
-    "AAPL": {
-      "price": 248.8,
-      "rsi10": 35.77,
-      "rsiPrev": 43.5,
-      "rsiW": 42.08,
-      "ema200": 250.97,
-      "emaTrend": "lateral"
-    },
-    "ABNB": {
-      "price": 122.87,
-      "rsi10": 35.66,
-      "rsiPrev": 51.1,
-      "rsiW": 44.44,
-      "ema200": 128.95,
-      "emaTrend": "lateral"
     }
   },
   "cycles": {},
