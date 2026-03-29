@@ -40,7 +40,7 @@ YF_MAP = {
 }
 
 BOT_NOTES = [
-    "Día de paciencia. El mercado está en fase de digestión.",
+    "Día de paciencia. El mercado está en fase de consolidación.",
     "RSI promedio en zona neutral — esperar definición.",
     "Los mejores setups suelen venir después de estas fases de compresión.",
     "Sin señales no hay operación. La paciencia es parte de la estrategia.",
