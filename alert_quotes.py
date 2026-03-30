@@ -911,7 +911,7 @@ for ticker, score, q, epct, ppct in watchlist_found:
     )
     print(f"\n{msg}\n")
     send_telegram(msg)
-    time.sleep(0.5)
+    time.sleep(0.3)
 
     # Acumular en historial del día
     if ticker not in _daily["watchlist"]:
