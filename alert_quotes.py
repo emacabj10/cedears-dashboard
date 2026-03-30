@@ -615,7 +615,7 @@ def handle_operado(ticker_cmd):
     dj["daily"] = daily
 
     with open("data.json", "w") as f:
-        json.dump(dj, f)
+        json.dump(dj, f, indent=2, ensure_ascii=False)
 
     print(f"  [OPERADO] {ticker_cmd} silenciado. Ciclo iniciado.")
     send_telegram(
@@ -926,7 +926,7 @@ except Exception:
 _dj_full["daily"]  = _daily
 _dj_full["cycles"] = cycles
 with open("data.json", "w") as f:
-    json.dump(_dj_full, f)
+    json.dump(_dj_full, f, indent=2, ensure_ascii=False)
 
 # ── 3. Reporte Diario — SOLO en CIERRE DE MERCADO ────────────────────────────
 if is_cierre:
