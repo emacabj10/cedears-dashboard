@@ -865,7 +865,7 @@ for ticker, score, q, epct, ppct, fund in signals_found:
     )
     print(f"\n{msg}\n")
     send_telegram_with_button(msg, ticker)
-    time.sleep(0.1)
+    time.sleep(0.2)
 
     # Acumular en historial del día
     if ticker not in _daily["signals"]:
@@ -891,7 +891,7 @@ for ticker, score, q, epct, ppct in watchlist_found:
 
     if not _header_sent:
         send_telegram(session_header)
-        time.sleep(0.3)
+        time.sleep(0.2)
         _header_sent = True
 
     _price_fmt_w = f"${q['price']:,.2f}"
@@ -911,7 +911,7 @@ for ticker, score, q, epct, ppct in watchlist_found:
     )
     print(f"\n{msg}\n")
     send_telegram(msg)
-    time.sleep(0.1)
+    time.sleep(0.2)
 
     # Acumular en historial del día
     if ticker not in _daily["watchlist"]:
