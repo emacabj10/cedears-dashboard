@@ -319,7 +319,8 @@ let data=[
   {t:"V",co:"Visa",sec:"Finanzas/Pagos",rsi10:31.3,rsiW:286.05,ema200:333.08,price:307.14,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:348.59,rsiPrev:null},
   {t:"WMT",co:"Walmart",sec:"Retail defensivo",rsi10:53.77,rsiW:60.92,ema200:109.57,price:126.52,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:97,rsiPrev:null},
   {t:"GLD",co:"Gold Shares ETF",sec:"ETF índice",rsi10:21.7,rsiW:44.91,ema200:380,price:413,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:304,rsiPrev:null},,,
-  {t:"NU",co:"Nu Holdings Ltd.",sec:"Regional Banks",rsi10:33.34,rsiW:31.73,ema200:15.2,price:13.51,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:12.15,rsiPrev:null}
+  {t:"NU",co:"Nu Holdings Ltd.",sec:"Regional Banks",rsi10:33.34,rsiW:31.73,ema200:15.2,price:13.51,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:12.15,rsiPrev:null},
+  {t:"APPL",co:"Apple Inc",sec:"Telecommunications Equipment",rsi10:32.38,rsiW:41.07,ema200:251.15,price:246.63,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:146.74,rsiPrev:null}
 ];
 function emaPct(p,e){return e>0?((p-e)/e*100):0;}
 function pocPct(p,c){return c>0?((p-c)/c*100):0;}
@@ -696,7 +697,7 @@ function buildIndexHtml(){
 
 function buildFetchPy(){
   const base=`import json, urllib.request, urllib.error, time\nfrom datetime import datetime\n\nYF_MAP = {\n`;
-  const allTickers=Object.assign({},{"AMD":"AMD","AMZN":"AMZN","BABA":"BABA","BNB":"BNB-USD","BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD","GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META","MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ","SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD","NU":"NU",});
+  const allTickers=Object.assign({},{"AMD":"AMD","AMZN":"AMZN","BABA":"BABA","BNB":"BNB-USD","BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD","GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META","MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ","SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD","APPL":"APPL","NU":"NU",});
   data.forEach(d=>{if(!allTickers[d.t]){allTickers[d.t]=d.t.replace(".","-");}});
   // Remove deleted tickers
   DELETED_TICKERS.forEach(t=>{delete allTickers[t];});
