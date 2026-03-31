@@ -209,6 +209,11 @@
       "is_silenced": true,
       "rsi_hit_50": false,
       "rsi_reset": false
+    },
+    "MELI": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false
     }
   },
   "daily": {
@@ -227,6 +232,11 @@
         "ticker": "GLD",
         "price": "$417.53",
         "hora": "14:47"
+      },
+      {
+        "ticker": "MELI",
+        "price": "$1,668.51",
+        "hora": "13:14"
       }
     ]
   }
