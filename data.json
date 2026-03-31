@@ -184,6 +184,14 @@
       "rsiW": 41.07,
       "ema200": 251.15,
       "emaTrend": "lateral"
+    },
+    "NVDA": {
+      "price": 165.17,
+      "rsi10": 29.95,
+      "rsiPrev": 50,
+      "rsiW": 34.96,
+      "ema200": 173.67,
+      "emaTrend": "subiendo"
     }
   },
   "cycles": {
