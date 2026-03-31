@@ -74,9 +74,20 @@ def fetch_ticker(sym):
         rsi_w     = calc_rsi(w_closes, 10)
         ema200    = calc_ema(closes, 200)
         ema_trend = calc_ema_trend(closes, 200)
+        # ── Historial RSI — ultimas 15 velas ─────────────────────────────
+        # Se guarda en data.json para detectar rebotes entre runs.
+        # Ej: RSI bajo a 17.91 en run anterior → rsi_bounced_15=True ahora.
+        rsi_history = []
+        for lookback in range(15, 0, -1):   # vela 15 atras -> vela 1 atras
+            if len(closes) > lookback:
+                past_rsi = calc_rsi(closes[:-(lookback)], 10)
+                if past_rsi is not None:
+                    rsi_history.append(round(past_rsi, 2))
+
         return {
             "price": price, "rsi10": rsi10, "rsiPrev": rsi_prev,
-            "rsiW": rsi_w, "ema200": ema200, "emaTrend": ema_trend
+            "rsiW": rsi_w, "ema200": ema200, "emaTrend": ema_trend,
+            "rsiHistory": rsi_history
         }
     except Exception as e:
         print(f"  Error: {e}")
