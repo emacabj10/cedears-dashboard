@@ -155,17 +155,23 @@ def fetch_ticker(sym):
         bb_squeeze = (bb_wid[0] < bb_wid[1] * 0.85) if bb_wid else False
         bb_near_lo = (not bb_below) and bb_lo and ((price - bb_lo) / bb_lo * 100 < 2)
 
-        # ── Rebote RSI — ventana de 15 velas ─────────────────────────────────
-        # Alguna de las últimas 15 velas tuvo RSI <= 30,
-        # y la vela actual tiene RSI > 30 (rebote confirmado en ventana amplia).
-        rsi_bounced_15 = False
-        if rsi10 is not None and rsi10 > 30:
-            for lookback in range(1, 16):  # velas 1..15 hacia atrás
-                if len(closes) > lookback:
-                    past_rsi = calc_rsi(closes[:-(lookback)], 10)
-                    if past_rsi is not None and past_rsi <= 30:
-                        rsi_bounced_15 = True
-                        break
+        # ── Historial RSI — ultimas 15 velas ───────────────────────────────────
+        # Calculamos el RSI de cada una de las ultimas 15 velas y lo
+        # guardamos en rsiHistory. Persiste en data.json entre runs,
+        # evitando perder rebotes como el de 17.91 de META.
+        rsi_history = []
+        for lookback in range(15, 0, -1):   # vela 15 atras -> vela 1 atras
+            if len(closes) > lookback:
+                past_rsi = calc_rsi(closes[:-(lookback)], 10)
+                if past_rsi is not None:
+                    rsi_history.append(round(past_rsi, 2))
+
+        # rsi_bounced_15: alguna vela toco <=30 y la actual > 30
+        rsi_bounced_15 = (
+            rsi10 is not None
+            and rsi10 > 30
+            and any(r <= 30 for r in rsi_history)
+        )
 
         # ── Divergencia alcista — ventana de 15 velas ────────────────────────
         # Mínimo de precio reciente más bajo que mínimo anterior,
@@ -206,6 +212,7 @@ def fetch_ticker(sym):
             "price_prev": price_prev,
             "bb_lo_prev": bb_lo_prev,
             "rsi_bounced_15": rsi_bounced_15,
+            "rsiHistory": rsi_history,
         }
     except Exception as e:
         print(f"  Error: {e}"); return None
@@ -700,6 +707,19 @@ for ticker, sym in YF_MAP.items():
         ema200_val = q.get("ema200") or 0
         epct_debug = (q["price"] - ema200_val) / ema200_val * 100 if ema200_val else 0
         print(f"RSI {q['rsi10']} · ${q['price']} · EMA200=${ema200_val} ({epct_debug:+.1f}%){div_tag}{bb_tag}")
+
+        # ── Fusionar rsiHistory persistido con el calculado ahora ──────────
+        # Si fetch_quotes.py guardo un rsiHistory con un minimo <=30 en run
+        # anterior, lo combinamos con el actual para no perder ese rebote.
+        prev_history = existing.get(ticker, {}).get("rsiHistory", [])
+        curr_history = q.get("rsiHistory", [])
+        # Unimos: los ultimos 15 valores entre historial previo y actual
+        merged_history = (prev_history + curr_history)[-15:]
+        q["rsiHistory"] = merged_history
+        # Recalcular rsi_bounced_15 con el historial fusionado
+        if q.get("rsi10") and q["rsi10"] > 30 and any(r <= 30 for r in merged_history):
+            q["rsi_bounced_15"] = True
+
 
     if q.get("_fallback"):
         rsi10 = q["rsi10"] or 50
