@@ -176,6 +176,14 @@
       "rsiW": 31.73,
       "ema200": 15.2,
       "emaTrend": "lateral"
+    },
+    "APPL": {
+      "price": 246.63,
+      "rsi10": 32.38,
+      "rsiPrev": 50,
+      "rsiW": 41.07,
+      "ema200": 251.15,
+      "emaTrend": "lateral"
     }
   },
   "cycles": {
