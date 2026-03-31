@@ -42,7 +42,7 @@
       "emaTrend": "lateral"
     },
     "BTC": {
-      "price": 66784.0,
+      "price": 66784,
       "rsi10": 40.83,
       "rsiPrev": 36.67,
       "rsiW": 32.74,
@@ -115,7 +115,7 @@
     },
     "PEP": {
       "price": 156.82,
-      "rsi10": 53.0,
+      "rsi10": 53,
       "rsiPrev": 39.9,
       "rsiW": 52.67,
       "ema200": 150.96,
@@ -167,6 +167,14 @@
       "rsiPrev": 37.01,
       "rsiW": 46.35,
       "ema200": 387.55,
+      "emaTrend": "lateral"
+    },
+    "NU": {
+      "price": 13.51,
+      "rsi10": 33.34,
+      "rsiPrev": 50,
+      "rsiW": 31.73,
+      "ema200": 15.2,
       "emaTrend": "lateral"
     }
   },
