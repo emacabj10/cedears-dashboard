@@ -363,18 +363,24 @@ def generar_analisis(ticker, score, q, epct, ppct, fund):
     return "\n".join(lineas)
 
 
-def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov):
+def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov, ema_ok=None, ema_ok_media=None):
     """
     Solo decisión operativa — sin repetir datos técnicos que ya están en Contexto.
-    score 3   = señal completa
-    score 2   = señal promovida por divergencia (div reemplaza punto faltante)
+    score 3         = señal completa
+    score 2 + div   = señal promovida por divergencia
+    ema_ok          = precio dentro del -5% de EMA  → posición completa
+    ema_ok_media    = precio entre -5% y -15% de EMA → posición media
     """
     if score not in (2, 3):
         return "Señal incompleta. Monitorear — no operar aún."
 
+    # Calcular flags si no vienen del caller
+    if ema_ok is None:       ema_ok       = epct >= -5
+    if ema_ok_media is None: ema_ok_media = epct >= -15
+
     # Señal promovida por divergencia (score 2): más conservador
     if score == 2 and div:
-        if epct >= -5:
+        if ema_ok:
             return (
                 "Entrada con media posición. "
                 "Ampliá a posición completa cuando el setup complete los 3 puntos."
@@ -385,42 +391,35 @@ def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov):
                 "Esperá confirmación adicional antes de ampliar."
             )
 
-    # Con divergencia en señal 3/3: entrada reforzada
-    if div and epct >= -5:
+    # Con divergencia en señal 3/3 + cerca EMA: entrada reforzada
+    if div and ema_ok:
         return (
             "Entrada con posición completa. "
             "Ampliá si la siguiente vela confirma continuidad alcista."
         )
 
-    # Precio sobre EMA200 + BB: setup limpio
+    # Precio sobre EMA200 + BB: setup más limpio posible
     if epct >= 0 and bb_recov:
         return (
             "Entrada con posición completa. "
             "La EMA200 actúa como soporte dinámico de largo plazo."
         )
 
-    # Testeando EMA200 + BB recuperado
-    if epct >= -5 and bb_recov:
+    # Testeando EMA200 (dentro del -5%) + BB recuperado
+    if ema_ok and bb_recov:
         return (
             "Entrada con posición completa. "
             "Zona de confluencia técnica — favorable para acumulación."
         )
 
-    # Entre -5% y -15% de EMA: precaución por distancia
-    if -15 <= epct < -5:
+    # Entre -5% y -15% de EMA: posición media, esperar recuperación
+    if ema_ok_media and not ema_ok:
         return (
             f"Entrada con media posición ({abs(epct):.1f}% bajo EMA200). "
             "Ampliá a posición completa cuando el precio recupere la media."
         )
 
-    # Corrección profunda bajo -15%
-    if epct < -15:
-        return (
-            "Entrada con media posición. "
-            "Acumulación escalonada: ampliá si el precio confirma soporte en las próximas ruedas."
-        )
-
-    # Default
+    # Default conservador
     return (
         "Entrada con media posición. "
         "Confirmá tendencia en TradingView antes de ejecutar."
@@ -504,9 +503,13 @@ def score_signal(ticker, q):
     if rsi_bounced_15:
         score += 1
 
-    # ── Punto 2: EMA200 — precio encima O a no más del 3% por debajo ────────
-    ema_ok = epct >= -5
-    if ema_ok:
+    # ── Punto 2: EMA200 — dos niveles ──────────────────────────────────────────
+    # ema_ok       : precio dentro del -5%  → posición completa
+    # ema_ok_media : precio entre -5% y -15% → posición media
+    # Ambos suman el punto; la sugerencia de tamaño la maneja sugerencia_signal
+    ema_ok       = epct >= -5
+    ema_ok_media = epct >= -15
+    if ema_ok or ema_ok_media:
         score += 1
 
     # ── Punto 3: Bollinger — recuperó banda inferior ──────────────────────────
@@ -517,7 +520,7 @@ def score_signal(ticker, q):
     forming_rsi_zone = (rsi10 <= 38 and not rsi_bounced_15)
     forming = forming_rsi_zone
 
-    return score, forming, epct, ppct, fund, rsi_bounced_15, rsi_oversold
+    return score, forming, epct, ppct, fund, rsi_bounced_15, rsi_oversold, ema_ok, ema_ok_media
 
 def send_telegram(message):
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
@@ -706,7 +709,12 @@ for ticker, sym in YF_MAP.items():
         bb_tag  = " · BB↑"   if q.get("bb_recov")   else ""
         ema200_val = q.get("ema200") or 0
         epct_debug = (q["price"] - ema200_val) / ema200_val * 100 if ema200_val else 0
-        print(f"RSI {q['rsi10']} · ${q['price']} · EMA200=${ema200_val} ({epct_debug:+.1f}%){div_tag}{bb_tag}")
+        # Dirección RSI: flecha visual para ver si está tomando carrera o buscando piso
+        _rsi_now  = q.get("rsi10") or 50
+        _rsi_prev = q.get("rsi_prev") or _rsi_now
+        rsi_arrow = "↗️" if _rsi_now > _rsi_prev else ("↘️" if _rsi_now < _rsi_prev else "→")
+        q["rsi_direction"] = "subiendo" if _rsi_now > _rsi_prev else ("bajando" if _rsi_now < _rsi_prev else "lateral")
+        print(f"RSI {q['rsi10']}{rsi_arrow} · ${q['price']} · EMA200=${ema200_val} ({epct_debug:+.1f}%){div_tag}{bb_tag}")
 
         # ── Fusionar rsiHistory persistido con el calculado ahora ──────────
         # Si fetch_quotes.py guardo un rsiHistory con un minimo <=30 en run
@@ -723,13 +731,13 @@ for ticker, sym in YF_MAP.items():
 
     if q.get("_fallback"):
         rsi10 = q["rsi10"] or 50
-        _, _, epct, ppct, _, _, _ = score_signal(ticker, q)
+        _, _, epct, ppct, _, _, _, _, _ = score_signal(ticker, q)
         all_results.append((ticker, 0, q, epct, ppct))
         if rsi10 <= 38:
             radar_info.append((ticker, q, epct, ppct, 0))
         continue
 
-    score, forming, epct, ppct, fund, rsi_bounced, rsi_oversold = \
+    score, forming, epct, ppct, fund, rsi_bounced, rsi_oversold, ema_ok, ema_ok_media = \
         score_signal(ticker, q)
     all_results.append((ticker, score, q, epct, ppct))
 
@@ -770,19 +778,42 @@ for ticker, sym in YF_MAP.items():
 
     # ── Clasificación normal (respetando silencio) ────────────────────────────
 
-    # Fix 2: bb_ema_watchlist sin condición redundante de score
-    # (bb_recov + epct >= -5 ya garantiza score >= 2)
+    # ── rsi_direction: detectar si el RSI está subiendo o bajando ───────────────
+    rsi_direction = q.get("rsi_direction", "lateral")
+
+    # ── Clasificación — condiciones actualizadas ──────────────────────────────
+
+    # CAMBIO 2: watchlist score=2 solo si el punto faltante NO es EMA profunda
+    # Si epct < -15% con score=2 → va a radar, no watchlist
+    watchlist_score2 = (
+        score == 2
+        and not rsi_bounced
+        and rsi10 <= 45
+        and epct >= -15   # si falta EMA por mucho → radar
+    )
+
+    # bb_ema_watchlist: BB recuperado + cerca EMA + sin rebote RSI aún
     bb_ema_watchlist = (
         bb_recov
         and epct >= -5
         and not rsi_bounced
     )
 
-    # Fix 1: div_to_signal ahora incluye score 2 con O sin rsi_bounced
-    # Fix 3: div_to_radar cubre score >= 0 (no solo score == 0)
-    div_to_signal    = div and score >= 2
-    div_to_watchlist = div and score == 1 and rsi10 <= 40
-    div_to_radar     = div and score == 0 and rsi10 <= 35
+    # CAMBIO 1: Señal DIV más exigente
+    # Requiere: bb_recov obligatorio + (RSI rebotó O precio cerca EMA) + score>=2
+    div_to_signal = (
+        div
+        and bb_recov
+        and (rsi_bounced or epct >= -15)
+        and score >= 2
+    )
+
+    # CAMBIO 5: div_to_watchlist cubre score<=1 (antes solo score==1)
+    # Cubre el hueco RSI 35-40 con div y score=0 que antes quedaba ignorado
+    div_to_watchlist = div and score <= 1 and rsi10 <= 40
+
+    # CAMBIO 3: radar EMA solo si RSI <= 50 (evita activos neutrales)
+    div_to_radar = div and score == 0 and rsi10 <= 35
 
     # Activo silenciado: solo puede aparecer en radar si rsi_reset=True y RSI < 45
     if is_silenced:
@@ -792,19 +823,20 @@ for ticker, sym in YF_MAP.items():
         else:
             print(f"  [CICLO] {ticker}: silenciado — ignorado (RSI={rsi10} hit50={rsi_hit_50} reset={rsi_reset})")
     elif score == 3 and rsi_bounced:
-        print(f"  >>> SEÑAL 3/3: {ticker} rsi={rsi10} rsi_prev={q.get('rsi_prev')} bb_recov={bb_recov} epct={epct:.1f}")
+        dir_tag = f" {rsi_direction}" if rsi_direction != "lateral" else ""
+        print(f"  >>> SEÑAL 3/3: {ticker} rsi={rsi10}{dir_tag} rsi_prev={q.get('rsi_prev')} bb_recov={bb_recov} epct={epct:.1f}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
     elif div_to_signal:
-        print(f"  >>> SEÑAL DIV {score}/3+div: {ticker} rsi={rsi10} epct={epct:.1f}")
+        print(f"  >>> SEÑAL DIV {score}/3+div: {ticker} rsi={rsi10} epct={epct:.1f} bb_recov={bb_recov}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
-    elif (score == 2 and not rsi_bounced and rsi10 <= 45) or bb_ema_watchlist or div_to_watchlist:
+    elif watchlist_score2 or bb_ema_watchlist or div_to_watchlist:
         reason = "bb_ema" if bb_ema_watchlist else ("div" if div_to_watchlist else "score+rsi")
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → watchlist ({reason})")
         watchlist_found.append((ticker, score, q, epct, ppct))
-    elif (rsi10 <= 35) or (rsi10 < 30 and not rsi_bounced) or (abs(epct) <= 1) or div_to_radar:
-        # Fix 3: agregar div explícitamente al radar cuando score > 0 y RSI <= 35
+    elif (rsi10 <= 35) or (rsi10 < 30 and not rsi_bounced) or (abs(epct) <= 1 and rsi10 <= 50) or div_to_radar:
         has_div = div and rsi10 <= 35
-        print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → radar{' (div)' if has_div else ''}")
+        dir_tag = f" {rsi_direction}" if rsi_direction != "lateral" else ""
+        print(f"  ... {ticker}: rsi={rsi10}{dir_tag} score={score}/3 → radar{' (div)' if has_div else ''}")
         radar_info.append((ticker, q, epct, ppct, score))
     else:
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → ignorado")
@@ -858,7 +890,7 @@ for ticker, score, q, epct, ppct, fund in signals_found:
     div    = q.get("div_bullish", False)
     bb_rec = q.get("bb_recov", False)
 
-    sugerencia = sugerencia_signal(score, rsi10, epct, fund, div, bb_rec)
+    sugerencia = sugerencia_signal(score, rsi10, epct, fund, div, bb_rec, ema_ok=ema_ok, ema_ok_media=ema_ok_media)
     analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
 
     _tv_sym  = TV_MAP.get(ticker, ticker)
