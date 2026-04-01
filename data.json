@@ -625,7 +625,7 @@
     },
     "AMZN": {
       "is_silenced": true,
-      "rsi_hit_50": false,
+      "rsi_hit_50": true,
       "rsi_reset": false
     }
   },
