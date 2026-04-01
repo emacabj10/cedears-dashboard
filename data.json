@@ -622,6 +622,11 @@
       "is_silenced": true,
       "rsi_hit_50": true,
       "rsi_reset": false
+    },
+    "AMZN": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false
     }
   },
   "daily": {
@@ -636,6 +641,12 @@
       "NVDA"
     ],
     "watchlist": [],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "AMZN",
+        "price": "$212.65",
+        "hora": "14:34"
+      }
+    ]
   }
 }
