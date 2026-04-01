@@ -51,6 +51,16 @@ jobs:
           CALLBACK_QUERY_ID: ${{ github.event.inputs.callback_query_id }}
         run: python alert_quotes.py
 
+      - name: Commit data.json after alerts
+        if: ${{ github.event.inputs.cmd_operado == '' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add data.json
+          git diff --staged --quiet || git commit -m "Update daily $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
+
       - name: Commit data.json after operado
         if: ${{ github.event.inputs.cmd_operado != '' }}
         run: |
