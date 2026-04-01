@@ -620,32 +620,22 @@
     },
     "MELI": {
       "is_silenced": true,
-      "rsi_hit_50": false,
+      "rsi_hit_50": true,
       "rsi_reset": false
     }
   },
   "daily": {
-    "entradas": [
-      {
-        "ticker": "BRK.B",
-        "price": "$474.87",
-        "hora": "11:59"
-      },
-      {
-        "ticker": "MCD",
-        "price": "$309.29",
-        "hora": "12:35"
-      },
-      {
-        "ticker": "GLD",
-        "price": "$417.53",
-        "hora": "14:47"
-      },
-      {
-        "ticker": "MELI",
-        "price": "$1,668.51",
-        "hora": "13:14"
-      }
-    ]
+    "date": "2026-03-31",
+    "signals": [
+      "AMZN",
+      "GOOGL",
+      "META",
+      "QQQ",
+      "SPY",
+      "TSLA",
+      "NVDA"
+    ],
+    "watchlist": [],
+    "entradas": []
   }
 }
