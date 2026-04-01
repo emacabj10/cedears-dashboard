@@ -615,7 +615,7 @@
     },
     "GLD": {
       "is_silenced": true,
-      "rsi_hit_50": false,
+      "rsi_hit_50": true,
       "rsi_reset": false
     },
     "MELI": {
@@ -625,7 +625,7 @@
     }
   },
   "daily": {
-    "date": "2026-03-31",
+    "date": "2026-04-01",
     "signals": [
       "AMZN",
       "GOOGL",
