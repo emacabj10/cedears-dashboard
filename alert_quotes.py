@@ -602,9 +602,23 @@ def handle_operado(ticker_cmd):
         dj = {}
 
     # Activar silencio
+    # Detectar posicion automaticamente segun epct al momento de operar
     cycs = dj.get("cycles", {})
-    cycs[ticker_cmd] = {"is_silenced": True, "rsi_hit_50": False, "rsi_reset": False}
+    quotes_data = dj.get("quotes", {})
+    posicion = "completa"  # default
+    if ticker_cmd in quotes_data:
+        _price  = quotes_data[ticker_cmd].get("price", 0)
+        _ema200 = quotes_data[ticker_cmd].get("ema200", 0) or 1
+        _epct   = (_price - _ema200) / _ema200 * 100
+        posicion = "completa" if _epct >= -5 else "media"
+    cycs[ticker_cmd] = {
+        "is_silenced": True,
+        "rsi_hit_50":  False,
+        "rsi_reset":   False,
+        "posicion":    posicion,
+    }
     dj["cycles"] = cycs
+    print(f"  [OPERADO] posicion detectada: {posicion} (epct guardado en ciclo)")
 
     # Registrar entrada del día
     today = now_arg().strftime("%Y-%m-%d")
@@ -628,9 +642,12 @@ def handle_operado(ticker_cmd):
         json.dump(dj, f, indent=2, ensure_ascii=False)
 
     print(f"  [OPERADO] {ticker_cmd} silenciado. Ciclo iniciado.")
+    pos_emoji = "💯" if posicion == "completa" else "⚡"
+    pos_label = "posición completa" if posicion == "completa" else "media posición"
     send_telegram(
         f"✅ <b>{ticker_cmd}</b> marcado como operado.\n"
-        f"El bot silenciará alertas de Señal/Watchlist para este activo.\n"
+        f"{pos_emoji} Entrada registrada como <b>{pos_label}</b>.\n"
+        f"El bot silenciará alertas de Señal/Watchlist hasta completar el ciclo.\n"
     )
 
 # Procesar comando operado — soporta dos fuentes:
@@ -769,12 +786,28 @@ for ticker, sym in YF_MAP.items():
     # Fase 4: rsi_reset activo + nuevo rebote técnico válido → despertar
     rebote_valido = rsi_bounced and bb_recov
     if is_silenced and rsi_reset and rebote_valido:
+        _posicion_previa = cyc.get("posicion", "completa")
         cyc["is_silenced"] = False
         cyc["rsi_hit_50"]  = False
         cyc["rsi_reset"]   = False
+        cyc["posicion"]    = None
         is_silenced = False
-        print(f"  [CICLO] {ticker}: DESPERTAR — ciclo completado, silencio levantado")
+        print(f"  [CICLO] {ticker}: DESPERTAR — ciclo completado (posicion_previa={_posicion_previa})")
         save_cycle(ticker, cyc)
+        # Notificar despertar con contexto de posicion
+        if _posicion_previa == "media":
+            send_telegram(
+                f"🔔 <b>{ticker}</b> — Ciclo completado\n"
+                f" Tenés <b>media posición</b> abierta en este activo.\n"
+                f"El setup técnico se renovó — si la señal confirma, "
+                f"podés <b>completar a posición completa</b>.\n"
+            )
+        else:
+            send_telegram(
+                f"🔔 <b>{ticker}</b> — Ciclo completado\n"
+                f" Posición previa era completa. "
+                f"Si la señal confirma, podés evaluar una <b>nueva entrada</b>.\n"
+            )
 
     # ── Clasificación normal (respetando silencio) ────────────────────────────
 
