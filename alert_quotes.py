@@ -741,11 +741,6 @@ if _INTRADAY:
     if _daily_intra.get("date") != _today_intra:
         _daily_intra = {"date": _today_intra, "signals": [], "watchlist": [], "entradas": []}
 
-    # already_alerted: tickers que ya recibieron alerta hoy (señal o watchlist)
-    _alerted_today = set(
-        _daily_intra.get("signals", []) + _daily_intra.get("watchlist", [])
-    )
-
     _intra_header_sent = False
     _intra_fired = []
 
@@ -755,9 +750,14 @@ if _INTRADAY:
             print(f"  [INTRADAY] {ticker}: sin datos guardados — skip")
             continue
 
-        # Skip si ya fue alertado hoy
-        if ticker in _alerted_today:
-            print(f"  [INTRADAY] {ticker}: ya alertado hoy — skip")
+        # Skip si ya fue alertado hoy — con lógica de upgrade
+        _intra_in_signals   = ticker in set(_daily_intra.get("signals", []))
+        _intra_in_watchlist = ticker in set(_daily_intra.get("watchlist", []))
+
+        # Para evaluar upgrade necesitamos los datos guardados primero
+        # (los leemos abajo; acá solo skip definitivo si ya está en señal)
+        if _intra_in_signals:
+            print(f"  [INTRADAY] {ticker}: señal ya enviada hoy — skip")
             continue
 
         # Skip si está silenciado (ciclo activo)
@@ -796,6 +796,13 @@ if _INTRADAY:
             and rsi_prev_close <= 40
             and epct_intra >= -15
         )
+
+        # Si estaba en watchlist y sigue siendo watchlist → skip (ya fue avisado)
+        if _intra_in_watchlist and not signal_still_active:
+            print(f"  [INTRADAY] {ticker}: watchlist ya enviada hoy, sin upgrade — skip")
+            continue
+        elif _intra_in_watchlist and signal_still_active:
+            print(f"  [INTRADAY] {ticker}: UPGRADE watchlist→señal intradiario")
 
         print(f"  [INTRADAY] {ticker}: precio=${current_price} EMA200=${ema200_saved} "
               f"({epct_intra:+.1f}%) RSI_cierre={rsi_prev_close} "
@@ -961,15 +968,31 @@ for ticker, sym in YF_MAP.items():
             )
 
     # ── Skip si ya fue alertado hoy (flag already_alerted) ──────────────────
-    # Evita re-disparar en los 3 runs diarios de fetch_quotes.py.
-    # El intradiario también respeta este flag (lo lee de data.json antes de correr).
+    # Regla: skip total solo si ya está en señal (no puede bajar de categoría).
+    # Si estaba en watchlist pero ahora clasifica como señal → se permite el upgrade.
     _alerted_signals_full   = set(_daily.get("signals", []))
     _alerted_watchlist_full = set(_daily.get("watchlist", []))
-    if ticker in _alerted_signals_full or ticker in _alerted_watchlist_full:
-        print(f"  [DAILY] {ticker}: already_alerted hoy — skip")
+
+    _would_be_signal = (
+        (score == 3 and rsi_bounced and rsi10 <= 45)
+        or (div and q.get("bb_recov") and (rsi_bounced or epct >= -15) and score >= 2)
+    )
+
+    if ticker in _alerted_signals_full:
+        # Ya tiene señal hoy → skip total (evita spam en múltiples runs)
+        print(f"  [DAILY] {ticker}: señal ya enviada hoy — skip")
         all_results.append((ticker, score, q, epct, ppct))
-        radar_info.append((ticker, q, epct, ppct, score))  # sigue en radar para el reporte
+        radar_info.append((ticker, q, epct, ppct, score))
         continue
+    elif ticker in _alerted_watchlist_full and not _would_be_signal:
+        # Sigue siendo watchlist o radar → skip (ya fue avisado)
+        print(f"  [DAILY] {ticker}: watchlist ya enviada hoy, sin upgrade — skip")
+        all_results.append((ticker, score, q, epct, ppct))
+        radar_info.append((ticker, q, epct, ppct, score))
+        continue
+    elif ticker in _alerted_watchlist_full and _would_be_signal:
+        # Subió de watchlist a señal → dejar pasar, se enviará alerta verde
+        print(f"  [DAILY] {ticker}: UPGRADE watchlist→señal — procesando")
 
     # ── Clasificación normal (respetando silencio) ────────────────────────────
 
