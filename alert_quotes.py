@@ -685,6 +685,88 @@ elif _cmd_operado.lower().startswith("!operado "):
     _ticker_op = _cmd_operado.split(" ", 1)[1]
     handle_operado(_ticker_op)
     import sys; sys.exit(0)
+elif _cmd_operado.lower().startswith("!run "):
+    # !run TICKER — fetch completo + mensaje identico al bot normal
+    _run_ticker = _cmd_operado.split(" ", 1)[1].strip().upper()
+    if _run_ticker not in YF_MAP:
+        send_telegram(f"❌ Ticker <b>{_run_ticker}</b> no reconocido en el universo.")
+        import sys; sys.exit(0)
+    print(f"[!run] Fetch completo de {_run_ticker}")
+    _sym_run = YF_MAP[_run_ticker]
+    _q_run   = fetch_ticker(_sym_run)
+    if not _q_run:
+        send_telegram(f"❌ No se pudieron obtener datos para <b>{_run_ticker}</b>.")
+        import sys; sys.exit(0)
+    # Score identico al bot normal
+    _r_price  = _q_run["price"]
+    _r_ema    = _q_run["ema200"] or 1
+    _r_epct   = (_r_price - _r_ema) / _r_ema * 100
+    _r_rsi    = _q_run["rsi10"] or 50
+    _r_rsi_p  = _q_run.get("rsi_prev") or _r_rsi
+    _r_poc    = _q_run.get("poc_proxy") or 1
+    _r_ppct   = (_r_price - _r_poc) / _r_poc * 100
+    _r_b15    = _q_run.get("rsi_bounced_15", False)
+    _r_bb     = _q_run.get("bb_recov", False)
+    _r_div    = _q_run.get("div_bullish", False)
+    _r_ema_ok = _r_epct >= -5
+    _r_ema_md = _r_epct >= -15
+    _r_fund   = FUND.get(_run_ticker, "buenos")
+    _r_score  = sum([_r_b15, (_r_ema_ok or _r_ema_md), _r_bb])
+    _r_tv     = TV_MAP.get(_run_ticker, _run_ticker)
+    _r_link   = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_r_tv}">Ver gráfico en TradingView →</a>'
+    # Clasificacion
+    _r_div_sig = _r_div and _r_bb and (_r_b15 or _r_ema_md) and _r_score >= 2
+    if _r_score == 3 and _r_b15 and _r_rsi <= 45:
+        _r_tipo = "senal"
+        _r_label = f"SEÑAL {_r_score}/3"
+        _r_emoji = "🟢"
+    elif _r_div_sig:
+        _r_tipo = "senal"
+        _r_label = f"SEÑAL DIV {_r_score}/3+div"
+        _r_emoji = "🟢"
+    elif _r_score == 2 and not _r_b15 and _r_rsi <= 40 and _r_ema_md:
+        _r_tipo = "watchlist"
+        _r_label = f"WATCHLIST {_r_score}/3"
+        _r_emoji = "🟡"
+    elif _r_rsi <= 35 or (_r_rsi < 30 and not _r_b15) or (abs(_r_epct) <= 1 and _r_rsi <= 30):
+        _r_tipo = "radar"
+        _r_label = "RADAR"
+        _r_emoji = "🔵"
+    else:
+        _r_tipo = "ignorado"
+        _r_label = "SIN SEÑAL"
+        _r_emoji = "⚪"
+    # Generar analisis y sugerencia identicos al bot
+    _r_analisis = generar_analisis(_run_ticker, _r_score, _q_run, _r_epct, _r_ppct, _r_fund)
+    _r_sugerencia = sugerencia_signal(_r_score, _r_rsi, _r_epct, _r_fund, _r_div, _r_bb,
+                                       ema_ok=_r_ema_ok, ema_ok_media=_r_ema_md)
+    _r_price_fmt = f"${_r_price:,.2f}"
+    if _r_tipo in ("senal", "watchlist"):
+        msg_run = (
+            f"{_r_emoji} <b>{_run_ticker} {_r_price_fmt} — {_r_label}</b>\n"
+            f"\n<b>Indicadores</b>\n"
+            f"📉 {rsi_label_signal(_r_rsi, _r_rsi_p)}\n"
+            f"📈 {ema_label_signal(_r_epct, _q_run['emaTrend'], _r_ema)}\n"
+            f"📦 {poc_label_signal(_r_ppct, _r_poc)}\n"
+            f"🎢 {bb_label_signal(_q_run)}\n"
+            f"\n🔍 <b>Contexto</b>\n"
+            f"{_r_analisis}\n"
+            f"\n💡 <b>Acción</b>\n"
+            f"{_r_sugerencia}\n"
+            f"\n{_r_link}"
+        )
+        send_telegram_with_button(msg_run, _run_ticker) if _r_tipo == "senal" else send_telegram(msg_run)
+    else:
+        _r_rsi_dir = "subiendo" if _r_rsi > _r_rsi_p else "bajando"
+        msg_run = (
+            f"{_r_emoji} <b>{_run_ticker} {_r_price_fmt} — {_r_label}</b>\n"
+            f"RSI(10): {_r_rsi} ({_r_rsi_dir}) · EMA200: ${_r_ema:,.2f} ({_r_epct:+.1f}%)\n"
+            f"Score: {_r_score}/3 · BB: {'Si' if _r_bb else 'No'} · Div: {'Si' if _r_div else 'No'}\n"
+            f"\n{_r_link}"
+        )
+        send_telegram(msg_run)
+    import sys; sys.exit(0)
+
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 print(f"\n{'='*55}")
@@ -743,6 +825,15 @@ if _INTRADAY:
 
     _intra_header_sent = False
     _intra_fired = []
+
+    # Sesión según hora Argentina — igual que el bot normal
+    _intra_hour = now_arg().hour
+    if 9 <= _intra_hour < 13:
+        _intra_session = "APERTURA DE MERCADO"
+    elif 13 <= _intra_hour < 16:
+        _intra_session = "MEDIA RUEDA DE MERCADO"
+    else:
+        _intra_session = "CIERRE DE MERCADO"
 
     for ticker, sym in YF_MAP.items():
         saved = _quotes_saved.get(ticker)
@@ -812,13 +903,22 @@ if _INTRADAY:
             _tv_sym_i  = TV_MAP.get(ticker, ticker)
             _link_tv_i = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_i}">Ver gráfico →</a>'
             if not _intra_header_sent:
-                send_telegram(f"🔔 CHEQUEO INTRADIARIO — {now_arg().strftime('%H:%M')}\nSeñales activas del cierre anterior:")
+                send_telegram(
+                    f"🔔 {_intra_session} — {now_arg().strftime('%H:%M')}\n"
+                    f"Iniciando reporte técnico..."
+                )
                 _intra_header_sent = True
+            # Score intradiario: usa rsi_bounced_15 + bb_recov del cierre anterior
+            _score_intra = sum([rsi_bounced_15, ema_still_ok, bb_recov_saved])
             msg_intra = (
-                f"🟢 <b>{ticker} ${current_price:,.2f} — SEÑAL ACTIVA (intradiario)</b>\n"
-                f"RSI cierre anterior: {rsi_prev_close} · EMA200: ${ema200_saved:,.2f} ({epct_intra:+.1f}%)\n"
-                f"La señal del cierre anterior sigue válida con el precio actual.\n"
-                f"{_link_tv_i}"
+                f"🟢 <b>{ticker} ${current_price:,.2f} — SEÑAL {_score_intra}/3 (Intradiario)</b>\n"
+                f"\n<b>Indicadores</b>\n"
+                f"📉 RSI cierre anterior: {rsi_prev_close}\n"
+                f"📈 EMA200: ${ema200_saved:,.2f} ({epct_intra:+.1f}%)\n"
+                f"🎢 BB recuperada en cierre anterior: {'Sí' if bb_recov_saved else 'No'}\n"
+                f"\n🔍 <b>Contexto</b>\n"
+                f"Señal del cierre anterior confirmada con precio actual.\n"
+                f"\n{_link_tv_i}"
             )
             send_telegram_with_button(msg_intra, ticker)
             _intra_fired.append(ticker)
@@ -831,13 +931,22 @@ if _INTRADAY:
             _tv_sym_iw  = TV_MAP.get(ticker, ticker)
             _link_tv_iw = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_iw}">Ver gráfico →</a>'
             if not _intra_header_sent:
-                send_telegram(f"🔔 CHEQUEO INTRADIARIO — {now_arg().strftime('%H:%M')}\nSetups en formación:")
+                send_telegram(
+                    f"🔔 {_intra_session} — {now_arg().strftime('%H:%M')}\n"
+                    f"Iniciando reporte técnico..."
+                )
                 _intra_header_sent = True
+            _score_intra_w = sum([rsi_bounced_15, ema_still_ok, bb_recov_saved])
             msg_intra_w = (
-                f"🟡 <b>{ticker} ${current_price:,.2f} — WATCHLIST ACTIVA (intradiario)</b>\n"
-                f"RSI cierre anterior: {rsi_prev_close} · EMA200: ${ema200_saved:,.2f} ({epct_intra:+.1f}%)\n"
-                f"Setup en formación — confirmar con cierre diario.\n"
-                f"{_link_tv_iw}"
+                f"🟡 <b>{ticker} ${current_price:,.2f} — WATCHLIST {_score_intra_w}/3 (Intradiario)</b>\n"
+                f"⚠️ <b>Estado:</b> Setup en formación. Aviso previo — monitorear.\n"
+                f"\n<b>Indicadores</b>\n"
+                f"📉 RSI cierre anterior: {rsi_prev_close}\n"
+                f"📈 EMA200: ${ema200_saved:,.2f} ({epct_intra:+.1f}%)\n"
+                f"🎢 BB recuperada en cierre anterior: {'Sí' if bb_recov_saved else 'No'}\n"
+                f"\n🔍 <b>Contexto</b>\n"
+                f"Setup del cierre anterior activo — confirmar con cierre diario.\n"
+                f"\n{_link_tv_iw}"
             )
             send_telegram(msg_intra_w)
             _intra_fired.append(ticker)
