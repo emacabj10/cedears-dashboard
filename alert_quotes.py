@@ -902,13 +902,21 @@ if _INTRADAY:
         if signal_still_active:
             _tv_sym_i  = TV_MAP.get(ticker, ticker)
             _link_tv_i = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_i}">Ver gráfico →</a>'
+
+            # Filtro apertura: antes de las 11:00 ARG, skip total del intradiario.
+            # El run diario de las 10:30 ya envió el aviso como watchlist.
+            # No repetir hasta que se libere el filtro.
+            _intra_en_carencia = (now_arg().hour == 10)
+            if _intra_en_carencia:
+                print(f"  [CARENCIA] {ticker}: intradiario silenciado hasta las 11:00 — skip")
+                continue
+
             if not _intra_header_sent:
                 send_telegram(
                     f"🔔 {_intra_session} — {now_arg().strftime('%H:%M')}\n"
                     f"Iniciando reporte técnico..."
                 )
                 _intra_header_sent = True
-            # Score intradiario: usa rsi_bounced_15 + bb_recov del cierre anterior
             _score_intra = sum([rsi_bounced_15, ema_still_ok, bb_recov_saved])
             msg_intra = (
                 f"🟢 <b>{ticker} ${current_price:,.2f} — SEÑAL {_score_intra}/3 (Intradiario)</b>\n"
@@ -922,7 +930,6 @@ if _INTRADAY:
             )
             send_telegram_with_button(msg_intra, ticker)
             _intra_fired.append(ticker)
-            # Registrar como alertado hoy
             if ticker not in _daily_intra.get("signals", []):
                 _daily_intra.setdefault("signals", []).append(ticker)
             time.sleep(0.3)
@@ -1178,6 +1185,7 @@ date_str = now_arg().strftime("%d/%m/%Y")
 
 # Sesión según hora Argentina
 _hour = now_arg().hour
+_minute = now_arg().minute
 if 9 <= _hour < 13:
     session_name = "APERTURA DE MERCADO"
     is_cierre    = False
@@ -1188,9 +1196,24 @@ else:
     session_name = "CIERRE DE MERCADO"
     is_cierre    = True
 
+# ── Filtro de apertura: primeros 30 min son solo watchlist ───────────────────
+# Si el run diario cae antes de las 11:00 ARG, las señales se degradan a
+# watchlist para evitar trampas de alta volatilidad en la apertura.
+# A las 11:00 en adelante el filtro se libera y las señales verdes se envían.
+_en_carencia = (_hour == 10)   # 10:00–10:59 ARG → solo watchlist
+if _en_carencia:
+    # Mover señales a watchlist — se envían como 🟡 sin botón "Operada"
+    for item in signals_found:
+        ticker_c, score_c, q_c, epct_c, ppct_c, fund_c = item
+        watchlist_found.append((ticker_c, score_c, q_c, epct_c, ppct_c))
+        print(f"  [CARENCIA] {ticker_c}: señal degradada a watchlist (apertura <11:00)")
+    signals_found = []
+    print(f"  [CARENCIA] Filtro activo — solo watchlists hasta las 11:00 ARG")
+
 session_header = (
     f"🔔 {session_name} — {now_arg().strftime('%H:%M')}\n"
     f"Iniciando reporte técnico..."
+    + ("\n⏳ Filtro de apertura activo — señales en modo watchlist hasta las 11:00." if _en_carencia else "")
 )
 
 # ── Persistencia de alertas del día en data.json ─────────────────────────────
