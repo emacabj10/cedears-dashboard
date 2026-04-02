@@ -1230,7 +1230,7 @@ for ticker, score, q, epct, ppct, fund in signals_found:
 
     _price_fmt = f"${q['price']:,.2f}"
     msg = (
-        f"🟢 <b>{ticker} {_price_fmt} — SEÑAL {score}/3</b>\n"
+        f"🟢 <b>{ticker} {_price_fmt} — SEÑAL {score}/3 (Diario)</b>\n"
         f"\n<b>Indicadores</b>\n"
         f"📉 {rsi_label_signal(rsi10, rsi_p)}\n"
         f"📈 {ema_label_signal(epct, q['emaTrend'], q['ema200'])}\n"
@@ -1275,7 +1275,7 @@ for ticker, score, q, epct, ppct in watchlist_found:
 
     _price_fmt_w = f"${q['price']:,.2f}"
     msg = (
-        f"🟡 <b>{ticker} {_price_fmt_w} — WATCHLIST {score}/3</b>\n"
+        f"🟡 <b>{ticker} {_price_fmt_w} — WATCHLIST {score}/3 (Diario)</b>\n"
         f"⚠️ <b>Estado:</b> Setup en formación. Aviso previo — monitorear.\n"
         f"\n<b>Indicadores</b>\n"
         f"📉 {rsi_label_watchlist(rsi10, rsi_p)}\n"
