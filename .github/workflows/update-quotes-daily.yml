@@ -1,0 +1,73 @@
+name: Update quotes (diario)
+
+on:
+  schedule:
+    - cron: '30 10 * * 1-5'   # 10:30 ARG — apertura
+    - cron: '30 13 * * 1-5'   # 13:30 ARG — media rueda
+    - cron: '30 16 * * 1-5'   # 16:30 ARG — cierre
+  workflow_dispatch:
+    inputs:
+      cmd_operado:
+        required: false
+        default: ''
+      callback_query_id:
+        required: false
+        default: ''
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: Fetch quotes from Yahoo Finance
+        if: ${{ github.event.inputs.cmd_operado == '' || github.event.inputs.cmd_operado == '__FETCH_ONLY__' }}
+        run: python fetch_quotes.py
+
+      - name: Commit and push data.json
+        if: ${{ github.event.inputs.cmd_operado == '' || github.event.inputs.cmd_operado == '__FETCH_ONLY__' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add data.json
+          git diff --staged --quiet || git commit -m "Update quotes $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
+
+      - name: Send Telegram alerts
+        if: ${{ github.event.inputs.cmd_operado == '' }}
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CMD_OPERADO: ${{ github.event.inputs.cmd_operado }}
+          CALLBACK_QUERY_ID: ${{ github.event.inputs.callback_query_id }}
+        run: python alert_quotes.py
+
+      - name: Commit data.json after alerts
+        if: ${{ github.event.inputs.cmd_operado == '' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add data.json
+          git diff --staged --quiet || git commit -m "Update daily $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
+
+      - name: Commit data.json after operado
+        if: ${{ github.event.inputs.cmd_operado != '' && github.event.inputs.cmd_operado != '__FETCH_ONLY__' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add data.json
+          git diff --staged --quiet || git commit -m "Update after operado $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push

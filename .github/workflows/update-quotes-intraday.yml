@@ -1,0 +1,55 @@
+name: Update quotes (intradiario)
+
+on:
+  schedule:
+    # Lun-Vie, cada 10 minutos en horario de mercado ARG (13:40–19:20 UTC)
+    # Los crons de :30 están en el workflow diario — estos cubren el resto
+    - cron: '40,50 10 * * 1-5'
+    - cron: '0,10,20 11 * * 1-5'
+    - cron: '30,40,50 11 * * 1-5'
+    - cron: '0,10,20 12 * * 1-5'
+    - cron: '30,40,50 12 * * 1-5'
+    - cron: '0,10,20 13 * * 1-5'
+    - cron: '40,50 13 * * 1-5'
+    - cron: '0,10,20 14 * * 1-5'
+    - cron: '30,40,50 14 * * 1-5'
+    - cron: '0,10,20 15 * * 1-5'
+    - cron: '30,40,50 15 * * 1-5'
+    - cron: '0,10,20,40,50 16 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      intraday_check:
+        description: 'Forzar chequeo intradiario manual (dejar vacío o 1)'
+        required: false
+        default: '1'
+
+jobs:
+  intraday:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: Intraday price check
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          INTRADAY_CHECK: "1"
+        run: python alert_quotes.py
+
+      - name: Commit data.json after intraday check
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add data.json
+          git diff --staged --quiet || git commit -m "Intraday check $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
