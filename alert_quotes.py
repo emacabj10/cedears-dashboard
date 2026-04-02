@@ -217,6 +217,23 @@ def fetch_ticker(sym):
     except Exception as e:
         print(f"  Error: {e}"); return None
 
+def fetch_price_only(sym):
+    """Fetch liviano: solo precio actual vía Yahoo Finance (sin historial completo).
+    Usado en el chequeo intradiario para confirmar que la señal del cierre anterior
+    sigue activa — no recalcula RSI ni indicadores.
+    """
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=5d"
+    headers = {"User-Agent":"Mozilla/5.0","Accept":"application/json"}
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            data = json.loads(r.read())
+        result = data["chart"]["result"][0]
+        closes = [c for c in result["indicators"]["quote"][0]["close"] if c is not None]
+        return round(closes[-1], 2) if closes else None
+    except Exception as e:
+        print(f"  [price_only] Error {sym}: {e}"); return None
+
 # ── Labels por indicador ──────────────────────────────────────────────────────
 
 def rsi_label_signal(rsi10, rsi_prev):
@@ -701,6 +718,140 @@ def get_cycle(ticker):
 def save_cycle(ticker, state):
     cycles[ticker] = state
 
+# ── Modo Intradiario ─────────────────────────────────────────────────────────
+# INTRADAY_CHECK=1 → chequeo liviano: solo precio actual vs EMA200 y RSI del
+# cierre anterior guardado en data.json. No recalcula indicadores. No genera
+# reportes de cierre. Solo dispara si la señal sigue activa Y no fue enviada hoy.
+_INTRADAY = os.environ.get("INTRADAY_CHECK", "0").strip() == "1"
+
+if _INTRADAY:
+    print("\n[INTRADAY] Modo chequeo intradiario liviano activado.")
+    _today_intra = now_arg().strftime("%Y-%m-%d")
+    try:
+        with open("data.json", "r") as f:
+            _dj_intra = json.load(f)
+    except Exception:
+        print("[INTRADAY] Sin data.json — abortando."); import sys; sys.exit(0)
+
+    _quotes_saved  = _dj_intra.get("quotes", {})
+    _daily_intra   = _dj_intra.get("daily", {})
+    _cycles_intra  = _dj_intra.get("cycles", {})
+
+    # Resetear daily si cambió la fecha
+    if _daily_intra.get("date") != _today_intra:
+        _daily_intra = {"date": _today_intra, "signals": [], "watchlist": [], "entradas": []}
+
+    # already_alerted: tickers que ya recibieron alerta hoy (señal o watchlist)
+    _alerted_today = set(
+        _daily_intra.get("signals", []) + _daily_intra.get("watchlist", [])
+    )
+
+    _intra_header_sent = False
+    _intra_fired = []
+
+    for ticker, sym in YF_MAP.items():
+        saved = _quotes_saved.get(ticker)
+        if not saved:
+            print(f"  [INTRADAY] {ticker}: sin datos guardados — skip")
+            continue
+
+        # Skip si ya fue alertado hoy
+        if ticker in _alerted_today:
+            print(f"  [INTRADAY] {ticker}: ya alertado hoy — skip")
+            continue
+
+        # Skip si está silenciado (ciclo activo)
+        cyc_intra = _cycles_intra.get(ticker, {})
+        if cyc_intra.get("is_silenced"):
+            print(f"  [INTRADAY] {ticker}: silenciado (ciclo) — skip")
+            continue
+
+        # Leer datos del cierre anterior desde data.json
+        rsi_prev_close  = saved.get("rsi10")       # RSI del último cierre diario
+        ema200_saved    = saved.get("ema200")
+        rsi_bounced_15  = saved.get("rsi_bounced_15", False)
+        bb_recov_saved  = saved.get("bb_recov", False)
+
+        if not rsi_prev_close or not ema200_saved:
+            print(f"  [INTRADAY] {ticker}: datos incompletos en data.json — skip")
+            continue
+
+        # Fetch precio actual liviano
+        current_price = fetch_price_only(sym)
+        if current_price is None:
+            print(f"  [INTRADAY] {ticker}: no se pudo obtener precio actual — skip")
+            continue
+
+        epct_intra = (current_price - ema200_saved) / ema200_saved * 100
+
+        # Verificar si la señal del cierre sigue activa con precio actual:
+        # - RSI del cierre anterior indicaba rebote (rsi_bounced_15)
+        # - Precio actual aún cerca o sobre EMA200 (dentro del -15%)
+        ema_still_ok = epct_intra >= -15
+        signal_still_active = rsi_bounced_15 and ema_still_ok
+
+        # Watchlist: RSI del cierre <= 40 y precio aún cerca de EMA
+        watchlist_still_active = (
+            not rsi_bounced_15
+            and rsi_prev_close <= 40
+            and epct_intra >= -15
+        )
+
+        print(f"  [INTRADAY] {ticker}: precio=${current_price} EMA200=${ema200_saved} "
+              f"({epct_intra:+.1f}%) RSI_cierre={rsi_prev_close} "
+              f"bounced={rsi_bounced_15} → señal={signal_still_active} watch={watchlist_still_active}")
+
+        if signal_still_active:
+            _tv_sym_i  = TV_MAP.get(ticker, ticker)
+            _link_tv_i = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_i}">Ver gráfico →</a>'
+            if not _intra_header_sent:
+                send_telegram(f"🔔 CHEQUEO INTRADIARIO — {now_arg().strftime('%H:%M')}\nSeñales activas del cierre anterior:")
+                _intra_header_sent = True
+            msg_intra = (
+                f"🟢 <b>{ticker} ${current_price:,.2f} — SEÑAL ACTIVA (intradiario)</b>\n"
+                f"RSI cierre anterior: {rsi_prev_close} · EMA200: ${ema200_saved:,.2f} ({epct_intra:+.1f}%)\n"
+                f"La señal del cierre anterior sigue válida con el precio actual.\n"
+                f"{_link_tv_i}"
+            )
+            send_telegram_with_button(msg_intra, ticker)
+            _intra_fired.append(ticker)
+            # Registrar como alertado hoy
+            if ticker not in _daily_intra.get("signals", []):
+                _daily_intra.setdefault("signals", []).append(ticker)
+            time.sleep(0.3)
+
+        elif watchlist_still_active:
+            _tv_sym_iw  = TV_MAP.get(ticker, ticker)
+            _link_tv_iw = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_iw}">Ver gráfico →</a>'
+            if not _intra_header_sent:
+                send_telegram(f"🔔 CHEQUEO INTRADIARIO — {now_arg().strftime('%H:%M')}\nSetups en formación:")
+                _intra_header_sent = True
+            msg_intra_w = (
+                f"🟡 <b>{ticker} ${current_price:,.2f} — WATCHLIST ACTIVA (intradiario)</b>\n"
+                f"RSI cierre anterior: {rsi_prev_close} · EMA200: ${ema200_saved:,.2f} ({epct_intra:+.1f}%)\n"
+                f"Setup en formación — confirmar con cierre diario.\n"
+                f"{_link_tv_iw}"
+            )
+            send_telegram(msg_intra_w)
+            _intra_fired.append(ticker)
+            if ticker not in _daily_intra.get("watchlist", []):
+                _daily_intra.setdefault("watchlist", []).append(ticker)
+            time.sleep(0.3)
+
+    # Guardar daily actualizado
+    _dj_intra["daily"] = _daily_intra
+    with open("data.json", "w") as f:
+        json.dump(_dj_intra, f, indent=2, ensure_ascii=False)
+
+    if not _intra_fired:
+        print("[INTRADAY] Sin señales activas en este chequeo.")
+    else:
+        print(f"[INTRADAY] Alertas enviadas: {', '.join(_intra_fired)}")
+
+    import sys; sys.exit(0)
+
+# ── Fin modo intradiario — continúa el análisis completo diario ───────────────
+
 for ticker, sym in YF_MAP.items():
     print(f"Analizando {ticker}...", end=" ", flush=True)
     q = fetch_ticker(sym)
@@ -808,6 +959,17 @@ for ticker, sym in YF_MAP.items():
                 f" Posición previa era completa. "
                 f"Si la señal confirma, podés evaluar una <b>nueva entrada</b>.\n"
             )
+
+    # ── Skip si ya fue alertado hoy (flag already_alerted) ──────────────────
+    # Evita re-disparar en los 3 runs diarios de fetch_quotes.py.
+    # El intradiario también respeta este flag (lo lee de data.json antes de correr).
+    _alerted_signals_full   = set(_daily.get("signals", []))
+    _alerted_watchlist_full = set(_daily.get("watchlist", []))
+    if ticker in _alerted_signals_full or ticker in _alerted_watchlist_full:
+        print(f"  [DAILY] {ticker}: already_alerted hoy — skip")
+        all_results.append((ticker, score, q, epct, ppct))
+        radar_info.append((ticker, q, epct, ppct, score))  # sigue en radar para el reporte
+        continue
 
     # ── Clasificación normal (respetando silencio) ────────────────────────────
 
