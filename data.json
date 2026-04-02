@@ -631,7 +631,10 @@
   },
   "daily": {
     "date": "2026-04-02",
-    "signals": [],
+    "signals": [
+      "META",
+      "TSLA"
+    ],
     "watchlist": [
       "V",
       "BABA",
