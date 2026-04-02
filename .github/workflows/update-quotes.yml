@@ -3,23 +3,23 @@ name: Update quotes
 on:
   schedule:
     # ── Runs diarios completos (fetch + análisis + alertas) ──────────────────
-    - cron: '30 13 * * 1-5'   # 10:30 ARG — apertura
-    - cron: '30 16 * * 1-5'   # 13:30 ARG — media rueda
-    - cron: '30 19 * * 1-5'   # 16:30 ARG — cierre
+    - cron: '30 10 * * 1-5'   # 10:30 ARG — apertura
+    - cron: '30 13 * * 1-5'   # 13:30 ARG — media rueda
+    - cron: '30 16 * * 1-5'   # 16:30 ARG — cierre
     # ── Chequeo intradiario liviano cada 10 minutos (horario de mercado) ─────
     # Lun-Vie 13:40–19:20 UTC (10:40–16:20 ARG). Evita solapar con runs diarios.
+    - cron: '40,50 10 * * 1-5'
+    - cron: '0,10,20 11 * * 1-5'
+    - cron: '30,40,50 11 * * 1-5'
+    - cron: '0,10,20 12 * * 1-5'
+    - cron: '30,40,50 12 * * 1-5'
+    - cron: '0,10,20 13 * * 1-5'
     - cron: '40,50 13 * * 1-5'
     - cron: '0,10,20 14 * * 1-5'
     - cron: '30,40,50 14 * * 1-5'
     - cron: '0,10,20 15 * * 1-5'
     - cron: '30,40,50 15 * * 1-5'
-    - cron: '0,10,20 16 * * 1-5'
-    - cron: '40,50 16 * * 1-5'
-    - cron: '0,10,20 17 * * 1-5'
-    - cron: '30,40,50 17 * * 1-5'
-    - cron: '0,10,20 18 * * 1-5'
-    - cron: '30,40,50 18 * * 1-5'
-    - cron: '0,10,20 19 * * 1-5'
+    - cron: '0,10,20,40,50 16 * * 1-5'
   workflow_dispatch:
     inputs:
       cmd_operado:
