@@ -913,19 +913,33 @@ if _INTRADAY:
 
             if not _intra_header_sent:
                 send_telegram(
-                    f"🔔 {_intra_session} — {now_arg().strftime('%H:%M')}\n"
-                    f"Iniciando reporte técnico..."
+                    f"🔔 CHEQUEO INTRADIARIO — {now_arg().strftime('%H:%M')}\n"
+                    f"Señales activas del cierre anterior:"
                 )
                 _intra_header_sent = True
+            # Construir mensaje completo igual al bot diario
+            _q_intra = dict(saved)
+            _q_intra["price"] = current_price
+            _poc_intra = saved.get("poc_proxy") or 1
+            _ppct_intra = (current_price - _poc_intra) / _poc_intra * 100
+            _fund_intra = FUND.get(ticker, "buenos")
             _score_intra = sum([rsi_bounced_15, ema_still_ok, bb_recov_saved])
+            _rsi_p_intra = saved.get("rsi_prev") or rsi_prev_close
+            _analisis_intra = generar_analisis(ticker, _score_intra, _q_intra, epct_intra, _ppct_intra, _fund_intra)
+            _suger_intra = sugerencia_signal(_score_intra, rsi_prev_close, epct_intra, _fund_intra,
+                                              saved.get("div_bullish", False), bb_recov_saved,
+                                              ema_ok=(epct_intra >= -5), ema_ok_media=(epct_intra >= -15))
             msg_intra = (
                 f"🟢 <b>{ticker} ${current_price:,.2f} — SEÑAL {_score_intra}/3 (Intradiario)</b>\n"
                 f"\n<b>Indicadores</b>\n"
-                f"📉 RSI cierre anterior: {rsi_prev_close}\n"
-                f"📈 EMA200: ${ema200_saved:,.2f} ({epct_intra:+.1f}%)\n"
-                f"🎢 BB recuperada en cierre anterior: {'Sí' if bb_recov_saved else 'No'}\n"
+                f"📉 {rsi_label_signal(rsi_prev_close, _rsi_p_intra)}\n"
+                f"📈 {ema_label_signal(epct_intra, saved.get('emaTrend','lateral'), ema200_saved)}\n"
+                f"📦 {poc_label_signal(_ppct_intra, _poc_intra)}\n"
+                f"🎢 {bb_label_signal(_q_intra)}\n"
                 f"\n🔍 <b>Contexto</b>\n"
-                f"Señal del cierre anterior confirmada con precio actual.\n"
+                f"{_analisis_intra}\n"
+                f"\n💡 <b>Acción</b>\n"
+                f"{_suger_intra}\n"
                 f"\n{_link_tv_i}"
             )
             send_telegram_with_button(msg_intra, ticker)
@@ -939,20 +953,33 @@ if _INTRADAY:
             _link_tv_iw = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_iw}">Ver gráfico →</a>'
             if not _intra_header_sent:
                 send_telegram(
-                    f"🔔 {_intra_session} — {now_arg().strftime('%H:%M')}\n"
-                    f"Iniciando reporte técnico..."
+                    f"🔔 CHEQUEO INTRADIARIO — {now_arg().strftime('%H:%M')}\n"
+                    f"Setups en formación:"
                 )
                 _intra_header_sent = True
+            _q_intra_w = dict(saved)
+            _q_intra_w["price"] = current_price
+            _poc_intra_w = saved.get("poc_proxy") or 1
+            _ppct_intra_w = (current_price - _poc_intra_w) / _poc_intra_w * 100
+            _fund_intra_w = FUND.get(ticker, "buenos")
             _score_intra_w = sum([rsi_bounced_15, ema_still_ok, bb_recov_saved])
+            _rsi_p_intra_w = saved.get("rsi_prev") or rsi_prev_close
+            _analisis_intra_w = generar_analisis(ticker, _score_intra_w, _q_intra_w, epct_intra, _ppct_intra_w, _fund_intra_w)
+            _suger_intra_w = sugerencia_watchlist(_score_intra_w, rsi_prev_close, epct_intra, _fund_intra_w,
+                                                   saved.get("div_bullish", False), bb_recov_saved,
+                                                   saved.get("bb_below", False), rsi_bounced_15)
             msg_intra_w = (
                 f"🟡 <b>{ticker} ${current_price:,.2f} — WATCHLIST {_score_intra_w}/3 (Intradiario)</b>\n"
                 f"⚠️ <b>Estado:</b> Setup en formación. Aviso previo — monitorear.\n"
                 f"\n<b>Indicadores</b>\n"
-                f"📉 RSI cierre anterior: {rsi_prev_close}\n"
-                f"📈 EMA200: ${ema200_saved:,.2f} ({epct_intra:+.1f}%)\n"
-                f"🎢 BB recuperada en cierre anterior: {'Sí' if bb_recov_saved else 'No'}\n"
+                f"📉 {rsi_label_watchlist(rsi_prev_close, _rsi_p_intra_w)}\n"
+                f"📈 {ema_label_watchlist(epct_intra, saved.get('emaTrend','lateral'))}\n"
+                f"📦 {poc_label_watchlist(_ppct_intra_w, _poc_intra_w, current_price)}\n"
+                f"🎢 {bb_label_watchlist(_q_intra_w)}\n"
                 f"\n🔍 <b>Contexto</b>\n"
-                f"Setup del cierre anterior activo — confirmar con cierre diario.\n"
+                f"{_analisis_intra_w}\n"
+                f"\n💡 <b>Acción</b>\n"
+                f"{_suger_intra_w}\n"
                 f"\n{_link_tv_iw}"
             )
             send_telegram(msg_intra_w)
@@ -1083,33 +1110,6 @@ for ticker, sym in YF_MAP.items():
                 f"Si la señal confirma, podés evaluar una <b>nueva entrada</b>.\n"
             )
 
-    # ── Skip si ya fue alertado hoy (flag already_alerted) ──────────────────
-    # Regla: skip total solo si ya está en señal (no puede bajar de categoría).
-    # Si estaba en watchlist pero ahora clasifica como señal → se permite el upgrade.
-    _alerted_signals_full   = set(_daily.get("signals", []))
-    _alerted_watchlist_full = set(_daily.get("watchlist", []))
-
-    _would_be_signal = (
-        (score == 3 and rsi_bounced and rsi10 <= 45)
-        or (div and q.get("bb_recov") and (rsi_bounced or epct >= -15) and score >= 2)
-    )
-
-    if ticker in _alerted_signals_full:
-        # Ya tiene señal hoy → skip total (evita spam en múltiples runs)
-        print(f"  [DAILY] {ticker}: señal ya enviada hoy — skip")
-        all_results.append((ticker, score, q, epct, ppct))
-        radar_info.append((ticker, q, epct, ppct, score))
-        continue
-    elif ticker in _alerted_watchlist_full and not _would_be_signal:
-        # Sigue siendo watchlist o radar → skip (ya fue avisado)
-        print(f"  [DAILY] {ticker}: watchlist ya enviada hoy, sin upgrade — skip")
-        all_results.append((ticker, score, q, epct, ppct))
-        radar_info.append((ticker, q, epct, ppct, score))
-        continue
-    elif ticker in _alerted_watchlist_full and _would_be_signal:
-        # Subió de watchlist a señal → dejar pasar, se enviará alerta verde
-        print(f"  [DAILY] {ticker}: UPGRADE watchlist→señal — procesando")
-
     # ── Clasificación normal (respetando silencio) ────────────────────────────
 
     # ── rsi_direction: detectar si el RSI está subiendo o bajando ───────────────
@@ -1229,6 +1229,33 @@ try:
             _daily["entradas"] = []
 except Exception:
     pass
+
+# ── Skip si ya fue alertado hoy — calculado una vez, antes de los loops ──────
+_alerted_signals_full   = set(_daily.get("signals", []))
+_alerted_watchlist_full = set(_daily.get("watchlist", []))
+
+# Filtrar signals_found y watchlist_found eliminando los ya alertados
+_signals_filtered = []
+for _item in signals_found:
+    _tk = _item[0]
+    _sc = _item[1]; _q2 = _item[2]; _ep2 = _item[3]
+    _would_sig = True  # ya clasificó como señal
+    if _tk in _alerted_signals_full:
+        print(f"  [DAILY] {_tk}: señal ya enviada hoy — skip")
+    else:
+        _signals_filtered.append(_item)
+signals_found = _signals_filtered
+
+_watchlist_filtered = []
+for _item in watchlist_found:
+    _tk = _item[0]
+    if _tk in _alerted_signals_full:
+        print(f"  [DAILY] {_tk}: ya en señal hoy — skip watchlist")
+    elif _tk in _alerted_watchlist_full:
+        print(f"  [DAILY] {_tk}: watchlist ya enviada hoy — skip")
+    else:
+        _watchlist_filtered.append(_item)
+watchlist_found = _watchlist_filtered
 
 # ── 1. Señales confirmadas (Score 3/3) → alerta verde individual ──────────────
 _header_sent = False
