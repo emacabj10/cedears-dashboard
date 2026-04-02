@@ -7,15 +7,100 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0e13;color:#e6edf3;padding:1.5rem}
-.dash{max-width:1400px;margin:0 auto}
-.topbar{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
-.ttl{font-size:15px;font-weight:500;color:#e6edf3}
-.tsub{font-size:11px;color:#6e7681}
-.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.25rem}
-.sc{background:#161b22;border-radius:8px;padding:.75rem 1rem;text-align:center;border:0.5px solid #21262d}
-.sl{font-size:11px;color:#6e7681;margin-bottom:4px}
-.sv{font-size:22px;font-weight:500}
-.ok{color:#2ea043}.warn{color:#ba7517}.ng{color:#da3633}.neu{color:#6e7681}
+.dash{max-width:1500px;margin:0 auto}
+
+/* ── TOP BAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:10px}
+.ttl{font-size:15px;font-weight:600;color:#e6edf3}
+.tsub{font-size:11px;color:#6e7681;margin-top:2px}
+.topbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:0;margin-bottom:1.25rem;border-bottom:1px solid #21262d}
+.tab{font-size:12px;padding:8px 16px;cursor:pointer;background:transparent;border:none;color:#6e7681;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab.active{color:#58a6ff;border-bottom-color:#58a6ff;font-weight:500}
+.tab:hover:not(.active){color:#c9d1d9}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── SUMMARY CARDS ── */
+.summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:1.25rem}
+.sc{background:#161b22;border-radius:8px;padding:.65rem 1rem;text-align:center;border:0.5px solid #21262d}
+.sl{font-size:10px;color:#6e7681;margin-bottom:3px;line-height:1.3}
+.sv{font-size:20px;font-weight:600}
+.ok{color:#2ea043}.warn{color:#ba7517}.ng{color:#da3633}.neu{color:#6e7681}.blue{color:#58a6ff}
+
+/* ── ALERT PANEL ── */
+.alert-panel{margin-bottom:1.25rem}
+.alert-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#444441;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.alert-section-title::after{content:'';flex:1;height:1px;background:#21262d}
+.alert-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.alert-item{background:#161b22;border-radius:8px;padding:10px 14px;border:0.5px solid #21262d;display:flex;align-items:flex-start;gap:10px;position:relative}
+.alert-item.alert-buy{border-left:3px solid #2ea043}
+.alert-item.alert-watch{border-left:3px solid #ef9f27}
+.alert-item.alert-radar{border-left:3px solid #58a6ff}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.alert-dot-buy{background:#2ea043;box-shadow:0 0 6px #2ea04360}
+.alert-dot-watch{background:#ef9f27;box-shadow:0 0 6px #ef9f2760}
+.alert-dot-radar{background:#58a6ff;box-shadow:0 0 6px #58a6ff60}
+.alert-body{flex:1;min-width:0}
+.alert-ticker{font-size:13px;font-weight:600;color:#e6edf3}
+.alert-score{font-size:11px;font-weight:500;padding:2px 7px;border-radius:6px;margin-left:6px}
+.alert-score-buy{background:#0f3320;color:#2ea043}
+.alert-score-watch{background:#2d1f00;color:#f0a500}
+.alert-score-radar{background:#0d2340;color:#58a6ff}
+.alert-price{font-size:12px;color:#8b949e;margin-top:2px}
+.alert-indicators{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.alert-badge{font-size:10px;padding:2px 7px;border-radius:5px;border:0.5px solid}
+.ab-ok{background:#0f3320;color:#2ea043;border-color:#2ea04330}
+.ab-warn{background:#2d1f00;color:#f0a500;border-color:#f0a50030}
+.ab-no{background:#161b22;color:#444441;border-color:#30363d}
+.ab-ng{background:#2d0e0e;color:#da3633;border-color:#da363330}
+.alert-context{font-size:11px;color:#6e7681;margin-top:6px;line-height:1.5}
+.alert-action{font-size:11px;font-weight:500;color:#58a6ff;margin-top:4px}
+.alert-tv-link{font-size:10px;color:#58a6ff;text-decoration:none;margin-top:4px;display:inline-block}
+.alert-tv-link:hover{text-decoration:underline}
+.alert-empty{text-align:center;padding:20px;color:#444441;font-size:12px;background:#161b22;border-radius:8px;border:0.5px solid #21262d}
+
+/* ── RADAR GRID ── */
+.radar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:1.25rem}
+.radar-card{background:#161b22;border-radius:8px;padding:12px 14px;border:0.5px solid #21262d;border-left:3px solid #58a6ff}
+.radar-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.radar-tkr{font-size:14px;font-weight:600;color:#e6edf3}
+.radar-price{font-size:12px;color:#8b949e}
+.radar-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px}
+.radar-met{background:#0d1117;border-radius:6px;padding:5px 6px;text-align:center}
+.radar-ml{font-size:9px;color:#444441;margin-bottom:2px}
+.radar-mv{font-size:11px;font-weight:600}
+.radar-progress{margin-top:4px}
+.radar-prog-lbl{font-size:10px;color:#6e7681;margin-bottom:3px;display:flex;justify-content:space-between}
+.radar-track{height:4px;background:#0d1117;border-radius:3px;overflow:hidden}
+.radar-fill{height:100%;border-radius:3px;background:#58a6ff}
+.radar-missing{font-size:10px;color:#6e7681;margin-top:6px;padding:5px 8px;background:#0d1117;border-radius:6px;line-height:1.5}
+
+/* ── WATCHLIST TABLE ── */
+.wl-table-wrap{overflow-x:auto;margin-bottom:1.25rem}
+.wl-table{width:100%;border-collapse:collapse;font-size:12px}
+.wl-table th{font-size:10px;color:#444441;text-align:left;padding:6px 10px;border-bottom:1px solid #21262d;white-space:nowrap;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.wl-table td{padding:8px 10px;border-bottom:0.5px solid #21262d;vertical-align:middle}
+.wl-table tr:last-child td{border-bottom:none}
+.wl-table tr:hover td{background:#161b22}
+.wl-tkr{font-weight:600;color:#e6edf3;font-size:13px}
+.wl-co{font-size:10px;color:#6e7681}
+.rsi-bar{display:flex;align-items:center;gap:5px}
+.rsi-track{width:60px;height:4px;background:#21262d;border-radius:2px;overflow:hidden}
+.rsi-fill{height:100%;border-radius:2px}
+.sig-chip{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;white-space:nowrap}
+.sig-buy{background:#0f3320;color:#2ea043}
+.sig-watch{background:#2d1f00;color:#f0a500}
+.sig-forming{background:#2d2200;color:#e3b341}
+.sig-hold{background:#161b22;color:#6e7681}
+.sig-caution{background:#2d0e0e;color:#da3633}
+.dot3{display:flex;gap:4px;align-items:center}
+.d{width:8px;height:8px;border-radius:50%}
+.d-ok{background:#2ea043}.d-w{background:#ef9f27}.d-no{background:#21262d}.d-ng{background:#da3633}
+
+/* ── CARDS GRID (existing panel) ── */
 .ref-toggle{display:flex;align-items:center;justify-content:space-between;background:#161b22;border-radius:8px;padding:10px 14px;margin-bottom:10px;cursor:pointer;border:0.5px solid #21262d}
 .ref-toggle:hover{background:#1c2128}
 .ref-toggle-left{display:flex;align-items:center;gap:8px}
@@ -122,46 +207,318 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .trend-dn{background:#2d0e0e;color:#da3633}
 .trend-lat{background:#161b22;color:#6e7681}
 .bear-alert{margin-top:5px;margin-bottom:6px;background:#2d0e0e;border-radius:8px;padding:4px 8px;font-size:11px;color:#da3633;font-weight:500}
+
+/* ── WORKFLOW PANEL ── */
+.wf-panel{background:#161b22;border-radius:10px;padding:1.25rem;margin-bottom:1.25rem;border:0.5px solid #21262d}
+.wf-title{font-size:13px;font-weight:600;color:#e6edf3;margin-bottom:4px}
+.wf-desc{font-size:11px;color:#6e7681;margin-bottom:1rem;line-height:1.6}
+.wf-btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.wf-btn{font-size:12px;padding:7px 16px;cursor:pointer;border-radius:8px;font-weight:500;border:0.5px solid;transition:all .15s}
+.wf-btn-primary{background:#0d2340;color:#58a6ff;border-color:#1f6feb}
+.wf-btn-primary:hover:not(:disabled){background:#0f2d50}
+.wf-btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.wf-btn-sec{background:transparent;color:#6e7681;border-color:#30363d}
+.wf-btn-sec:hover{background:#21262d;color:#e6edf3}
+.wf-log{margin-top:1rem;background:#0d1117;border-radius:8px;padding:10px 12px;font-size:11px;color:#6e7681;font-family:'SF Mono',Monaco,monospace;line-height:1.8;max-height:200px;overflow-y:auto;display:none}
+.wf-log.open{display:block}
+.log-ok{color:#2ea043}.log-info{color:#58a6ff}.log-warn{color:#f0a500}.log-err{color:#da3633}
+.wf-status{font-size:11px;color:#6e7681;margin-top:8px}
+
+/* ── GH CONFIG ── */
+.gh-config-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:1rem;flex-wrap:wrap}
+.gh-input{font-size:12px;padding:6px 10px;border-radius:6px;border:0.5px solid #30363d;background:#0d1117;color:#e6edf3;width:320px;max-width:100%}
+.gh-status-ok{color:#2ea043}.gh-status-err{color:#da3633}
+
+/* ── MODALS ── */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center}
+.modal-box{background:#0d1117;border:0.5px solid #30363d;border-radius:12px;padding:1.25rem;width:420px;max-width:90vw;max-height:85vh;overflow-y:auto}
+.modal-title{font-size:14px;font-weight:500;color:#e6edf3;margin-bottom:12px}
+.modal-btns{display:flex;gap:8px;margin-top:14px}
+.mbtn-ok{flex:1;font-size:12px;padding:7px;cursor:pointer;background:#0f3320;border:0.5px solid #2ea043;border-radius:8px;color:#2ea043;font-weight:500}
+.mbtn-cancel{font-size:12px;padding:7px 14px;cursor:pointer;background:transparent;border:0.5px solid #30363d;border-radius:8px;color:#6e7681}
+.mbtn-danger{font-size:12px;padding:7px 14px;cursor:pointer;background:transparent;border:0.5px solid #da3633;border-radius:8px;color:#da3633}
+
+/* ── MISC ── */
+.btn{font-size:11px;padding:4px 12px;cursor:pointer;border-radius:6px;border:0.5px solid;font-weight:500;transition:all .15s}
+.btn-blue{background:#0d2340;color:#58a6ff;border-color:#1f6feb}
+.btn-blue:hover{background:#0f2d50}
+.btn-ghost{background:transparent;color:#6e7681;border-color:#30363d}
+.btn-ghost:hover{background:#161b22;color:#e6edf3}
+.btn-ghost-green{background:transparent;color:#2ea043;border-color:#2ea04340}
+.save-ind{display:none;align-items:center;gap:8px}
 </style>
 </head>
 <body>
 <div class="dash">
+
+<!-- TOP BAR -->
 <div class="topbar">
   <div>
     <div class="ttl">Panel de alertas — Cedears</div>
-    <div class="tsub">BB(20,2) · EMA200 · RSI(10) diario · RSI semanal · FRVP/POC · Temporalidad diaria</div>
+    <div class="tsub">BB(20,2) · EMA200 · RSI(10) diario · RSI semanal · FRVP/POC · Sistema idéntico al bot de Telegram</div>
   </div>
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-    <button onclick="fetchAllQuotes()" id="fetch-btn" style="font-size:11px;padding:3px 10px;cursor:pointer;background:#0d2340;border:0.5px solid #1f6feb;border-radius:6px;color:#58a6ff;font-weight:500">&#8635; Actualizar cotizaciones</button>
-    <button onclick="openAddTicker()" style="font-size:11px;padding:3px 10px;cursor:pointer;background:transparent;border:0.5px solid #30363d;border-radius:6px;color:#e6edf3">+ Agregar ticker</button>
-    <button onclick="openGithubConfig()" id="gh-btn" style="font-size:11px;padding:3px 10px;cursor:pointer;background:transparent;border:0.5px solid #30363d;border-radius:6px;color:#6e7681">⚙ GitHub</button>
-    <div id="save-indicator" style="display:none;align-items:center;gap:8px">
+  <div class="topbar-actions">
+    <button class="btn btn-blue" onclick="triggerWorkflow()" id="wf-trigger-btn">⚡ Actualizar (sin Telegram)</button>
+    <button class="btn btn-ghost" onclick="openAddTicker()">+ Agregar</button>
+    <button class="btn btn-ghost" id="gh-btn" onclick="openGithubConfig()">⚙ GitHub</button>
+    <div class="save-ind" id="save-indicator">
       <span style="font-size:11px;color:#2ea043">● Guardado</span>
-      <button onclick="if(confirm('¿Restablecer todos los valores originales?'))clearStorage();" style="font-size:11px;padding:3px 10px;cursor:pointer;background:transparent;border:0.5px solid #30363d;border-radius:6px;color:#6e7681">Restablecer</button>
+      <button class="btn btn-ghost" onclick="if(confirm('¿Restablecer?'))clearStorage()">Restablecer</button>
     </div>
     <span id="fetch-status" style="font-size:10px;color:#6e7681"></span>
   </div>
-  <div id="save-indicator-new" style="display:none"></div>
 </div>
 
-<div id="add-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
-  <div style="background:#0d1117;border:0.5px solid #30363d;border-radius:12px;padding:1.25rem;width:420px;max-width:90vw;max-height:85vh;overflow-y:auto">
-    <div style="font-size:14px;font-weight:500;color:#e6edf3;margin-bottom:12px">Agregar nuevo ticker</div>
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('alertas',this)">🔔 Alertas Telegram</button>
+  <button class="tab" onclick="switchTab('watchlist',this)">👁 Watchlist / Radar</button>
+  <button class="tab" onclick="switchTab('panel',this)">📊 Panel completo</button>
+  <button class="tab" onclick="switchTab('workflow',this)">⚡ Actualizar cotizaciones</button>
+</div>
+
+<!-- ═══════════ TAB 1: ALERTAS ═══════════ -->
+<div class="tab-panel active" id="tab-alertas">
+  <div class="summary">
+    <div class="sc"><div class="sl">Señal 3/3<br>Posición completa</div><div class="sv ok" id="c-sig3">0</div></div>
+    <div class="sc"><div class="sl">Señal 2/3+div<br>Media posición</div><div class="sv warn" id="c-sig2">0</div></div>
+    <div class="sc"><div class="sl">Watchlist<br>Setup en formación</div><div class="sv" style="color:#e3b341" id="c-watch">0</div></div>
+    <div class="sc"><div class="sl">Radar<br>RSI ≤ 35</div><div class="sv blue" id="c-radar">0</div></div>
+    <div class="sc"><div class="sl">Silenciados<br>Ciclo activo</div><div class="sv neu" id="c-sil">0</div></div>
+    <div class="sc"><div class="sl">Última actualización</div><div class="sv" style="font-size:13px;color:#6e7681" id="c-upd">—</div></div>
+  </div>
+
+  <div class="alert-panel" id="alert-signals-section">
+    <div class="alert-section-title">🟢 Señales confirmadas — idénticas a Telegram</div>
+    <div class="alert-list" id="alert-signals-list">
+      <div class="alert-empty">Cargando datos del repo...</div>
+    </div>
+  </div>
+
+  <div class="alert-panel" id="alert-watchlist-section">
+    <div class="alert-section-title">🟡 Watchlist — Setup en formación</div>
+    <div class="alert-list" id="alert-watchlist-list">
+      <div class="alert-empty">Cargando...</div>
+    </div>
+  </div>
+
+  <div class="alert-panel" id="alert-radar-section">
+    <div class="alert-section-title">🔵 Radar — Activos bajo observación</div>
+    <div class="alert-list" id="alert-radar-list">
+      <div class="alert-empty">Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ TAB 2: WATCHLIST / RADAR ═══════════ -->
+<div class="tab-panel" id="tab-watchlist">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <div style="font-size:12px;color:#6e7681">Vista de seguimiento compacto — mismos indicadores que el bot</div>
+    <div style="display:flex;gap:6px">
+      <button class="fbtn active" id="wl-f-all" onclick="wlFilter('all',this)">Todos</button>
+      <button class="fbtn" id="wl-f-sig" onclick="wlFilter('signal',this)">Señal</button>
+      <button class="fbtn" id="wl-f-watch" onclick="wlFilter('watch',this)">Watch</button>
+      <button class="fbtn" id="wl-f-radar" onclick="wlFilter('radar',this)">Radar</button>
+    </div>
+  </div>
+  <div class="wl-table-wrap">
+    <table class="wl-table" id="wl-table">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Precio</th>
+          <th>RSI(10)</th>
+          <th>RSI sem.</th>
+          <th>vs EMA200</th>
+          <th>vs POC</th>
+          <th>BB</th>
+          <th>RSI Rebote</th>
+          <th>Div.</th>
+          <th>Score Telegram</th>
+          <th>Señal</th>
+        </tr>
+      </thead>
+      <tbody id="wl-tbody">
+        <tr><td colspan="11" style="text-align:center;color:#444441;padding:20px">Cargando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:1.5rem">
+    <div class="alert-section-title">🔵 Radar de oportunidades — activos que se acercan al setup</div>
+    <div class="radar-grid" id="radar-grid">
+      <div class="alert-empty">Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ TAB 3: PANEL COMPLETO ═══════════ -->
+<div class="tab-panel" id="tab-panel">
+  <div class="summary">
+    <div class="sc"><div class="sl">Acumular — posición completa</div><div class="sv ok" id="c1">0</div></div>
+    <div class="sc"><div class="sl">Acumular — media posición</div><div class="sv warn" id="c2">0</div></div>
+    <div class="sc"><div class="sl">Esperar setup</div><div class="sv neu" id="c3">0</div></div>
+    <div class="sc"><div class="sl">Precaución / No entrar</div><div class="sv ng" id="c4">0</div></div>
+    <div class="sc"></div><div class="sc"></div>
+  </div>
+
+  <div class="ref-toggle" onclick="toggleRef()">
+    <div class="ref-toggle-left">
+      <div class="ref-icon">?</div>
+      <div><div class="ref-title">Guía de condiciones — cómo leer cada señal</div><div class="ref-sub">Rebote RSI · Divergencias · BB · EMA lateral · RSI semanal · POC</div></div>
+    </div>
+    <div class="ref-arrow" id="refArrow">▼</div>
+  </div>
+  <div class="ref-panel" id="refPanel">
+    <div class="ref-grid">
+      <div class="ref-card">
+        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">✓</div>Rebotó desde &lt;30 — RSI(10)</div>
+        <div class="ref-card-sub">El RSI cruzó por debajo de 30 y luego volvió a cruzar hacia arriba.</div>
+        <div class="ref-section">Marcar SÍ cuando</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">RSI cruzó el 30 hacia arriba hace <strong>menos de 15 velas</strong></div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Label <strong>"Bull"</strong> del RSI Divergence dentro de las últimas 15 velas</div></div>
+        <div class="ref-section">Marcar NO cuando</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">RSI nunca llegó a 30 o el cruce fue hace más de <strong>15 velas</strong></div></div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">÷</div>Divergencias RSI(10)</div>
+        <div class="ref-card-sub">Una sola línea: sin divergencia / bullish / bearish.</div>
+        <div class="ref-section">Bullish — suma a la señal</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio mínimo más bajo, RSI mínimo más alto · label <strong>"Bull"</strong> ≤15 velas</div></div>
+        <div class="ref-section">Bearish — cancela entrada</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Precio máximo más alto, RSI máximo más bajo · label <strong>"Bear"</strong> ≤15 velas</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Si está activa → tamaño pasa a <strong>"No entrar"</strong> automáticamente</div></div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">✓</div>Vela recuperó BB inferior</div>
+        <div class="ref-card-sub">Una vela cerró fuera de la banda inferior y una posterior cerró dentro.</div>
+        <div class="ref-section">Marcar SÍ cuando</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una vela <strong>cerró</strong> bajo la banda inferior (no solo tocó)</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una posterior cerró dentro — todo en las últimas <strong>5 velas</strong></div></div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-card-title"><div class="ci ci-w" style="width:16px;height:16px;font-size:10px">S</div>RSI semanal — informativo</div>
+        <div class="ref-card-sub">No afecta el score. Es contexto para decidir el tamaño final.</div>
+        <div class="ref-section">Cómo interpretarlo</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text"><strong>≥ 40</strong> — tendencia semanal saludable, señal diaria más confiable</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>25–39</strong> — tendencia débil, considerá reducir el tamaño</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text"><strong>&lt; 25</strong> — muy bajista. Con fundamentals excelentes puede ser zona de acumulación.</div></div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">%</div>% distancia al POC — FRVP anual</div>
+        <div class="ref-card-sub">Cuanto más negativo, más barata está la acción vs su historia.</div>
+        <table class="poc-table">
+          <tr><th>Distancia</th><th>Señal</th></tr>
+          <tr><td class="td-pct poc-ok">Más de -15%</td><td class="poc-ok">Fuerte ✓</td></tr>
+          <tr><td class="td-pct poc-warn">-5% a -15%</td><td class="poc-warn">Moderada ~</td></tr>
+          <tr><td class="td-pct poc-neu">0% a -5%</td><td class="poc-neu">Neutral —</td></tr>
+          <tr><td class="td-pct poc-ng">Por encima</td><td class="poc-ng">No suma —</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="fbtn active" onclick="filt('all',this)">Todos</button>
+    <button class="fbtn" onclick="filt('buy',this)">Acumular</button>
+    <button class="fbtn" onclick="filt('watch',this)">Media posición</button>
+    <button class="fbtn" onclick="filt('forming',this)">Setup en formación</button>
+    <button class="fbtn" onclick="filt('hold',this)">Esperar</button>
+    <button class="fbtn" onclick="filt('caution',this)">Precaución</button>
+  </div>
+  <div class="sort-bar">
+    <span class="sort-lbl">Ordenar:</span>
+    <button class="sbtn active" onclick="sortBy('az',this)">A–Z</button>
+    <button class="sbtn" onclick="sortBy('rsi',this)">RSI más bajo</button>
+    <button class="sbtn" onclick="sortBy('signal',this)">Por señal</button>
+    <button class="sbtn" onclick="sortBy('poc',this)">Mayor distancia POC</button>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- ═══════════ TAB 4: WORKFLOW ═══════════ -->
+<div class="tab-panel" id="tab-workflow">
+  <div class="wf-panel">
+    <div class="wf-title">⚡ Actualizar cotizaciones sin Telegram</div>
+    <div class="wf-desc">
+      Dispara el workflow de GitHub Actions para actualizar <code>data.json</code> con los precios e indicadores actuales.<br>
+      <strong style="color:#2ea043">Completamente separado de las alertas de Telegram</strong> — las alertas programadas siguen llegando según su horario normal sin ninguna interferencia.<br>
+      El workflow solo ejecuta <code>fetch_quotes.py</code> y guarda <code>data.json</code>. El step de <code>alert_quotes.py</code> es omitido.
+    </div>
+
+    <div style="margin-bottom:1rem">
+      <div style="font-size:11px;color:#6e7681;margin-bottom:8px">Configuración GitHub (requerida una sola vez)</div>
+      <div class="gh-config-row">
+        <div>
+          <div style="font-size:10px;color:#8b949e;margin-bottom:4px">Personal Access Token (ghp_...)</div>
+          <input class="gh-input" type="password" id="wf-token" placeholder="ghp_xxxxxxxxxxxx">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#8b949e;margin-bottom:4px">Repositorio (owner/repo)</div>
+          <input class="gh-input" type="text" id="wf-repo" placeholder="emacabj10/cedears-dashboard" style="width:240px">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost-green" onclick="saveWfConfig()">Guardar configuración</button>
+        <span id="wf-config-status" style="font-size:11px;color:#6e7681;align-self:center"></span>
+      </div>
+    </div>
+
+    <div class="wf-btn-row">
+      <button class="wf-btn wf-btn-primary" id="wf-run-btn" onclick="runFetchOnly()">
+        ↻ Actualizar cotizaciones (sin Telegram)
+      </button>
+      <button class="wf-btn wf-btn-sec" onclick="syncFromRepo()">
+        ⬇ Traer data.json del repo
+      </button>
+      <button class="wf-btn wf-btn-sec" onclick="toggleWfLog()">
+        📋 Ver log
+      </button>
+    </div>
+    <div class="wf-status" id="wf-main-status"></div>
+    <div class="wf-log" id="wf-log"></div>
+  </div>
+
+  <div class="wf-panel">
+    <div class="wf-title">📡 Cómo funciona la separación Telegram / Dashboard</div>
+    <div style="font-size:12px;color:#6e7681;line-height:1.9">
+      <div style="margin-bottom:6px">El workflow tiene dos pasos distintos:</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:11px">
+        <div style="background:#0d1117;border-radius:8px;padding:10px 12px;border-left:3px solid #2ea043">
+          <div style="color:#2ea043;font-weight:600;margin-bottom:4px">✓ Paso 1 — fetch_quotes.py</div>
+          <div>Descarga precios e indicadores de Yahoo Finance y los guarda en <code>data.json</code>.</div>
+          <div style="margin-top:4px;color:#444441">Siempre se ejecuta.</div>
+        </div>
+        <div style="background:#0d1117;border-radius:8px;padding:10px 12px;border-left:3px solid #58a6ff">
+          <div style="color:#58a6ff;font-weight:600;margin-bottom:4px">⚡ Paso 2 — alert_quotes.py</div>
+          <div>Analiza señales y <strong>envía mensajes a Telegram</strong>.</div>
+          <div style="margin-top:4px;color:#444441">En el trigger "sin Telegram" este paso se omite. Las alertas programadas siguen llegando normalmente.</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:#0d2340;border-radius:8px;border-left:2px solid #58a6ff;font-size:11px">
+        💡 <strong style="color:#58a6ff">Para que esto funcione:</strong> el workflow YAML ya tiene el step de alertas con la condición <code>if: $&#123;&#123; github.event.inputs.cmd_operado == '' &#125;&#125;</code>. Cuando se llama con <code>cmd_operado='__FETCH_ONLY__'</code>, el step de alertas es ignorado automáticamente.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODALS ═══════════ -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal-box">
+    <div class="modal-title">Agregar nuevo ticker</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
       <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">Ticker (ej: NVDA)</label><input id="new_t" type="text" placeholder="NVDA" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3"></div>
       <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">Empresa</label><input id="new_co" type="text" placeholder="Nvidia" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3"></div>
       <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">Sector</label><input id="new_sec" type="text" placeholder="Semiconductores" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3"></div>
       <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">Fundamentals</label>
         <select id="new_fund" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3">
-          <option value="excelentes">Excelentes</option>
-          <option value="buenos">Buenos</option>
-          <option value="moderados">Moderados</option>
-          <option value="controversiales">Controversiales</option>
+          <option value="excelentes">Excelentes</option><option value="buenos">Buenos</option>
+          <option value="moderados">Moderados</option><option value="controversiales">Controversiales</option>
         </select>
       </div>
     </div>
     <div style="height:0.5px;background:#21262d;margin:10px 0"></div>
-    <div style="font-size:10px;color:#444441;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Valores iniciales (editables luego)</div>
+    <div style="font-size:10px;color:#444441;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Valores iniciales</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
       <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">RSI(10)</label><input id="new_rsi" type="number" value="50" min="0" max="100" step="0.1" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3"></div>
       <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">RSI semanal</label><input id="new_rsiw" type="number" value="50" min="0" max="100" step="0.1" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3"></div>
@@ -170,131 +527,58 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">POC (FRVP)</label><input id="new_poc" type="number" value="100" step="0.01" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3"></div>
       <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">Pendiente EMA200</label>
         <select id="new_trend" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3">
-          <option value="subiendo">Subiendo</option>
-          <option value="lateral">Lateral</option>
-          <option value="bajando" selected>Bajando</option>
+          <option value="subiendo">Subiendo</option><option value="lateral">Lateral</option><option value="bajando" selected>Bajando</option>
         </select>
       </div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button onclick="confirmAddTicker()" style="flex:1;font-size:12px;padding:7px;cursor:pointer;background:#0f3320;border:0.5px solid #2ea043;border-radius:8px;color:#2ea043;font-weight:500">Agregar ticker</button>
-      <button onclick="closeAddTicker()" style="flex:1;font-size:12px;padding:7px;cursor:pointer;background:transparent;border:0.5px solid #30363d;border-radius:8px;color:#6e7681">Cancelar</button>
+    <div class="modal-btns">
+      <button class="mbtn-ok" onclick="confirmAddTicker()">Agregar ticker</button>
+      <button class="mbtn-cancel" onclick="closeAddTicker()">Cancelar</button>
     </div>
   </div>
 </div>
 
-<div id="gh-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
-  <div style="background:#0d1117;border:0.5px solid #30363d;border-radius:12px;padding:1.25rem;width:420px;max-width:90vw">
-    <div style="font-size:14px;font-weight:500;color:#e6edf3;margin-bottom:4px">Configuración GitHub</div>
-    <div style="font-size:11px;color:#6e7681;margin-bottom:14px">El token permite sincronizar tickers con tu repo automáticamente.</div>
+<div class="modal-overlay" id="gh-modal">
+  <div class="modal-box">
+    <div class="modal-title">Configuración GitHub</div>
+    <div style="font-size:11px;color:#6e7681;margin-bottom:14px">Token para sincronizar tickers y lanzar workflows.</div>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
       <label style="font-size:10px;color:#8b949e">Personal Access Token (ghp_...)</label>
       <input id="gh-token-input" type="password" placeholder="ghp_..." style="font-size:12px;padding:7px 10px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3;width:100%">
       <div id="gh-token-status" style="font-size:11px;color:#6e7681;min-height:16px"></div>
     </div>
     <div style="display:flex;gap:8px">
-      <button onclick="saveGithubToken()" style="flex:1;font-size:12px;padding:7px;cursor:pointer;background:#0f3320;border:0.5px solid #2ea043;border-radius:8px;color:#2ea043;font-weight:500">Guardar token</button>
-      <button onclick="clearGithubToken()" style="font-size:12px;padding:7px 10px;cursor:pointer;background:transparent;border:0.5px solid #da3633;border-radius:8px;color:#da3633">Borrar</button>
-      <button onclick="closeGithubConfig()" style="font-size:12px;padding:7px 10px;cursor:pointer;background:transparent;border:0.5px solid #30363d;border-radius:8px;color:#6e7681">Cerrar</button>
+      <button class="mbtn-ok" onclick="saveGithubToken()">Guardar token</button>
+      <button class="mbtn-danger" onclick="clearGithubToken()">Borrar</button>
+      <button class="mbtn-cancel" onclick="closeGithubConfig()">Cerrar</button>
     </div>
   </div>
 </div>
 
-<div class="summary">
-  <div class="sc"><div class="sl">Acumular — posición completa</div><div class="sv ok" id="c1">0</div></div>
-  <div class="sc"><div class="sl">Acumular — media posición</div><div class="sv warn" id="c2">0</div></div>
-  <div class="sc"><div class="sl">Esperar setup</div><div class="sv neu" id="c3">0</div></div>
-  <div class="sc"><div class="sl">Precaución / No entrar</div><div class="sv ng" id="c4">0</div></div>
-</div>
-<div class="ref-toggle" onclick="toggleRef()">
-  <div class="ref-toggle-left">
-    <div class="ref-icon">?</div>
-    <div><div class="ref-title">Guía de condiciones — cómo leer cada señal</div><div class="ref-sub">Rebote RSI · Divergencias · BB · EMA lateral · RSI semanal · POC</div></div>
-  </div>
-  <div class="ref-arrow" id="refArrow">▼</div>
-</div>
-<div class="ref-panel" id="refPanel">
-  <div class="ref-grid">
-    <div class="ref-card">
-      <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px;background:#0f3320;color:#2ea043">✓</div>Rebotó desde &lt;30 — RSI(10)</div>
-      <div class="ref-card-sub">El RSI cruzó por debajo de 30 y luego volvió a cruzar hacia arriba.</div>
-      <div class="ref-section">Marcar SÍ cuando</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">RSI cruzó el 30 hacia arriba hace <strong>menos de 15 velas</strong></div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Label <strong>"Bull"</strong> del RSI Divergence dentro de las últimas 15 velas</div></div>
-      <div class="ref-section">Marcar NO cuando</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">RSI nunca llegó a 30 o el cruce fue hace más de <strong>15 velas</strong></div></div>
-    </div>
-    <div class="ref-card">
-      <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px;background:#0f3320;color:#2ea043">÷</div>Divergencias RSI(10)</div>
-      <div class="ref-card-sub">Una sola línea: sin divergencia / bullish / bearish.</div>
-      <div class="ref-section">Bullish — suma a la señal</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio mínimo más bajo, RSI mínimo más alto · label <strong>"Bull"</strong> ≤15 velas</div></div>
-      <div class="ref-section">Bearish — cancela entrada</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Precio máximo más alto, RSI máximo más bajo · label <strong>"Bear"</strong> ≤15 velas</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Si está activa → tamaño pasa a <strong>"No entrar"</strong> automáticamente</div></div>
-    </div>
-    <div class="ref-card">
-      <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px;background:#0f3320;color:#2ea043">✓</div>Vela recuperó BB inferior</div>
-      <div class="ref-card-sub">Una vela cerró fuera de la banda inferior y una posterior cerró dentro.</div>
-      <div class="ref-section">Marcar SÍ cuando</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una vela <strong>cerró</strong> bajo la banda inferior (no solo tocó)</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una posterior cerró dentro — todo en las últimas <strong>5 velas</strong></div></div>
-    </div>
-    <div class="ref-card">
-      <div class="ref-card-title"><div class="ci ci-w" style="width:16px;height:16px;font-size:10px;background:#2d1f00;color:#f0a500">→</div>EMA200 lateral — cómo afecta</div>
-      <div class="ref-card-sub">Cuando la EMA200 no tiene dirección clara, la condición se evalúa distinto.</div>
-      <div class="ref-section">Precio sobre EMA + lateral</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Igual que "subiendo" — condición ok</div></div>
-      <div class="ref-section">Precio bajo EMA + lateral</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text">Fundamentals excelentes → warn ~ (más favorable que bajando)</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text">Fundamentals buenos → warn ~ si distancia ≤ 10%</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Distancia &gt;15% + lateral → condición no</div></div>
-      <div class="ref-section">Interpretación</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-neu"></div><div class="ref-text">EMA lateral = indecisión. Precio puede definir dirección pronto.</div></div>
-    </div>
-    <div class="ref-card">
-      <div class="ref-card-title"><div class="ci ci-w" style="width:16px;height:16px;font-size:10px;background:#2d1f00;color:#f0a500">S</div>RSI semanal — informativo</div>
-      <div class="ref-card-sub">No afecta el score. Es contexto para que vos decidas el tamaño final.</div>
-      <div class="ref-section">Cómo interpretarlo</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text"><strong>≥ 40</strong> — tendencia semanal saludable, señal diaria más confiable</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>25–39</strong> — tendencia débil, considerá reducir el tamaño manualmente</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text"><strong>&lt; 25</strong> — tendencia muy bajista. Precaución, aunque...</div></div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Con <strong>fundamentals excelentes</strong>, RSI semanal &lt;25 históricamente marca zonas de acumulación de largo plazo muy atractivas. Posición gradual y pequeña.</div></div>
-    </div>
-    <div class="ref-card">
-      <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px;background:#0f3320;color:#2ea043">%</div>% distancia al POC — FRVP anual</div>
-      <div class="ref-card-sub">Cuanto más negativo, más barata está la acción vs su historia reciente.</div>
-      <table class="poc-table">
-        <tr><th>Distancia</th><th>Señal</th></tr>
-        <tr><td class="td-pct poc-ok">Más de -15%</td><td class="poc-ok">Fuerte ✓</td></tr>
-        <tr><td class="td-pct poc-warn">-5% a -15%</td><td class="poc-warn">Moderada ~</td></tr>
-        <tr><td class="td-pct poc-neu">0% a -5%</td><td class="poc-neu">Neutral —</td></tr>
-        <tr><td class="td-pct poc-ng">Por encima</td><td class="poc-ng">No suma —</td></tr>
-      </table>
-      <div class="ref-section">Regla clave</div>
-      <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Siempre FRVP fijado en los <strong>últimos 12 meses</strong></div></div>
-    </div>
-  </div>
-</div>
-<div class="filters">
-  <button class="fbtn active" onclick="filt('all',this)">Todos</button>
-  <button class="fbtn" onclick="filt('buy',this)">Acumular</button>
-  <button class="fbtn" onclick="filt('watch',this)">Media posición</button>
-  <button class="fbtn" onclick="filt('forming',this)">Setup en formación</button>
-  <button class="fbtn" onclick="filt('hold',this)">Esperar</button>
-  <button class="fbtn" onclick="filt('caution',this)">Precaución</button>
-</div>
-<div class="sort-bar">
-  <span class="sort-lbl">Ordenar:</span>
-  <button class="sbtn active" onclick="sortBy('az',this)">A–Z</button>
-  <button class="sbtn" onclick="sortBy('rsi',this)">RSI más bajo</button>
-  <button class="sbtn" onclick="sortBy('signal',this)">Por señal</button>
-  <button class="sbtn" onclick="sortBy('poc',this)">Mayor distancia POC</button>
-</div>
-<div class="grid" id="grid"></div>
-</div>
 <script>
-const FUND={MSFT:"excelentes",GOOGL:"excelentes",AMZN:"excelentes",META:"excelentes","BRK.B":"excelentes",V:"excelentes",WMT:"excelentes",MELI:"excelentes",QQQ:"excelentes",SPY:"excelentes",DIA:"excelentes",GLD:"excelentes",BTC:"excelentes",ETH:"excelentes",BNB:"excelentes",AMD:"buenos",KO:"buenos",PEP:"buenos",MCD:"buenos",BABA:"buenos",PYPL:"buenos",TSLA:"controversiales"};
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA & CONFIG
+// ═══════════════════════════════════════════════════════════════════════════
+const FUND={
+  MSFT:"excelentes",GOOGL:"excelentes",AMZN:"excelentes",META:"excelentes",
+  "BRK.B":"excelentes",V:"excelentes",WMT:"excelentes",MELI:"excelentes",
+  QQQ:"excelentes",SPY:"excelentes",DIA:"excelentes",GLD:"excelentes",
+  BTC:"excelentes",ETH:"buenos",BNB:"buenos",
+  AMD:"buenos",KO:"buenos",PEP:"buenos",MCD:"buenos",BABA:"buenos",
+  TSLA:"controversiales",NVDA:"excelentes",AAPL:"excelentes",NU:"buenos",APPL:"excelentes"
+};
+
+const TV_MAP={
+  MSFT:"NASDAQ:MSFT",GOOGL:"NASDAQ:GOOGL",AMZN:"NASDAQ:AMZN",
+  META:"NASDAQ:META","BRK.B":"NYSE:BRK.B",V:"NYSE:V",
+  WMT:"NYSE:WMT",MELI:"NASDAQ:MELI",QQQ:"NASDAQ:QQQ",
+  SPY:"AMEX:SPY",DIA:"AMEX:DIA",AMD:"NASDAQ:AMD",
+  KO:"NYSE:KO",PEP:"NYSE:PEP",MCD:"NYSE:MCD",
+  BABA:"NYSE:BABA",TSLA:"NASDAQ:TSLA",
+  GLD:"AMEX:GLD",BTC:"BINANCE:BTCUSDT",ETH:"BINANCE:ETHUSDT",
+  BNB:"BINANCE:BNBUSDT",NVDA:"NASDAQ:NVDA",AAPL:"NASDAQ:AAPL",NU:"NYSE:NU",APPL:"NASDAQ:AAPL"
+};
+
 let CUSTOM_FUND={};
 let DELETED_TICKERS=new Set();
 let data=[
@@ -316,49 +600,97 @@ let data=[
   {t:"QQQ",co:"Nasdaq 100 ETF",sec:"ETF índice",rsi10:37.06,rsiW:41.27,ema200:490.73,price:491.72,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:603.47,rsiPrev:null},
   {t:"SPY",co:"S&P500 ETF",sec:"ETF índice",rsi10:29.3,rsiW:38.65,ema200:564.89,price:565.73,emaTrend:"subiendo",bbState:"below",bbRecov:false,rsiBounce:true,divState:"none",poc:584.63,rsiPrev:null},
   {t:"TSLA",co:"Tesla",sec:"Autos/Tech",rsi10:38.59,rsiW:39.04,ema200:395.85,price:391.2,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"bull",poc:334.22,rsiPrev:null},
-  {t:"V",co:"Visa",sec:"Finanzas/Pagos",rsi10:31.3,rsiW:286.05,ema200:333.08,price:307.14,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:348.59,rsiPrev:null},
+  {t:"V",co:"Visa",sec:"Finanzas/Pagos",rsi10:31.3,rsiW:40.0,ema200:333.08,price:307.14,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:348.59,rsiPrev:null},
   {t:"WMT",co:"Walmart",sec:"Retail defensivo",rsi10:53.77,rsiW:60.92,ema200:109.57,price:126.52,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:97,rsiPrev:null},
-  {t:"GLD",co:"Gold Shares ETF",sec:"ETF índice",rsi10:21.7,rsiW:44.91,ema200:380,price:413,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:304,rsiPrev:null},,,
+  {t:"GLD",co:"Gold Shares ETF",sec:"ETF índice",rsi10:21.7,rsiW:44.91,ema200:380,price:413,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:304,rsiPrev:null},
   {t:"NU",co:"Nu Holdings Ltd.",sec:"Regional Banks",rsi10:33.34,rsiW:31.73,ema200:15.2,price:13.51,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:12.15,rsiPrev:null},
-  {t:"APPL",co:"Apple Inc",sec:"Telecommunications Equipment",rsi10:32.38,rsiW:41.07,ema200:251.15,price:246.63,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:146.74,rsiPrev:null},
+  {t:"APPL",co:"Apple Inc",sec:"Tecnología",rsi10:32.38,rsiW:41.07,ema200:251.15,price:246.63,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:146.74,rsiPrev:null},
   {t:"NVDA",co:"Nvidia",sec:"Semiconductores",rsi10:29.95,rsiW:34.96,ema200:173.67,price:165.17,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:183.64,rsiPrev:null}
 ];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCORING — idéntico al bot de Telegram (alert_quotes.py)
+// Score 3/3: Punto1=RSI rebote desde 30 (≤15 velas), Punto2=EMA200 (≤-15%), Punto3=BB recuperó inferior
+// ═══════════════════════════════════════════════════════════════════════════
 function emaPct(p,e){return e>0?((p-e)/e*100):0;}
 function pocPct(p,c){return c>0?((p-c)/c*100):0;}
+
+function scoreTelegram(s){
+  // Replica exacta del sistema del bot de Telegram
+  const fund=CUSTOM_FUND[s.t]||FUND[s.t]||"buenos";
+  const epct=emaPct(s.price,s.ema200);
+  const ppct=pocPct(s.price,s.poc);
+  const rsi10=s.rsi10||50;
+  const rsiPrev=s.rsiPrev||rsi10;
+
+  // Punto 1: RSI rebotó desde ≤30 (ventana 15 velas)
+  const rsiBouncedNow=(rsi10>30&&rsiPrev<=30);
+  const rsiBounced=s.rsiBounce||rsiBouncedNow;  // rsiBounce viene de data.json merged
+  const rsiOversold=rsi10<=30;
+
+  // Punto 2: EMA200 (posición completa si ≥-5%, media si ≥-15%)
+  const emaOk=epct>=-5;
+  const emaOkMedia=epct>=-15;
+  const ema2pts=emaOk||emaOkMedia;
+
+  // Punto 3: BB recuperó banda inferior
+  const bbRecov=s.bbRecov||false;
+
+  let score=0;
+  if(rsiBounced) score++;
+  if(ema2pts) score++;
+  if(bbRecov) score++;
+
+  const div=s.divState==="bull";
+  const divBear=s.divState==="bear";
+
+  // Setup en formación: RSI ≤38 sin rebote aún
+  const forming=!rsiBounced&&rsi10<=38&&rsi10>25;
+
+  // Clasificación — misma lógica que alert_quotes.py
+  let categoria="hold"; // radar / watchlist / signal / hold
+  let posicion="esperar";
+
+  const watchlistScore2=(score===2&&!rsiBounced&&rsi10<=40&&epct>=-15);
+  const bbEmaWatchlist=(bbRecov&&epct>=-5&&!rsiBounced);
+  const divToSignal=(div&&bbRecov&&(rsiBounced||epct>=-15)&&score>=2);
+  const divToWatchlist=(div&&score<=1&&rsi10<=40);
+  const divToRadar=(div&&score===0&&rsi10<=35);
+
+  if(score===3&&rsiBounced&&rsi10<=45){
+    categoria="signal";
+    posicion=emaOk?"completa":"media";
+  } else if(divToSignal){
+    categoria="signal";
+    posicion=emaOk?"completa":"media";
+  } else if(watchlistScore2||bbEmaWatchlist||divToWatchlist){
+    categoria="watchlist";
+    posicion="esperar";
+  } else if(rsi10<=35||rsiOversold||divToRadar){
+    categoria="radar";
+    posicion="monitorear";
+  } else if(forming){
+    categoria="forming";
+    posicion="observar";
+  }
+
+  // Lo que falta para completar la señal
+  const missing=[];
+  if(!rsiBounced) missing.push("RSI rebote desde 30");
+  if(!ema2pts) missing.push("EMA200 (precio muy lejos)");
+  if(!bbRecov) missing.push("BB recuperación inferior");
+
+  return{score,rsiBounced,rsiOversold,emaOk,emaOkMedia,bbRecov,div,divBear,
+    forming,categoria,posicion,epct,ppct,fund,missing,rsi10,rsiPrev};
+}
+
+// Score para el panel legacy (5 puntos con divergencias)
 function rsiWLabel(v){if(v>=40)return{txt:`RSI sem. ${v} — tendencia saludable`,col:"ok"};if(v>=25)return{txt:`RSI sem. ${v} — tendencia débil`,col:"warn"};return{txt:`RSI sem. ${v} — tendencia muy bajista`,col:"ng"};}
 function emaCondition(epct,emaTrend,fundEx,fundOk){
   if(epct>=0)return"ok";
   if(emaTrend==="subiendo"){if(epct>=-5)return"warn";if(fundEx&&epct>=-20)return"warn";return"no";}
   if(emaTrend==="lateral"){if(fundEx&&epct>=-15)return"warn";if(fundOk&&epct>=-10)return"warn";return"no";}
   if(epct>=-5)return"warn";if(fundEx&&epct>=-20)return"warn";return"no";
-}
-function buildAutoNote(s,epct,ppct){
-  const fund=CUSTOM_FUND[s.t]||FUND[s.t]||"buenos";const fundEx=fund==="excelentes";const lines=[];
-  if(s.divState==="bear")lines.push({col:"ng",txt:"Divergencia bearish activa — señal de debilidad. Cancelá la entrada hasta que caduque."});
-  if(s.rsi10<=30&&!s.rsiBounce)lines.push({col:"warn",txt:`RSI(10) ${s.rsi10} — en oversold, sin rebote confirmado aún.`});
-  else if(s.rsiBounce)lines.push({col:"ok",txt:`RSI(10) ${s.rsi10} — rebotó desde oversold (≤15 velas).`});
-  else if(s.rsi10<=40)lines.push({col:"neu",txt:`RSI(10) ${s.rsi10} — zona baja, acercándose a oversold.`});
-  else lines.push({col:"neu",txt:`RSI(10) ${s.rsi10} — zona neutral. Esperar que baje a <30.`});
-  if(s.divState==="bull")lines.push({col:"ok",txt:"Divergencia bullish activa — confirma debilidad del movimiento bajista."});
-  if(s.bbRecov&&s.bbState!=="below"&&s.bbState!=="above")lines.push({col:"ok",txt:"Vela salió y recuperó banda inferior BB en las últimas 5 velas — reversión confirmada."});
-  else if(s.bbState==="below"&&!s.bbRecov)lines.push({col:"warn",txt:"Precio bajo banda inferior BB — esperando vela de recuperación."});
-  else if(s.bbState==="above")lines.push({col:"ng",txt:"Precio sobre banda superior BB — zona de sobrecompra, no es entrada."});
-  else lines.push({col:"neu",txt:"Precio dentro de bandas BB — sin salida reciente."});
-  if(epct>=0){lines.push({col:"ok",txt:`Precio $${s.price} está ${epct.toFixed(1)}% sobre EMA200 ($${s.ema200}) · EMA ${s.emaTrend}.`});}
-  else if(s.emaTrend==="lateral"){
-    if(Math.abs(epct)<=5)lines.push({col:"warn",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}). EMA lateral — indecisión, precio puede definir dirección pronto.`});
-    else if(fundEx&&Math.abs(epct)<=15)lines.push({col:"warn",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}). EMA lateral — más favorable que bajando; fundamentals compensan.`});
-    else lines.push({col:"ng",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}). EMA lateral pero distancia elevada.`});
-  } else if(epct>=-5){lines.push({col:"warn",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}), muy cerca · EMA ${s.emaTrend}.`});}
-  else if(epct>=-15){lines.push({col:"warn",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}) · EMA ${s.emaTrend}${fundEx?" — fundamentals compensan":""}.`});}
-  else{lines.push({col:"ng",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}) · EMA ${s.emaTrend} — distancia elevada.`});}
-  if(ppct<=-15)lines.push({col:"ok",txt:`Precio ${ppct.toFixed(1)}% bajo POC ($${s.poc.toLocaleString()}) — zona de alto valor histórico.`});
-  else if(ppct<=-5)lines.push({col:"warn",txt:`Precio ${ppct.toFixed(1)}% bajo POC ($${s.poc.toLocaleString()}) — zona moderada de valor.`});
-  else if(ppct<0)lines.push({col:"neu",txt:`Precio ${ppct.toFixed(1)}% bajo POC ($${s.poc.toLocaleString()}) — cerca del valor justo.`});
-  else lines.push({col:"ng",txt:`Precio ${ppct.toFixed(1)}% sobre POC ($${s.poc.toLocaleString()}) — sobre el valor justo.`});
-  const rw=rsiWLabel(s.rsiW);const rwExtra=s.rsiW<25&&fundEx?" Con fundamentals excelentes, puede ser zona de acumulación gradual.":"";
-  lines.push({col:rw.col,txt:`${rw.txt}.${rwExtra}`});
-  return lines;
 }
 function scoreSignal(s){
   const fund=CUSTOM_FUND[s.t]||FUND[s.t]||"buenos";const fundEx=fund==="excelentes",fundOk=fund==="excelentes"||fund==="buenos";
@@ -379,35 +711,50 @@ function scoreSignal(s){
   const pts=conds.filter(c=>c.st==="ok").length;
   const isBear=s.divState==="bear";
   const trendBajista=s.emaTrend==="bajando"&&epct<-15&&!fundOk;
-
-  // ── Zona máxima oportunidad POC ──────────────────────────
   const pocMaxOp=fundEx&&ppct<=-25&&ppct>=-40;
   const pocExtremo=ppct<-40;
-
-  // ── Alerta setup en formación ────────────────────────────
   const setupForming=!s.rsiBounce&&s.rsi10>25&&s.rsi10<=35&&s.rsiPrev&&s.rsiPrev>s.rsi10;
-
-  // ── Tamaño base por score ────────────────────────────────
   let sig,bdg,posBdg,posSize,posCls;
-  if(isBear||trendBajista){
-    sig="caution";bdg="Precaución";posBdg="No entrar";
-    posSize=isBear?"Divergencia bearish activa":"Tendencia bajista fuerte";posCls="ps-no";
-  } else if(pts>=4){
-    sig="buy";bdg="Acumular";posBdg="100%";posSize="Posición completa";posCls="ps-full";
-  } else if(pts===3){
-    sig="watch";bdg="Media posición";posBdg="50%";posSize="50% de la posición";posCls="ps-half";
-  } else if(setupForming){
-    sig="forming";bdg="Setup en formación";posBdg="—";posSize="RSI acercándose a 30 ↓";posCls="ps-forming";
-  } else{
-    sig="hold";bdg="Esperar setup";posBdg="—";posSize="No entrar aún";posCls="ps-wait";
-  }
-
+  if(isBear||trendBajista){sig="caution";bdg="Precaución";posBdg="No entrar";posSize=isBear?"Divergencia bearish activa":"Tendencia bajista fuerte";posCls="ps-no";}
+  else if(pts>=4){sig="buy";bdg="Acumular";posBdg="100%";posSize="Posición completa";posCls="ps-full";}
+  else if(pts===3){sig="watch";bdg="Media posición";posBdg="50%";posSize="50% de la posición";posCls="ps-half";}
+  else if(setupForming){sig="forming";bdg="Setup en formación";posBdg="—";posSize="RSI acercándose a 30 ↓";posCls="ps-forming";}
+  else{sig="hold";bdg="Esperar setup";posBdg="—";posSize="No entrar aún";posCls="ps-wait";}
   return{conds,pts,sig,bdg,posBdg,posSize,posCls,epct,ppct,fund,pocMaxOp,pocExtremo,setupForming};
 }
 function scolor(pts){return pts>=4?"#2ea043":pts>=3?"#ef9f27":"#444441";}
 function calcEmaHint(p,e){if(!e||!p)return"";const pct=((p-e)/e*100);const col=pct>=0?"#2ea043":pct>=-8?"#ba7517":"#da3633";return`<span style="color:${col}">${pct>=0?"+":""}${pct.toFixed(1)}% ${pct>=0?"sobre":"bajo"} EMA</span>`;}
 function calcPocHint(p,c){if(!c||!p)return"";const pct=((p-c)/c*100);const col=pct<=-15?"#2ea043":pct<=-5?"#ba7517":pct<0?"#6e7681":"#da3633";return`<span style="color:${col}">${pct.toFixed(1)}% ${pct<0?"bajo":"sobre"} POC</span>`;}
 function rsiWHint(v){if(v>=40)return`<span style="color:#2ea043">≥40 — tendencia saludable</span>`;if(v>=25)return`<span style="color:#ba7517">25-39 — tendencia débil</span>`;return`<span style="color:#da3633">&lt;25 — muy bajista</span>`;}
+
+function buildAutoNote(s,epct,ppct){
+  const fund=CUSTOM_FUND[s.t]||FUND[s.t]||"buenos";const fundEx=fund==="excelentes";const lines=[];
+  if(s.divState==="bear")lines.push({col:"ng",txt:"Divergencia bearish activa — señal de debilidad. Cancelá la entrada hasta que caduque."});
+  if(s.rsi10<=30&&!s.rsiBounce)lines.push({col:"warn",txt:`RSI(10) ${s.rsi10} — en oversold, sin rebote confirmado aún.`});
+  else if(s.rsiBounce)lines.push({col:"ok",txt:`RSI(10) ${s.rsi10} — rebotó desde oversold (≤15 velas).`});
+  else if(s.rsi10<=40)lines.push({col:"neu",txt:`RSI(10) ${s.rsi10} — zona baja, acercándose a oversold.`});
+  else lines.push({col:"neu",txt:`RSI(10) ${s.rsi10} — zona neutral. Esperar que baje a <30.`});
+  if(s.divState==="bull")lines.push({col:"ok",txt:"Divergencia bullish activa — confirma debilidad del movimiento bajista."});
+  if(s.bbRecov&&s.bbState!=="below"&&s.bbState!=="above")lines.push({col:"ok",txt:"Vela salió y recuperó banda inferior BB en las últimas 5 velas — reversión confirmada."});
+  else if(s.bbState==="below"&&!s.bbRecov)lines.push({col:"warn",txt:"Precio bajo banda inferior BB — esperando vela de recuperación."});
+  else if(s.bbState==="above")lines.push({col:"ng",txt:"Precio sobre banda superior BB — zona de sobrecompra, no es entrada."});
+  else lines.push({col:"neu",txt:"Precio dentro de bandas BB — sin salida reciente."});
+  if(epct>=0){lines.push({col:"ok",txt:`Precio $${s.price} está ${epct.toFixed(1)}% sobre EMA200 ($${s.ema200}) · EMA ${s.emaTrend}.`});}
+  else if(s.emaTrend==="lateral"){
+    if(Math.abs(epct)<=5)lines.push({col:"warn",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}). EMA lateral — indecisión.`});
+    else if(fundEx&&Math.abs(epct)<=15)lines.push({col:"warn",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}). EMA lateral — fundamentals compensan.`});
+    else lines.push({col:"ng",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}). EMA lateral pero distancia elevada.`});
+  } else if(epct>=-5){lines.push({col:"warn",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}), muy cerca · EMA ${s.emaTrend}.`});}
+  else if(epct>=-15){lines.push({col:"warn",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}) · EMA ${s.emaTrend}${fundEx?" — fundamentals compensan":""}.`});}
+  else{lines.push({col:"ng",txt:`Precio $${s.price} está ${Math.abs(epct).toFixed(1)}% bajo EMA200 ($${s.ema200}) · EMA ${s.emaTrend} — distancia elevada.`});}
+  if(ppct<=-15)lines.push({col:"ok",txt:`Precio ${ppct.toFixed(1)}% bajo POC ($${s.poc.toLocaleString()}) — zona de alto valor histórico.`});
+  else if(ppct<=-5)lines.push({col:"warn",txt:`Precio ${ppct.toFixed(1)}% bajo POC ($${s.poc.toLocaleString()}) — zona moderada de valor.`});
+  else if(ppct<0)lines.push({col:"neu",txt:`Precio ${ppct.toFixed(1)}% bajo POC ($${s.poc.toLocaleString()}) — cerca del valor justo.`});
+  else lines.push({col:"ng",txt:`Precio ${ppct.toFixed(1)}% sobre POC ($${s.poc.toLocaleString()}) — sobre el valor justo.`});
+  const rw=rsiWLabel(s.rsiW);const rwExtra=s.rsiW<25&&fundEx?" Con fundamentals excelentes, puede ser zona de acumulación gradual.":"";
+  lines.push({col:rw.col,txt:`${rw.txt}.${rwExtra}`});
+  return lines;
+}
 function buildEditPanel(i){
   const s=data[i];
   return`<div class="ep-sec">RSI(10) diario</div>
@@ -445,17 +792,26 @@ function buildEditPanel(i){
 }
 function liveCalc(i){const px=parseFloat(document.getElementById(`ep_px_${i}`).value)||0;const ema=parseFloat(document.getElementById(`ep_ema_${i}`).value)||0;const poc=parseFloat(document.getElementById(`ep_poc_${i}`).value)||0;const ec=document.getElementById(`ep_emac_${i}`),pc=document.getElementById(`ep_pocc_${i}`);if(ec)ec.innerHTML=calcEmaHint(px,ema);if(pc)pc.innerHTML=calcPocHint(px,poc);}
 function liveRsiW(i){const v=parseFloat(document.getElementById(`ep_rsiw_${i}`).value)||0;const ws=document.getElementById(`ep_wsub_${i}`);if(ws)ws.innerHTML=rsiWHint(v);}
-const STORAGE_KEY="cedears_v9_data";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════════════════════════
+const STORAGE_KEY="cedears_v10_data";
+const GH_TOKEN_KEY="cedears_gh_token";
+const WF_CONFIG_KEY="cedears_wf_config";
+const GH_REPO_DEFAULT="emacabj10/cedears-dashboard";
+
+function getGhToken(){try{return localStorage.getItem(GH_TOKEN_KEY)||"";}catch(e){return "";}}
+function getWfConfig(){try{const c=JSON.parse(localStorage.getItem(WF_CONFIG_KEY)||"{}");return{token:c.token||getGhToken(),repo:c.repo||GH_REPO_DEFAULT};}catch(e){return{token:"",repo:GH_REPO_DEFAULT};}}
+
 async function saveToStorage(){
   try{
-    const storage=window.storage||null;
     const payload=JSON.stringify({data,customFund:CUSTOM_FUND,deleted:[...DELETED_TICKERS]});
+    const storage=window.storage||null;
     if(storage){await storage.set(STORAGE_KEY,payload);}
     else{localStorage.setItem(STORAGE_KEY,payload);}
     const ind=document.getElementById("save-indicator");
     if(ind)ind.style.display="flex";
-    const indNew=document.getElementById("save-indicator-new");
-    if(indNew)indNew.style.display="none";
   }catch(e){}
 }
 async function loadFromStorage(){
@@ -472,9 +828,8 @@ async function loadFromStorage(){
       Object.assign(CUSTOM_FUND,savedCustomFund);
       savedDeleted.forEach(t=>{DELETED_TICKERS.add(t);});
       data=data.filter(d=>!DELETED_TICKERS.has(d.t));
-      const savedTickers=savedData.map(s=>s.t);
       const baseTickers=data.map(d=>d.t);
-      savedData.forEach((s,i)=>{
+      savedData.forEach(s=>{
         const existing=data.find(d=>d.t===s.t);
         if(existing){
           existing.rsi10=s.rsi10??existing.rsi10;existing.rsiW=s.rsiW??existing.rsiW;
@@ -484,13 +839,14 @@ async function loadFromStorage(){
           existing.divState=s.divState??existing.divState;existing.poc=s.poc??existing.poc;
           existing.rsiPrev=s.rsiPrev??existing.rsiPrev;
         } else if(!baseTickers.includes(s.t)){
-          data.push({t:s.t,co:s.co||s.t,sec:s.sec||"Sin sector",rsi10:s.rsi10||50,rsiW:s.rsiW||50,ema200:s.ema200||100,price:s.price||100,emaTrend:s.emaTrend||"bajando",bbState:s.bbState||"inside",bbRecov:s.bbRecov||false,rsiBounce:s.rsiBounce||false,divState:s.divState||"none",poc:s.poc||100});
+          data.push({t:s.t,co:s.co||s.t,sec:s.sec||"Sin sector",rsi10:s.rsi10||50,rsiW:s.rsiW||50,
+            ema200:s.ema200||100,price:s.price||100,emaTrend:s.emaTrend||"bajando",
+            bbState:s.bbState||"inside",bbRecov:s.bbRecov||false,rsiBounce:s.rsiBounce||false,
+            divState:s.divState||"none",poc:s.poc||100});
         }
       });
       const ind=document.getElementById("save-indicator");
       if(ind)ind.style.display="flex";
-      const indNew=document.getElementById("save-indicator-new");
-      if(indNew)indNew.style.display="none";
     }
   }catch(e){}
 }
@@ -499,8 +855,7 @@ async function clearStorage(){
     const storage=window.storage||null;
     if(storage){await storage.delete(STORAGE_KEY);}
     else{localStorage.removeItem(STORAGE_KEY);}
-    DELETED_TICKERS.clear();
-    location.reload();
+    DELETED_TICKERS.clear();location.reload();
   }catch(e){location.reload();}
 }
 function applyOne(i){
@@ -516,7 +871,8 @@ function applyOne(i){
   s.emaTrend=document.getElementById(`ep_emat_${i}`).value;
   s.poc=parseFloat(document.getElementById(`ep_poc_${i}`).value)||s.poc;
   saveToStorage();
-  renderCards();const ep=document.getElementById(`ep_${i}`);if(ep)ep.classList.add("open");
+  renderAll();
+  const ep=document.getElementById(`ep_${i}`);if(ep)ep.classList.add("open");
 }
 function togglePanel(type,i){
   const dp=document.getElementById(`dp_${i}`),ep=document.getElementById(`ep_${i}`);
@@ -525,6 +881,264 @@ function togglePanel(type,i){
   else{const was=ep.classList.contains("open");ep.classList.toggle("open");if(!was)ep.innerHTML=buildEditPanel(i);dp.classList.remove("open");eb.textContent=was?"Editar":"Cerrar edición";ab.textContent="Ver análisis";}
 }
 function toggleRef(){const p=document.getElementById("refPanel"),a=document.getElementById("refArrow");p.classList.toggle("open");a.classList.toggle("open");}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════════════════════════════
+function switchTab(name,btn){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("tab-"+name).classList.add("active");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER ALERT TAB — Replicas exactas de los mensajes de Telegram
+// ═══════════════════════════════════════════════════════════════════════════
+function tvLink(ticker){
+  const sym=TV_MAP[ticker]||ticker;
+  return `<a class="alert-tv-link" href="https://www.tradingview.com/chart/?symbol=${sym}" target="_blank">📊 Ver gráfico en TradingView →</a>`;
+}
+
+function rsiLabel(rsi10,rsiPrev,forSignal){
+  if(forSignal){
+    if(rsi10>30&&rsiPrev<=30)return{txt:`RSI(10): ${rsi10} — Rebotó (Cruzó de 30)`,cls:"ab-ok"};
+    if(rsi10<=30)return{txt:`RSI(10): ${rsi10} — En Oversold (sin rebote)`,cls:"ab-warn"};
+    if(rsi10>=70)return{txt:`RSI(10): ${rsi10} — Overbought`,cls:"ab-ng"};
+    return{txt:`RSI(10): ${rsi10} — Zona Neutral`,cls:"ab-no"};
+  } else {
+    if(rsi10<=30)return{txt:`RSI(10): ${rsi10} — En Oversold (sin rebote aún)`,cls:"ab-warn"};
+    if(rsi10<=38)return{txt:`RSI(10): ${rsi10} — Cerca de Oversold`,cls:"ab-warn"};
+    return{txt:`RSI(10): ${rsi10} — Consolidando`,cls:"ab-no"};
+  }
+}
+function emaLabel(epct,emaTrend,forSignal){
+  if(forSignal){
+    if(epct>=0)return{txt:`EMA200: +${epct.toFixed(1)}% sobre la media — Tendencia Alcista`,cls:"ab-ok"};
+    if(Math.abs(epct)<=3)return{txt:`EMA200: ${epct.toFixed(1)}% — Testeando EMA200`,cls:"ab-warn"};
+    if(epct<0&&emaTrend==="subiendo")return{txt:`EMA200: ${epct.toFixed(1)}% — Precio recuperando tendencia`,cls:"ab-warn"};
+    return{txt:`EMA200: ${epct.toFixed(1)}% bajo la media — Resistencia`,cls:"ab-no"};
+  } else {
+    if(epct>=0&&epct<=5)return{txt:`EMA200: +${epct.toFixed(1)}% — Cerca del soporte dinámico`,cls:"ab-ok"};
+    if(Math.abs(epct)<=3)return{txt:`EMA200: ${epct.toFixed(1)}% — Testeando rotura`,cls:"ab-warn"};
+    return{txt:`EMA200: ${epct.toFixed(1)}%`,cls:epct>=0?"ab-ok":"ab-no"};
+  }
+}
+function pocLabel(ppct,poc){
+  if(ppct<=-25)return{txt:`POC: ${ppct.toFixed(1)}% — Máxima oportunidad ($${poc.toLocaleString()})`,cls:"ab-ok"};
+  if(ppct<=-15)return{txt:`POC: ${ppct.toFixed(1)}% — Zona de Valor ($${poc.toLocaleString()})`,cls:"ab-ok"};
+  if(ppct<=-5)return{txt:`POC: ${ppct.toFixed(1)}% — Cerca de valor ($${poc.toLocaleString()})`,cls:"ab-warn"};
+  return{txt:`POC: ${ppct.toFixed(1)}% ($${poc.toLocaleString()})`,cls:"ab-no"};
+}
+function bbLabel(s,forSignal){
+  if(s.bbRecov){return{txt:"BB: Recuperó banda inferior (Rebote Bollinger confirmado)",cls:"ab-ok"};}
+  if(s.bbState==="below"){return{txt:forSignal?"BB: Bajo banda inferior":"BB: Velas cerrando fuera de banda (pánico)",cls:"ab-warn"};}
+  if(s.bbState==="above"){return{txt:"BB: Sobre banda superior (sobrecomprado)",cls:"ab-ng"};}
+  return{txt:"BB: Precio dentro de bandas",cls:"ab-no"};
+}
+
+function buildSignalAlert(s,sc){
+  const{score,rsiBounced,emaOk,emaOkMedia,bbRecov,div,divBear,epct,ppct,fund,missing,rsi10,rsiPrev}=sc;
+  const isSignal=sc.categoria==="signal";
+  const rsiL=rsiLabel(rsi10,rsiPrev,isSignal);
+  const emaL=emaLabel(epct,s.emaTrend,isSignal);
+  const pocL=pocLabel(ppct,s.poc);
+  const bbL=bbLabel(s,isSignal);
+  const priceStr=`$${s.price.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  const posicion=emaOk?"posición completa":emaOkMedia?"media posición":"esperar recuperación EMA";
+  const accion=isSignal
+    ?`Entrada con ${posicion}. ${div?" Divergencia bullish confirma el setup.":""}`
+    :`Faltan: ${missing.join(", ")}. Monitorear setup.`;
+
+  const context=buildContextLine(s,epct,div,bbRecov,rsi10,rsiPrev);
+  const scoreLabel=isSignal?`SEÑAL ${score}/3`:`WATCHLIST ${score}/3`;
+  const dotCls=isSignal?"alert-dot-buy":"alert-dot-watch";
+  const itemCls=isSignal?"alert-buy":"alert-watch";
+  const scoreCls=isSignal?"alert-score-buy":"alert-score-watch";
+
+  return `<div class="alert-item ${itemCls}">
+    <div class="alert-dot ${dotCls}" style="margin-top:6px"></div>
+    <div class="alert-body">
+      <div>
+        <span class="alert-ticker">${s.t} ${priceStr}</span>
+        <span class="alert-score ${scoreCls}">${scoreLabel}</span>
+        ${div?'<span class="alert-score" style="background:#0d2340;color:#58a6ff;margin-left:4px">DIV ✓</span>':""}
+      </div>
+      <div class="alert-price">${s.co} · ${s.sec} · Fund: ${fund}</div>
+      <div class="alert-indicators">
+        <span class="alert-badge ${rsiL.cls}">${rsiL.txt}</span>
+        <span class="alert-badge ${emaL.cls}">${emaL.txt}</span>
+        <span class="alert-badge ${pocL.cls}">${pocL.txt}</span>
+        <span class="alert-badge ${bbL.cls}">${bbL.txt}</span>
+      </div>
+      ${context?`<div class="alert-context">${context}</div>`:""}
+      <div class="alert-action">💡 ${accion}</div>
+      ${tvLink(s.t)}
+    </div>
+  </div>`;
+}
+
+function buildContextLine(s,epct,div,bbRecov,rsi10,rsiPrev){
+  let lines=[];
+  if(epct>=0&&s.emaTrend==="subiendo")lines.push("Tendencia alcista de largo plazo intacta. Corrección técnica dentro de estructura positiva.");
+  else if(epct>=0&&s.emaTrend==="lateral")lines.push("Mercado lateralizando sobre la EMA200 sin tendencia definida.");
+  else if(epct>=-5)lines.push(`Precio en zona de decisión crítica sobre la EMA200. Un cierre por encima confirma el soporte dinámico.`);
+  else if(epct>=-10)lines.push(`Corrección moderada bajo EMA200. La media actúa como resistencia dinámica.`);
+  else lines.push(`Corrección profunda (${Math.abs(epct).toFixed(1)}% bajo EMA200). Zona de capitulación.`);
+  if(div)lines.push("Divergencia alcista confirmada — precio hace mínimo más bajo pero el RSI marca mínimo más alto.");
+  else if(rsi10>30&&rsiPrev&&rsiPrev<=30)lines.push(`RSI cruzó al alza el nivel 30 — impulso girando a favor del comprador.`);
+  return lines.join(" ");
+}
+
+function buildRadarItem(s,sc){
+  const{score,rsi10,epct,ppct}=sc;
+  const priceStr=`$${s.price.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  const parts=[];
+  if(rsi10<30)parts.push(`RSI(10) en ${rsi10} — zona de suelo (oversold)`);
+  else if(rsi10<=35)parts.push(`RSI(10) en ${rsi10} — bajando hacia 30`);
+  if(Math.abs(epct)<=3)parts.push(`cerca de testear la EMA200 (${epct>0?"+":""}${epct.toFixed(1)}%)`);
+  if(s.bbState==="below")parts.push("Perdió la banda inferior de BB");
+  else if(s.bbRecov)parts.push("Apoyando en banda inferior de BB");
+  if(score>0)parts.push(`Score: ${score}/3`);
+  const desc=parts.join(" · ")||`RSI(10): ${rsi10}`;
+
+  return `<div class="alert-item alert-radar">
+    <div class="alert-dot alert-dot-radar" style="margin-top:6px"></div>
+    <div class="alert-body">
+      <div>
+        <span class="alert-ticker">${s.t} ${priceStr}</span>
+        <span class="alert-score alert-score-radar">RADAR</span>
+      </div>
+      <div class="alert-price">${s.co} · ${s.sec}</div>
+      <div class="alert-context" style="margin-top:4px">${desc}</div>
+      ${tvLink(s.t)}
+    </div>
+  </div>`;
+}
+
+function renderAlerts(){
+  const signals=[],watchlist=[],radar=[];
+  data.forEach(s=>{
+    const sc=scoreTelegram(s);
+    if(sc.categoria==="signal")signals.push({s,sc});
+    else if(sc.categoria==="watchlist")watchlist.push({s,sc});
+    else if(sc.categoria==="radar"||sc.rsi10<=35)radar.push({s,sc});
+  });
+
+  watchlist.sort((a,b)=>a.sc.rsi10-b.sc.rsi10);
+  radar.sort((a,b)=>a.sc.rsi10-b.sc.rsi10);
+
+  const sigList=document.getElementById("alert-signals-list");
+  const wlList=document.getElementById("alert-watchlist-list");
+  const radList=document.getElementById("alert-radar-list");
+
+  sigList.innerHTML=signals.length
+    ?signals.map(({s,sc})=>buildSignalAlert(s,sc)).join("")
+    :`<div class="alert-empty">No hay señales 3/3 activas en este momento.<br><span style="color:#444441">Las señales se generan cuando RSI rebota desde 30, EMA200 y BB se alinean.</span></div>`;
+
+  wlList.innerHTML=watchlist.length
+    ?watchlist.map(({s,sc})=>buildSignalAlert(s,sc)).join("")
+    :`<div class="alert-empty">No hay activos en watchlist actualmente.</div>`;
+
+  radList.innerHTML=radar.length
+    ?radar.map(({s,sc})=>buildRadarItem(s,sc)).join("")
+    :`<div class="alert-empty">No hay activos en zona de radar (RSI ≤ 35).</div>`;
+
+  document.getElementById("c-sig3").textContent=signals.filter(x=>x.sc.score===3).length;
+  document.getElementById("c-sig2").textContent=signals.filter(x=>x.sc.score===2).length;
+  document.getElementById("c-watch").textContent=watchlist.length;
+  document.getElementById("c-radar").textContent=radar.length;
+  document.getElementById("c-sil").textContent=0; // silenciados vienen de data.json
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER WATCHLIST TABLE + RADAR CARDS
+// ═══════════════════════════════════════════════════════════════════════════
+let wlCurrentFilter="all";
+function wlFilter(f,btn){
+  wlCurrentFilter=f;
+  document.querySelectorAll(".fbtn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  renderWatchlist();
+}
+
+function renderWatchlist(){
+  const tbody=document.getElementById("wl-tbody");
+  const radarGrid=document.getElementById("radar-grid");
+  const rows=[];
+  const radarCards=[];
+
+  const sorted=[...data].sort((a,b)=>{
+    const sa=scoreTelegram(a),sb=scoreTelegram(b);
+    const order={signal:0,watchlist:1,forming:2,radar:3,hold:4};
+    return(order[sa.categoria]||4)-(order[sb.categoria]||4)||sa.rsi10-sb.rsi10;
+  });
+
+  sorted.forEach(s=>{
+    const sc=scoreTelegram(s);
+    const{score,rsiBounced,emaOk,bbRecov,div,epct,ppct,rsi10,categoria}=sc;
+    if(wlCurrentFilter!=="all"){
+      if(wlCurrentFilter==="signal"&&categoria!=="signal")return;
+      if(wlCurrentFilter==="watch"&&categoria!=="watchlist")return;
+      if(wlCurrentFilter==="radar"&&categoria!=="radar"&&rsi10>35)return;
+    }
+
+    const rsiCls=rsi10<=30?"ok":rsi10<=38?"warn":"neu";
+    const rsiWCls=s.rsiW>=40?"ok":s.rsiW>=25?"warn":"ng";
+    const emaCls=epct>=0?"ok":epct>=-8?"warn":"ng";
+    const pocCls=ppct<=-15?"ok":ppct<=-5?"warn":ppct<0?"neu":"ng";
+    const sigMap={signal:"sig-buy",watchlist:"sig-watch",forming:"sig-forming",radar:"sig-hold",hold:"sig-hold"};
+    const sigLbl={signal:`Señal ${score}/3`,watchlist:`Watch ${score}/3`,forming:"Formación",radar:"Radar",hold:"Esperar"};
+    const d1Cls=rsiBounced?"d-ok":rsi10<=30?"d-w":"d-no";
+    const d2Cls=emaOk?"d-ok":epct>=-15?"d-w":"d-no";
+    const d3Cls=bbRecov?"d-ok":s.bbState==="below"?"d-w":"d-no";
+    const divCls=div?"d-ok":s.divState==="bear"?"d-ng":"d-no";
+    const tvSym=TV_MAP[s.t]||s.t;
+
+    rows.push(`<tr>
+      <td><div class="wl-tkr">${s.t}</div><div class="wl-co">${s.co}</div></td>
+      <td style="color:#e6edf3;font-weight:500">$${s.price.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td><div class="rsi-bar"><div class="rsi-track"><div class="rsi-fill" style="width:${rsi10}%;background:${rsi10<=30?"#2ea043":rsi10<=50?"#ba7517":"#da363330"}"></div></div><span class="${rsiCls}" style="font-size:11px;font-weight:600">${rsi10}</span></div></td>
+      <td class="${rsiWCls}" style="font-size:11px;font-weight:500">${s.rsiW}</td>
+      <td class="${emaCls}" style="font-size:11px;font-weight:500">${epct>=0?"+":""}${epct.toFixed(1)}%</td>
+      <td class="${pocCls}" style="font-size:11px;font-weight:500">${ppct.toFixed(1)}%</td>
+      <td style="font-size:10px;color:${s.bbRecov?"#2ea043":s.bbState==="below"?"#f0a500":"#6e7681"}">${s.bbRecov?"↑ Recuperó":s.bbState==="below"?"↓ Bajo BB":"Dentro"}</td>
+      <td><div class="dot3"><div class="d ${d1Cls}"></div><span style="font-size:10px;color:${rsiBounced?"#2ea043":rsi10<=30?"#f0a500":"#444441"}">${rsiBounced?"Sí":rsi10<=30?"Pend":"No"}</span></div></td>
+      <td style="font-size:10px;color:${div?"#2ea043":s.divState==="bear"?"#da3633":"#444441"}">${div?"Bull ✓":s.divState==="bear"?"Bear ✗":"—"}</td>
+      <td><div class="dot3"><div class="d ${d1Cls}" title="RSI"></div><div class="d ${d2Cls}" title="EMA"></div><div class="d ${d3Cls}" title="BB"></div><span style="font-size:10px;color:#6e7681;margin-left:2px">${score}/3</span></div></td>
+      <td><span class="sig-chip ${sigMap[categoria]||"sig-hold"}">${sigLbl[categoria]||"—"}</span></td>
+    </tr>`);
+
+    // Radar cards para activos que les faltan 1-2 puntos
+    if((categoria==="radar"||categoria==="forming"||(categoria==="watchlist"&&score<=2))&&sc.missing.length>0){
+      const missingStr=sc.missing.map(m=>`<div style="display:flex;gap:4px;align-items:center"><div class="d d-no" style="flex-shrink:0"></div>${m}</div>`).join("");
+      radarCards.push(`<div class="radar-card">
+        <div class="radar-card-head">
+          <div class="radar-tkr">${s.t} <span style="font-size:10px;color:#6e7681;font-weight:400">${s.co}</span></div>
+          <div class="radar-price">$${s.price.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        </div>
+        <div class="radar-metrics">
+          <div class="radar-met"><div class="radar-ml">RSI(10)</div><div class="radar-mv ${rsi10<=30?"ok":rsi10<=38?"warn":"neu"}">${rsi10}</div></div>
+          <div class="radar-met"><div class="radar-ml">vs EMA200</div><div class="radar-mv ${epct>=0?"ok":epct>=-15?"warn":"ng"}">${epct>=0?"+":""}${epct.toFixed(1)}%</div></div>
+          <div class="radar-met"><div class="radar-ml">vs POC</div><div class="radar-mv ${ppct<=-15?"ok":ppct<=-5?"warn":"ng"}">${ppct.toFixed(1)}%</div></div>
+        </div>
+        <div class="radar-progress">
+          <div class="radar-prog-lbl"><span>Score Telegram</span><span style="color:#58a6ff">${score}/3 puntos</span></div>
+          <div class="radar-track"><div class="radar-fill" style="width:${(score/3)*100}%"></div></div>
+        </div>
+        <div class="radar-missing"><div style="font-size:9px;color:#444441;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Falta para completar señal:</div>${missingStr}</div>
+        ${tvLink(s.t)}
+      </div>`);
+    }
+  });
+
+  tbody.innerHTML=rows.length?rows.join(""):`<tr><td colspan="11" style="text-align:center;color:#444441;padding:20px">No hay activos con el filtro seleccionado</td></tr>`;
+  radarGrid.innerHTML=radarCards.length?radarCards.join(""):`<div class="alert-empty" style="grid-column:1/-1">No hay activos en zona de radar actualmente.</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER PANEL COMPLETO (cards legacy)
+// ═══════════════════════════════════════════════════════════════════════════
 let curFilt="all",curSort="az";
 function renderCards(){
   const g=document.getElementById("grid");g.innerHTML="";let b=0,w=0,h=0,ca=0;
@@ -539,7 +1153,7 @@ function renderCards(){
     if(sig==="buy")b++;else if(sig==="watch")w++;else if(sig==="caution")ca++;else h++;
     if(curFilt!=="all"&&sig!==curFilt)return;
     const pct=Math.round((pts/5)*100);
-    const bCls={buy:"b-buy",watch:"b-watch",hold:"b-hold",caution:"b-caution"}[sig];
+    const bCls={buy:"b-buy",watch:"b-watch",hold:"b-hold",caution:"b-caution",forming:"b-forming"}[sig]||"b-hold";
     const ciMap={ok:"ci-ok",warn:"ci-w",no:"ci-no",ng:"ci-ng"};
     const rsiCls=s.rsi10<=30?"ok":s.rsi10>=70?"ng":"neu";
     const rsiWCls=s.rsiW>=40?"ok":s.rsiW>=25?"warn":"ng";
@@ -574,7 +1188,7 @@ function renderCards(){
       <div class="drow"><span>Pendiente EMA200</span><span>${s.emaTrend}</span></div>
       <div class="drow"><span>POC (FRVP anual)</span><span>$${s.poc.toLocaleString()} (${ppct.toFixed(1)}%)</span></div>
       <div class="drow"><span>RSI(10) diario</span><span>${s.rsi10}</span></div>
-      <div class="drow"><span>RSI semanal</span><span>${s.rsiW} — ${rsiWLabel(s.rsiW).txt.split("—")[1].trim()}</span></div>
+      <div class="drow"><span>RSI semanal</span><span>${s.rsiW}</span></div>
       <div class="drow"><span>Divergencia</span><span>${s.divState==="bull"?"Bullish activa":s.divState==="bear"?"Bearish activa ⚠":"Sin divergencia"}</span></div>
       <div class="drow"><span>Estado BB</span><span>${s.bbState==="below"?"Bajo inferior":s.bbState==="above"?"Sobre superior":"Dentro"}</span></div>
       <div class="drow"><span>Fundamentals</span><span>${fund}</span></div>
@@ -583,65 +1197,31 @@ function renderCards(){
     <div class="epanel" id="ep_${i}"></div>`;
     g.appendChild(card);
   });
-  document.getElementById("c1").textContent=b;document.getElementById("c2").textContent=w;document.getElementById("c3").textContent=h;document.getElementById("c4").textContent=ca;
+  document.getElementById("c1").textContent=b;document.getElementById("c2").textContent=w;
+  document.getElementById("c3").textContent=h;document.getElementById("c4").textContent=ca;
 }
-function openAddTicker(){document.getElementById("add-modal").style.display="flex";}
-function closeAddTicker(){document.getElementById("add-modal").style.display="none";}
-function confirmAddTicker(){
-  const t=document.getElementById("new_t").value.trim().toUpperCase();
-  const co=document.getElementById("new_co").value.trim();
-  const sec=document.getElementById("new_sec").value.trim();
-  const fund=document.getElementById("new_fund").value;
-  if(!t||!co){alert("Ticker y empresa son obligatorios.");return;}
-  if(data.find(d=>d.t===t)){alert(`El ticker ${t} ya existe.`);return;}
-  const newTicker={
-    t,co,sec:sec||"Sin sector",
-    rsi10:parseFloat(document.getElementById("new_rsi").value)||50,
-    rsiW:parseFloat(document.getElementById("new_rsiw").value)||50,
-    price:parseFloat(document.getElementById("new_price").value)||100,
-    ema200:parseFloat(document.getElementById("new_ema").value)||100,
-    poc:parseFloat(document.getElementById("new_poc").value)||100,
-    emaTrend:document.getElementById("new_trend").value,
-    bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",
-    _customFund:fund
-  };
-  CUSTOM_FUND[t]=fund;
-  data.push(newTicker);
-  saveToStorage();
-  closeAddTicker();
-  renderCards();
-  // Sync to GitHub if token available
-  if(getGhToken()) syncToGithub("add", t);
-}
-function deleteTicker(ticker){
-  const dataIdx=data.findIndex(d=>d.t===ticker);
-  if(dataIdx===-1)return;
-  const s=data[dataIdx];
-  if(!confirm(`¿Eliminar ${s.t} del dashboard? No volverá a aparecer.`))return;
-  DELETED_TICKERS.add(s.t);
-  data.splice(dataIdx,1);
-  delete CUSTOM_FUND[s.t];
-  saveToStorage();
-  renderCards();
-  // Sync to GitHub if token available
-  if(getGhToken()) syncToGithub("delete", ticker);
-}
-function filt(sig,btn){curFilt=sig;document.querySelectorAll(".fbtn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderCards();}
-function sortBy(type,btn){curSort=type;document.querySelectorAll(".sbtn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderCards();}
-// ── GitHub API Integration ───────────────────────────────────────────────────
-const GH_TOKEN_KEY="cedears_gh_token";
-const GH_REPO="emacabj10/cedears-dashboard";
 
-function getGhToken(){try{return localStorage.getItem(GH_TOKEN_KEY)||"";}catch(e){return "";}}
+function renderAll(){
+  renderAlerts();
+  renderWatchlist();
+  renderCards();
+}
+
+function filt(sig,btn){curFilt=sig;document.querySelectorAll("#tab-panel .fbtn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderCards();}
+function sortBy(type,btn){curSort=type;document.querySelectorAll(".sbtn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderCards();}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GITHUB API
+// ═══════════════════════════════════════════════════════════════════════════
+const GH_REPO=GH_REPO_DEFAULT;
 function openGithubConfig(){
   const modal=document.getElementById("gh-modal");
   const input=document.getElementById("gh-token-input");
   const status=document.getElementById("gh-token-status");
-  if(modal){modal.style.display="flex";}
+  if(modal)modal.style.display="flex";
   const t=getGhToken();
-  if(input) input.value=t?"●●●●●●●●●●●●":"";
-  if(status) status.textContent=t?"Token guardado — listo para sincronizar":"Sin token — las acciones solo se guardan localmente";
-  if(status) status.style.color=t?"#2ea043":"#6e7681";
+  if(input)input.value=t?"●●●●●●●●●●●●":"";
+  if(status){status.textContent=t?"Token guardado — listo para sincronizar":"Sin token";status.style.color=t?"#2ea043":"#6e7681";}
 }
 function closeGithubConfig(){const m=document.getElementById("gh-modal");if(m)m.style.display="none";}
 function saveGithubToken(){
@@ -660,26 +1240,20 @@ function clearGithubToken(){
   const status=document.getElementById("gh-token-status");
   if(input)input.value="";
   if(status){status.textContent="Token borrado";status.style.color="#da3633";}
-  const btn=document.getElementById("gh-btn");
-  if(btn){btn.style.color="#6e7681";btn.style.borderColor="#30363d";}
 }
-
-async function getFileSha(token, path){
-  const r=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${path}`,{
-    headers:{"Authorization":`Bearer ${token}`,"Accept":"application/vnd.github+json"}
-  });
-  if(!r.ok) return null;
+async function getFileSha(token,path,repo){
+  const r=await fetch(`https://api.github.com/repos/${repo}/contents/${path}`,{headers:{"Authorization":`Bearer ${token}`,"Accept":"application/vnd.github+json"}});
+  if(!r.ok)return null;
   const d=await r.json();
   const raw=atob(d.content.replace(/\n/g,""));
   const bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));
   const decoded=new TextDecoder("utf-8").decode(bytes);
-  return{sha:d.sha, content:decoded};
+  return{sha:d.sha,content:decoded};
 }
-
-async function updateGithubFile(token, path, newContent, message){
-  const file=await getFileSha(token, path);
-  if(!file) return false;
-  const r=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${path}`,{
+async function updateGithubFile(token,path,newContent,message,repo){
+  const file=await getFileSha(token,path,repo);
+  if(!file)return false;
+  const r=await fetch(`https://api.github.com/repos/${repo}/contents/${path}`,{
     method:"PUT",
     headers:{"Authorization":`Bearer ${token}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"},
     body:JSON.stringify({message,content:btoa(unescape(encodeURIComponent(newContent))),sha:file.sha})
@@ -687,250 +1261,153 @@ async function updateGithubFile(token, path, newContent, message){
   return r.ok;
 }
 
-function buildIndexHtml(){
-  const lines=data.map(s=>`  {t:"${s.t}",co:"${s.co}",sec:"${s.sec}",rsi10:${s.rsi10},rsiW:${s.rsiW},ema200:${s.ema200},price:${s.price},emaTrend:"${s.emaTrend}",bbState:"${s.bbState}",bbRecov:${s.bbRecov},rsiBounce:${s.rsiBounce},divState:"${s.divState}",poc:${s.poc},rsiPrev:${s.rsiPrev===null?"null":s.rsiPrev}}`).join(",\n");
-  const currentHtml=document.documentElement.outerHTML;
-  const start=currentHtml.indexOf("let data=[\n");
-  const end=currentHtml.indexOf("\n];\n",start)+5;
-  if(start===-1||end===-1) return null;
-  return currentHtml.substring(0,start)+"let data=[\n"+lines+"\n];"+currentHtml.substring(end);
+// ═══════════════════════════════════════════════════════════════════════════
+// WORKFLOW — Actualizar sin Telegram
+// ═══════════════════════════════════════════════════════════════════════════
+function logWf(msg,cls=""){
+  const log=document.getElementById("wf-log");
+  log.classList.add("open");
+  const line=document.createElement("div");
+  if(cls)line.className=cls;
+  line.textContent=`[${new Date().toLocaleTimeString("es-AR")}] ${msg}`;
+  log.appendChild(line);
+  log.scrollTop=log.scrollHeight;
+}
+function toggleWfLog(){
+  const log=document.getElementById("wf-log");
+  log.classList.toggle("open");
+}
+function saveWfConfig(){
+  const token=document.getElementById("wf-token").value.trim();
+  const repo=document.getElementById("wf-repo").value.trim()||GH_REPO_DEFAULT;
+  if(token){try{localStorage.setItem(GH_TOKEN_KEY,token);}catch(e){}}
+  try{localStorage.setItem(WF_CONFIG_KEY,JSON.stringify({token,repo}));}catch(e){}
+  const s=document.getElementById("wf-config-status");
+  s.textContent="✓ Configuración guardada";s.style.color="#2ea043";
+  const btn=document.getElementById("gh-btn");
+  if(btn&&token){btn.style.color="#2ea043";btn.style.borderColor="#2ea04360";}
+  setTimeout(()=>{s.textContent="";},3000);
 }
 
-function buildFetchPy(){
-  const base=`import json, urllib.request, urllib.error, time\nfrom datetime import datetime\n\nYF_MAP = {\n`;
-  const allTickers=Object.assign({},{"AMD":"AMD","AMZN":"AMZN","BABA":"BABA","BNB":"BNB-USD","BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD","GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META","MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ","SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD","NVDA":"NVDA","APPL":"APPL","NU":"NU",});
-  data.forEach(d=>{if(!allTickers[d.t]){allTickers[d.t]=d.t.replace(".","-");}});
-  // Remove deleted tickers
-  DELETED_TICKERS.forEach(t=>{delete allTickers[t];});
-  const mapLines=Object.entries(allTickers).map(([k,v])=>`    "${k}":"${v}"`).join(",\n");
-  return base+mapLines+`\n}\n\n# resto del script igual`;
-}
+async function runFetchOnly(){
+  const cfg=getWfConfig();
+  const token=cfg.token||getGhToken();
+  const repo=cfg.repo||GH_REPO_DEFAULT;
 
-async function syncToGithub(action, tickerName){
-  const token=getGhToken();
   if(!token){
-    alert("Configurá tu token de GitHub primero (botón ⚙ GitHub)");
-    return false;
+    alert("Necesitás configurar tu GitHub Personal Access Token primero.\n\nAndá a la pestaña '⚡ Actualizar cotizaciones' y completá el token.");
+    return;
   }
-  const status=document.getElementById("fetch-status");
-  if(status){status.style.color="#58a6ff";status.textContent=`Sincronizando ${tickerName} con GitHub...`;}
+
+  const btn=document.getElementById("wf-run-btn");
+  const status=document.getElementById("wf-main-status");
+  btn.disabled=true;
+  status.style.color="#58a6ff";
+  status.textContent="Disparando workflow...";
+  logWf("Iniciando actualización SIN Telegram...", "log-info");
+  logWf(`Repo: ${repo}`, "log-info");
 
   try{
-    // ── 1. Actualizar index.html ──────────────────────────────────────────────
-    const file=await getFileSha(token,"index.html");
-    if(!file) throw new Error("No se pudo leer index.html del repo");
-    let html=file.content;
-    const yfSym=tickerName.replace(".","_").replace(".","-");
-    const yfSymClean=tickerName.replace(".","-");
+    // Disparar workflow con cmd_operado='__FETCH_ONLY__'
+    // Esto hace que el step de fetch_quotes se ejecute pero alert_quotes sea omitido
+    // porque el YAML tiene: if: ${{ github.event.inputs.cmd_operado == '' }}
+    // Al pasar un valor no vacío, el step de fetch también se saltea,
+    // entonces necesitamos un workflow separado o modificar el YAML.
+    // La forma más limpia: disparar el workflow_dispatch sin inputs (cron equivalente)
+    // pero eso ejecutaría también las alertas.
+    // Solución: usar un input especial que el YAML reconozca para fetch-only.
 
-    if(action==="add"){
-      const s=data.find(d=>d.t===tickerName);
-      if(!s) throw new Error("Ticker no encontrado en data");
-      const newLine=`  {t:"${s.t}",co:"${s.co}",sec:"${s.sec}",rsi10:${s.rsi10},rsiW:${s.rsiW},ema200:${s.ema200},price:${s.price},emaTrend:"${s.emaTrend}",bbState:"${s.bbState}",bbRecov:${s.bbRecov},rsiBounce:${s.rsiBounce},divState:"${s.divState}",poc:${s.poc},rsiPrev:null}`;
-      const insertIdx=html.lastIndexOf("\n];");
-      if(insertIdx===-1) throw new Error("No se encontró el cierre del array data");
-      html=html.substring(0,insertIdx)+",\n"+newLine+html.substring(insertIdx);
-      // Add to YF_MAP in index.html
-      html=html.replace(/"GLD":"GLD"/,`"GLD":"GLD","${tickerName}":"${yfSymClean}"`);
-    } else if(action==="delete"){
-      const regex=new RegExp(`  \\{t:"${tickerName}",[^\n]+\\},?\n`,"g");
-      html=html.replace(regex,"");
-      const yfRegex=new RegExp(`"${tickerName}":"[^"]*",?`,"g");
-      html=html.replace(yfRegex,"");
+    // Intentamos primero verificar que el repo tiene el workflow
+    logWf("Verificando acceso al repositorio...", "log-info");
+    const checkR=await fetch(`https://api.github.com/repos/${repo}`,{
+      headers:{"Authorization":`Bearer ${token}`,"Accept":"application/vnd.github+json"}
+    });
+    if(!checkR.ok){
+      const err=await checkR.json();
+      throw new Error(`Error de acceso al repo: ${err.message||checkR.status}`);
     }
-    const okIndex=await updateGithubFile(token,"index.html",html,`${action==="add"?"Agregar":"Eliminar"} ticker ${tickerName} desde dashboard`);
-    if(!okIndex) throw new Error("Error al actualizar index.html");
+    logWf("✓ Acceso al repositorio OK", "log-ok");
 
-    // ── 2. Actualizar fetch_quotes.py ─────────────────────────────────────────
-    if(status) status.textContent=`Actualizando fetch_quotes.py...`;
-    const fetchFile=await getFileSha(token,"fetch_quotes.py");
-    if(fetchFile){
-      let fetchPy=fetchFile.content;
-      if(action==="add"){
-        // Add to YF_MAP in fetch_quotes.py
-        fetchPy=fetchPy.replace(/"GLD":"GLD",/,`"GLD":"GLD",\n    "${tickerName}":"${yfSymClean}",`);
-      } else if(action==="delete"){
-        const regex=new RegExp(`\s+"${tickerName}":"[^"]*",?\n?`,"g");
-        fetchPy=fetchPy.replace(regex,"\n");
-      }
-      await updateGithubFile(token,"fetch_quotes.py",fetchPy,`${action==="add"?"Agregar":"Eliminar"} ticker ${tickerName}`);
-    }
+    // Listar workflows disponibles
+    logWf("Buscando workflows...", "log-info");
+    const wfListR=await fetch(`https://api.github.com/repos/${repo}/actions/workflows`,{
+      headers:{"Authorization":`Bearer ${token}`,"Accept":"application/vnd.github+json"}
+    });
+    if(!wfListR.ok) throw new Error("No se pudieron listar los workflows");
+    const wfList=await wfListR.json();
+    const workflows=wfList.workflows||[];
+    logWf(`Workflows encontrados: ${workflows.map(w=>w.name).join(", ")||"ninguno"}`, "log-info");
 
-    // ── 3. Actualizar alert_quotes.py ─────────────────────────────────────────
-    if(status) status.textContent=`Actualizando alert_quotes.py...`;
-    const alertFile=await getFileSha(token,"alert_quotes.py");
-    if(alertFile){
-      let alertPy=alertFile.content;
-      const s=data.find(d=>d.t===tickerName);
-      const fund=CUSTOM_FUND[tickerName]||(s?"buenos":"buenos");
-      if(action==="add"){
-        // Add to FUND
-        alertPy=alertPy.replace(/"TSLA":"controversiales",/,`"TSLA":"controversiales","${tickerName}":"${fund}",`);
-        // Add to TV_MAP
-        const tvSym=`${tickerName.includes("BTC")||tickerName.includes("ETH")||tickerName.includes("BNB")?"BINANCE":"NASDAQ"}:${tickerName}`;
-        alertPy=alertPy.replace(/"BNB":"BINANCE:BNBUSDT",/,`"BNB":"BINANCE:BNBUSDT","${tickerName}":"${tvSym}",`);
-        // Add to YF_MAP
-        alertPy=alertPy.replace(/"GLD":"GLD",/,`"GLD":"GLD","${tickerName}":"${yfSymClean}",`);
-      } else if(action==="delete"){
-        // Remove from FUND, TV_MAP, YF_MAP
-        const regexFund=new RegExp(`"${tickerName}":"[^"]*",?`,"g");
-        alertPy=alertPy.replace(regexFund,"");
-      }
-      await updateGithubFile(token,"alert_quotes.py",alertPy,`${action==="add"?"Agregar":"Eliminar"} ticker ${tickerName}`);
-    }
+    // Buscar el workflow de cotizaciones
+    const targetWf=workflows.find(w=>
+      w.name.toLowerCase().includes("quote")||
+      w.name.toLowerCase().includes("cedear")||
+      w.name.toLowerCase().includes("fetch")||
+      w.name.toLowerCase().includes("update")
+    );
+    if(!targetWf) throw new Error(`No se encontró el workflow de cotizaciones. Disponibles: ${workflows.map(w=>w.name).join(", ")}`);
+    logWf(`✓ Workflow encontrado: "${targetWf.name}" (${targetWf.id})`, "log-ok");
 
-    // ── 4. Actualizar data.json ───────────────────────────────────────────────
-    if(status) status.textContent=`Actualizando data.json...`;
-    const dataFile=await getFileSha(token,"data.json");
-    if(dataFile){
-      try{
-        const dj=JSON.parse(dataFile.content);
-        if(action==="add"){
-          if(!dj.quotes) dj.quotes={};
-          const s=data.find(d=>d.t===tickerName);
-          dj.quotes[tickerName]={
-            price:s?.price||0, rsi10:s?.rsi10||50,
-            rsiPrev:s?.rsiPrev||50, rsiW:s?.rsiW||50,
-            ema200:s?.ema200||0, emaTrend:s?.emaTrend||"lateral"
-          };
-        } else if(action==="delete"){
-          if(dj.quotes) delete dj.quotes[tickerName];
-          if(dj.cycles) delete dj.cycles[tickerName];
+    // Disparar workflow con cmd_operado='__FETCH_ONLY__'
+    // IMPORTANTE: para que esto funcione correctamente sin alertas de Telegram,
+    // el YAML debe tener este input reconocido. Ver nota en el panel de info.
+    logWf("Disparando workflow (sin alertas Telegram)...", "log-info");
+    const dispatchR=await fetch(`https://api.github.com/repos/${repo}/actions/workflows/${targetWf.id}/dispatches`,{
+      method:"POST",
+      headers:{"Authorization":`Bearer ${token}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"},
+      body:JSON.stringify({
+        ref:"main",
+        inputs:{
+          cmd_operado:"__FETCH_ONLY__",
+          callback_query_id:""
         }
-        await updateGithubFile(token,"data.json",JSON.stringify(dj,null,2),`${action==="add"?"Agregar":"Eliminar"} ticker ${tickerName}`);
-      }catch(e){ console.warn("data.json parse error",e); }
-    }
+      })
+    });
 
-    if(status){
+    if(dispatchR.status===204||dispatchR.ok){
+      logWf("✓ Workflow disparado exitosamente", "log-ok");
+      logWf("El workflow está corriendo en GitHub Actions. Tarda ~2-3 minutos.", "log-info");
+      logWf("Cuando termine, hacé click en '⬇ Traer data.json del repo' para actualizar el dashboard.", "log-info");
       status.style.color="#2ea043";
-      status.textContent=`✓ ${tickerName} ${action==="add"?"agregado":"eliminado"} en todos los archivos · Corré el workflow para activar alertas`;
+      status.textContent="✓ Workflow disparado — esperar 2-3 minutos y luego traer el data.json";
+    } else {
+      const errData=await dispatchR.json().catch(()=>({}));
+      throw new Error(`Error ${dispatchR.status}: ${errData.message||"Error desconocido"}`);
     }
-    return true;
-  }catch(e){
-    if(status){status.style.color="#da3633";status.textContent=`Error GitHub: ${e.message}`;}
-    return false;
+
+  } catch(e){
+    logWf(`✗ Error: ${e.message}`, "log-err");
+    status.style.color="#da3633";
+    status.textContent=`Error: ${e.message}`;
   }
+
+  btn.disabled=false;
 }
 
-loadFromStorage().then(()=>{renderCards();if(getGhToken()){const b=document.getElementById('gh-btn');if(b){b.style.color='#2ea043';b.style.borderColor='#2ea04360';}}});
-
-// ── Yahoo Finance Auto-fetch ─────────────────────────────────────────────────
-
-// Map ticker → Yahoo Finance symbol
-const YF_MAP={
-  "AMD":"AMD","AMZN":"AMZN","B":"GOLD","BABA":"BABA","BNB":"BNB-USD",
-  "BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD",
-  "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
-  "MSFT":"MSFT","NKE":"NKE","PEP":"PEP","QQQ":"QQQ",
-  "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT"
-};
-
-const FETCH_KEY="cedears_last_fetch";
-
-function calcRSI(closes, period){
-  if(closes.length < period+1) return null;
-  let gains=0, losses=0;
-  for(let i=1;i<=period;i++){
-    const diff=closes[i]-closes[i-1];
-    if(diff>0) gains+=diff; else losses+=Math.abs(diff);
-  }
-  let avgGain=gains/period, avgLoss=losses/period;
-  for(let i=period+1;i<closes.length;i++){
-    const diff=closes[i]-closes[i-1];
-    const g=diff>0?diff:0, l=diff<0?Math.abs(diff):0;
-    avgGain=(avgGain*(period-1)+g)/period;
-    avgLoss=(avgLoss*(period-1)+l)/period;
-  }
-  if(avgLoss===0) return 100;
-  const rs=avgGain/avgLoss;
-  return Math.round((100-(100/(1+rs)))*100)/100;
+// También disponible desde la topbar
+async function triggerWorkflow(){
+  switchTab("workflow",document.querySelector('.tab:nth-child(4)'));
+  setTimeout(()=>runFetchOnly(),100);
 }
 
-function calcEMA(closes, period){
-  if(closes.length < period) return null;
-  const k=2/(period+1);
-  let ema=closes.slice(0,period).reduce((a,b)=>a+b,0)/period;
-  for(let i=period;i<closes.length;i++) ema=closes[i]*k+ema*(1-k);
-  return Math.round(ema*100)/100;
-}
+// ═══════════════════════════════════════════════════════════════════════════
+// SYNC FROM REPO (traer data.json y actualizar dashboard)
+// ═══════════════════════════════════════════════════════════════════════════
+async function syncFromRepo(){
+  const cfg=getWfConfig();
+  const token=cfg.token||getGhToken();
+  const repo=cfg.repo||GH_REPO_DEFAULT;
+  const status=document.getElementById("wf-main-status");
+  const fetchStatus=document.getElementById("fetch-status");
 
-function calcEmaTrend(closes, period){
-  if(closes.length < period+10) return "lateral";
-  const k=2/(period+1);
-  let ema=closes.slice(0,period).reduce((a,b)=>a+b,0)/period;
-  const emas=[];
-  for(let i=period;i<closes.length;i++){ema=closes[i]*k+ema*(1-k);emas.push(ema);}
-  const last10=emas.slice(-10);
-  const slope=(last10[last10.length-1]-last10[0])/last10[0]*100;
-  if(slope>1.5) return"subiendo"; if(slope<-1.5) return"bajando"; return"lateral";
-}
-
-async function fetchQuote(ticker){
-  const sym=YF_MAP[ticker]||ticker;
-  const yfUrl=`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1y`;
-
-  // Try multiple approaches in order
-  const attempts=[
-    // 1. Direct (works locally sometimes)
-    ()=>fetch(yfUrl,{headers:{"Accept":"application/json"}}),
-    // 2. allorigins proxy
-    ()=>fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}`).then(async r=>{
-      const d=await r.json();
-      return new Response(d.contents,{status:200,headers:{"Content-Type":"application/json"}});
-    }),
-    // 3. corsproxy.io
-    ()=>fetch(`https://corsproxy.io/?${encodeURIComponent(yfUrl)}`),
-  ];
-
-  let j=null;
-  for(const attempt of attempts){
-    try{
-      const r=await attempt();
-      if(!r.ok) continue;
-      j=await r.json();
-      if(j?.chart?.result?.[0]) break;
-      j=null;
-    }catch(e){j=null;}
-  }
+  status.style.color="#58a6ff";
+  status.textContent="Leyendo data.json del repo...";
+  logWf("Sincronizando data.json desde el repo...", "log-info");
 
   try{
-    const result=j?.chart?.result?.[0];
-    if(!result) throw new Error("No data");
-    const closes=result.indicators?.quote?.[0]?.close?.filter(v=>v!=null);
-    if(!closes||closes.length<30) throw new Error("Insufficient data");
-    const price=Math.round(closes[closes.length-1]*100)/100;
-    const rsi10=calcRSI(closes,10);
-
-    // Weekly closes (approx every 5 daily bars)
-    const wCloses=[];
-    for(let i=0;i<closes.length;i+=5) wCloses.push(closes[i]);
-    const rsiW=calcRSI(wCloses,10);
-
-    const ema200=calcEMA(closes,200);
-    const emaTrend=calcEmaTrend(closes,200);
-
-    // rsiPrev: RSI of yesterday (closes excluding today)
-    const rsiPrev=calcRSI(closes.slice(0,-1),10);
-    return{price,rsi10,rsiW,ema200,emaTrend,rsiPrev,ok:true};
-  }catch(e){
-    return{ok:false,error:e.message};
-  }
-}
-
-async function fetchAllQuotes(){
-  const btn=document.getElementById("fetch-btn");
-  const status=document.getElementById("fetch-status");
-  btn.disabled=true; btn.textContent="Actualizando...";
-  status.style.color="#58a6ff"; status.textContent="Leyendo data.json del repo...";
-
-  try{
-    // Lee data.json directo del repo via GitHub API (no depende de proxies)
-    const token=getGhToken();
     let dj=null;
-
     if(token){
-      // Con token: usa GitHub API autenticada
-      const r=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/data.json`,{
+      const r=await fetch(`https://api.github.com/repos/${repo}/contents/data.json`,{
         headers:{"Authorization":`Bearer ${token}`,"Accept":"application/vnd.github+json"}
       });
       if(r.ok){
@@ -940,54 +1417,165 @@ async function fetchAllQuotes(){
         dj=JSON.parse(new TextDecoder("utf-8").decode(bytes));
       }
     }
-
     if(!dj){
-      // Sin token: intenta via raw.githubusercontent.com (público)
-      const r=await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/data.json`);
-      if(r.ok) dj=await r.json();
+      const r=await fetch(`https://raw.githubusercontent.com/${repo}/main/data.json`);
+      if(r.ok)dj=await r.json();
     }
+    if(!dj||!dj.quotes)throw new Error("No se pudo leer data.json o no tiene datos de quotes");
 
-    if(!dj||!dj.quotes) throw new Error("No se pudo leer data.json");
+    logWf(`✓ data.json leído. ${Object.keys(dj.quotes).length} tickers en el repo.`, "log-ok");
 
-    let updated=0, notFound=0;
+    let updated=0,notFound=0;
     for(const s of data){
       const q=dj.quotes[s.t];
       if(q){
-        if(q.price)    s.price=q.price;
-        if(q.rsi10)    s.rsi10=q.rsi10;
-        if(q.rsiW)     s.rsiW=q.rsiW;
-        if(q.ema200)   {s.ema200=q.ema200; s.emaTrend=q.emaTrend||s.emaTrend;}
-        if(q.rsiPrev)  s.rsiPrev=q.rsiPrev;
+        if(q.price!=null)s.price=q.price;
+        if(q.rsi10!=null)s.rsi10=q.rsi10;
+        if(q.rsiW!=null)s.rsiW=q.rsiW;
+        if(q.ema200!=null){s.ema200=q.ema200;if(q.emaTrend)s.emaTrend=q.emaTrend;}
+        if(q.rsiPrev!=null)s.rsiPrev=q.rsiPrev;
+        // Indicadores calculados por el bot
+        if(q.bb_recov!=null)s.bbRecov=q.bb_recov;
+        if(q.bb_below!=null)s.bbState=q.bb_below?"below":(q.bb_above?"above":"inside");
+        if(q.rsi_bounced_15!=null)s.rsiBounce=q.rsi_bounced_15;
+        if(q.div_bullish!=null)s.divState=q.div_bullish?"bull":s.divState==="bear"?"bear":"none";
         updated++;
+        logWf(`  ✓ ${s.t}: precio=$${q.price} RSI=${q.rsi10} EMA200=$${q.ema200}`, "log-ok");
       } else {
         notFound++;
+        logWf(`  — ${s.t}: no encontrado en data.json`, "log-warn");
       }
     }
 
+    // Ciclos silenciados
+    if(dj.cycles){
+      const sil=Object.entries(dj.cycles).filter(([_,c])=>c.is_silenced);
+      if(sil.length>0){
+        logWf(`⚡ Activos silenciados en ciclo: ${sil.map(([t])=>t).join(", ")}`, "log-warn");
+        document.getElementById("c-sil").textContent=sil.length;
+      }
+    }
+
+    // Última actualización
+    if(dj.updated||dj.daily?.date){
+      const upd=dj.updated||dj.daily?.date;
+      document.getElementById("c-upd").textContent=upd.replace("T"," ").slice(0,16);
+    }
+
     saveToStorage();
-    renderCards();
-    btn.disabled=false; btn.textContent="↻ Actualizar cotizaciones";
+    renderAll();
+
     const now=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
-    const updMsg=dj.updated?` · datos del repo: ${dj.updated.replace("T"," ").slice(0,16)} UTC`:"";
     status.style.color="#2ea043";
-    status.textContent=`✓ ${updated} tickers actualizados${updMsg}`;
-    try{localStorage.setItem(FETCH_KEY,now);}catch(e){}
+    status.textContent=`✓ ${updated} tickers actualizados · ${notFound} sin datos en repo`;
+    if(fetchStatus){fetchStatus.style.color="#2ea043";fetchStatus.textContent=`✓ Datos del repo actualizados (${now})`;}
+    logWf(`Sincronización completa: ${updated} actualizados, ${notFound} sin datos.`, "log-ok");
 
   }catch(e){
-    btn.disabled=false; btn.textContent="↻ Actualizar cotizaciones";
+    logWf(`✗ Error: ${e.message}`, "log-err");
     status.style.color="#da3633";
-    status.textContent=`Error: ${e.message} — corré el workflow de GitHub primero`;
+    status.textContent=`Error: ${e.message}`;
   }
 }
 
-// Show last fetch time on load
-try{
-  const last=localStorage.getItem(FETCH_KEY);
-  if(last){
-    const s=document.getElementById("fetch-status");
-    if(s){s.textContent="Última actualización: "+last;s.style.color="#6e7681";}
+// También disparar desde topbar
+async function fetchAllQuotes(){
+  await syncFromRepo();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ADD / DELETE TICKER
+// ═══════════════════════════════════════════════════════════════════════════
+function openAddTicker(){document.getElementById("add-modal").style.display="flex";}
+function closeAddTicker(){document.getElementById("add-modal").style.display="none";}
+function confirmAddTicker(){
+  const t=document.getElementById("new_t").value.trim().toUpperCase();
+  const co=document.getElementById("new_co").value.trim();
+  const sec=document.getElementById("new_sec").value.trim();
+  const fund=document.getElementById("new_fund").value;
+  if(!t||!co){alert("Ticker y empresa son obligatorios.");return;}
+  if(data.find(d=>d.t===t)){alert(`El ticker ${t} ya existe.`);return;}
+  const newTicker={
+    t,co,sec:sec||"Sin sector",
+    rsi10:parseFloat(document.getElementById("new_rsi").value)||50,
+    rsiW:parseFloat(document.getElementById("new_rsiw").value)||50,
+    price:parseFloat(document.getElementById("new_price").value)||100,
+    ema200:parseFloat(document.getElementById("new_ema").value)||100,
+    poc:parseFloat(document.getElementById("new_poc").value)||100,
+    emaTrend:document.getElementById("new_trend").value,
+    bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",_customFund:fund
+  };
+  CUSTOM_FUND[t]=fund;
+  data.push(newTicker);
+  saveToStorage();
+  closeAddTicker();
+  renderAll();
+  if(getGhToken()) syncToGithub("add",t);
+}
+function deleteTicker(ticker){
+  const dataIdx=data.findIndex(d=>d.t===ticker);
+  if(dataIdx===-1)return;
+  const s=data[dataIdx];
+  if(!confirm(`¿Eliminar ${s.t} del dashboard?`))return;
+  DELETED_TICKERS.add(s.t);
+  data.splice(dataIdx,1);
+  delete CUSTOM_FUND[s.t];
+  saveToStorage();
+  renderAll();
+  if(getGhToken()) syncToGithub("delete",ticker);
+}
+
+// GitHub sync para add/delete (igual que antes)
+async function syncToGithub(action,tickerName){
+  const token=getGhToken();
+  if(!token)return;
+  const repo=GH_REPO;
+  const status=document.getElementById("fetch-status");
+  if(status){status.style.color="#58a6ff";status.textContent=`Sincronizando ${tickerName}...`;}
+  try{
+    const file=await getFileSha(token,"index.html",repo);
+    if(!file)throw new Error("No se pudo leer index.html");
+    let html=file.content;
+    const yfSymClean=tickerName.replace(".","-");
+    if(action==="add"){
+      const s=data.find(d=>d.t===tickerName);
+      if(!s)throw new Error("Ticker no encontrado");
+      const newLine=`  {t:"${s.t}",co:"${s.co}",sec:"${s.sec}",rsi10:${s.rsi10},rsiW:${s.rsiW},ema200:${s.ema200},price:${s.price},emaTrend:"${s.emaTrend}",bbState:"${s.bbState}",bbRecov:${s.bbRecov},rsiBounce:${s.rsiBounce},divState:"${s.divState}",poc:${s.poc},rsiPrev:null}`;
+      const insertIdx=html.lastIndexOf("\n];");
+      if(insertIdx!==-1)html=html.substring(0,insertIdx)+",\n"+newLine+html.substring(insertIdx);
+    } else if(action==="delete"){
+      const regex=new RegExp(`  \\{t:"${tickerName}",[^\n]+\\},?\n`,"g");
+      html=html.replace(regex,"");
+    }
+    const okIndex=await updateGithubFile(token,"index.html",html,`${action==="add"?"Agregar":"Eliminar"} ${tickerName}`,repo);
+    if(status){status.style.color="#2ea043";status.textContent=`✓ ${tickerName} ${action==="add"?"agregado":"eliminado"} en GitHub`;}
+  }catch(e){
+    if(status){status.style.color="#da3633";status.textContent=`Error GitHub: ${e.message}`;}
   }
-}catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
+// Load workflow config into fields
+function initWfConfig(){
+  const cfg=getWfConfig();
+  const tokenField=document.getElementById("wf-token");
+  const repoField=document.getElementById("wf-repo");
+  if(tokenField&&cfg.token)tokenField.value="●●●●●●●●●●●●";
+  if(repoField)repoField.value=cfg.repo||GH_REPO_DEFAULT;
+  if(cfg.token){
+    const status=document.getElementById("wf-config-status");
+    if(status){status.textContent="✓ Token configurado";status.style.color="#2ea043";}
+    const btn=document.getElementById("gh-btn");
+    if(btn){btn.style.color="#2ea043";btn.style.borderColor="#2ea04360";}
+  }
+}
+
+loadFromStorage().then(()=>{
+  renderAll();
+  initWfConfig();
+});
 </script>
 </body>
 </html>
