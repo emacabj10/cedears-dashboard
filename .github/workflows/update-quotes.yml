@@ -29,12 +29,13 @@ jobs:
         with:
           python-version: '3.11'
 
+      # MODIFICACIÓN: Ahora corre si está vacío O si es __FETCH_ONLY__
       - name: Fetch quotes from Yahoo Finance
-        if: ${{ github.event.inputs.cmd_operado == '' }}
+        if: ${{ github.event.inputs.cmd_operado == '' || github.event.inputs.cmd_operado == '__FETCH_ONLY__' }}
         run: python fetch_quotes.py
 
       - name: Commit and push data.json
-        if: ${{ github.event.inputs.cmd_operado == '' }}
+        if: ${{ github.event.inputs.cmd_operado == '' || github.event.inputs.cmd_operado == '__FETCH_ONLY__' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -43,7 +44,9 @@ jobs:
           git diff --staged --quiet || git commit -m "Update quotes $(date -u '+%Y-%m-%d %H:%M UTC')"
           git push
 
+      # Se mantiene igual: Solo corre si NO hay comandos manuales (evita spam en Telegram)
       - name: Send Telegram alerts
+        if: ${{ github.event.inputs.cmd_operado == '' }}
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -62,11 +65,11 @@ jobs:
           git push
 
       - name: Commit data.json after operado
-        if: ${{ github.event.inputs.cmd_operado != '' }}
+        if: ${{ github.event.inputs.cmd_operado != '' && github.event.inputs.cmd_operado != '__FETCH_ONLY__' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase --autostash
           git add data.json
-          git diff --staged --quiet || git commit -m "Operado: ${{ github.event.inputs.cmd_operado }}"
+          git diff --staged --quiet || git commit -m "Update after operado $(date -u '+%Y-%m-%d %H:%M UTC')"
           git push
