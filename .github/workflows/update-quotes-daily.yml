@@ -2,9 +2,9 @@ name: Update quotes (diario)
 
 on:
   schedule:
-    - cron: '30 10 * * 1-5'   # 10:30 ARG — apertura
-    - cron: '30 13 * * 1-5'   # 13:30 ARG — media rueda
-    - cron: '30 16 * * 1-5'   # 16:30 ARG — cierre
+    - cron: '30 10 * * 1-5'
+    - cron: '30 13 * * 1-5'
+    - cron: '30 16 * * 1-5'
   workflow_dispatch:
     inputs:
       cmd_operado:
@@ -31,11 +31,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Fetch quotes from Yahoo Finance
+      - name: Fetch quotes (Solo si no es comando operado)
         if: ${{ github.event.inputs.cmd_operado == '' || github.event.inputs.cmd_operado == '__FETCH_ONLY__' }}
         run: python fetch_quotes.py
 
-      - name: Send Telegram alerts
+      - name: Send Telegram alerts / Process Operado
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -43,16 +43,16 @@ jobs:
           CALLBACK_QUERY_ID: ${{ github.event.inputs.callback_query_id }}
         run: python alert_quotes.py
 
-      - name: Commit and push changes
+      - name: Final Sync and Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data.json
-          # Si hay cambios, intenta pull y luego push
+          # Pull con rebase para evitar errores de sincronización
+          git pull --rebase --autostash
           if ! git diff --staged --quiet; then
-            git commit -m "Update daily $(date -u '+%Y-%m-%d %H:%M UTC')"
-            git pull --rebase --autostash
+            git commit -m "Daily update $(date -u '+%H:%M')"
             git push
           else
-            echo "No hay cambios para subir"
+            echo "Nada nuevo que subir."
           fi
