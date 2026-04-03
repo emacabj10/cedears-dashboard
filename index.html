@@ -610,7 +610,7 @@ const FUND={
   QQQ:"excelentes",SPY:"excelentes",DIA:"excelentes",GLD:"excelentes",
   BTC:"excelentes",ETH:"buenos",BNB:"buenos",
   AMD:"buenos",KO:"buenos",PEP:"buenos",MCD:"buenos",BABA:"buenos",
-  TSLA:"controversiales",
+  TSLA:"controversiales",NVDA:"excelentes",AAPL:"excelentes",NU:"buenos",AAPL:"excelentes"
 };
 
 const TV_MAP={
@@ -621,7 +621,7 @@ const TV_MAP={
   KO:"NYSE:KO",PEP:"NYSE:PEP",MCD:"NYSE:MCD",
   BABA:"NYSE:BABA",TSLA:"NASDAQ:TSLA",
   GLD:"AMEX:GLD",BTC:"BINANCE:BTCUSDT",ETH:"BINANCE:ETHUSDT",
-  BNB:"BINANCE:BNBUSDT",
+  BNB:"BINANCE:BNBUSDT",NVDA:"NASDAQ:NVDA",AAPL:"NASDAQ:AAPL",NU:"NYSE:NU",AAPL:"NASDAQ:AAPL"
 };
 
 let CUSTOM_FUND={};
@@ -648,6 +648,8 @@ let data=[
   {t:"V",co:"Visa",sec:"Finanzas/Pagos",rsi10:31.3,rsiW:40.0,ema200:333.08,price:307.14,emaTrend:"bajando",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:348.59,rsiPrev:null},
   {t:"WMT",co:"Walmart",sec:"Retail defensivo",rsi10:53.77,rsiW:60.92,ema200:109.57,price:126.52,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:97,rsiPrev:null},
   {t:"GLD",co:"Gold Shares ETF",sec:"ETF índice",rsi10:21.7,rsiW:44.91,ema200:380,price:413,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:304,rsiPrev:null},
+  {t:"NU",co:"Nu Holdings Ltd.",sec:"Regional Banks",rsi10:33.34,rsiW:31.73,ema200:15.2,price:13.51,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:12.15,rsiPrev:null},
+  {t:"NVDA",co:"Nvidia",sec:"Semiconductores",rsi10:29.95,rsiW:34.96,ema200:173.67,price:165.17,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:183.64,rsiPrev:null}
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1611,7 +1613,7 @@ function autoFillYF(){
   const TV_AUTO={BNB:"BINANCE:BNBUSDT",BTC:"BINANCE:BTCUSDT",ETH:"BINANCE:ETHUSDT",
     SPY:"AMEX:SPY",DIA:"AMEX:DIA",GLD:"AMEX:GLD",QQQ:"NASDAQ:QQQ",
     "BRK.B":"NYSE:BRK.B",V:"NYSE:V",KO:"NYSE:KO",MCD:"NYSE:MCD",WMT:"NYSE:WMT",
-    BABA:"NYSE:BABA",MELI:"NASDAQ:MELI",};
+    BABA:"NYSE:BABA",MELI:"NASDAQ:MELI",NU:"NYSE:NU"};
   if(yfField&&!yfField.value)yfField.value=YF_AUTO[t]||t;
   if(tvField&&!tvField.value)tvField.value=TV_AUTO[t]||`NASDAQ:${t}`;
 }
@@ -1667,73 +1669,107 @@ async function syncToGithub(action,tickerName){
   const status=document.getElementById("fetch-status");
   if(status){status.style.color="#58a6ff";status.textContent=`Sincronizando ${tickerName} en GitHub...`;}
 
-  // Símbolo Yahoo Finance — usa el guardado en el ticker si existe
   const YF_SUFFIX={BNB:"BNB-USD",BTC:"BTC-USD",ETH:"ETH-USD"};
   const s_add=action==="add"?data.find(d=>d.t===tickerName):null;
   const yfSym=(s_add&&s_add._yfSym)||YF_SUFFIX[tickerName]||(tickerName.replace(".","-"));
-
-  // Símbolo TradingView — usa el guardado o TV_MAP
-  const tvSym=(s_add&&s_add._tvSym)||TV_MAP[tickerName]||tickerName;
-
-  // Fundamentals del ticker — del CUSTOM_FUND o FUND
+  const tvSym=(s_add&&s_add._tvSym)||TV_MAP[tickerName]||`NASDAQ:${tickerName}`;
   const fund=CUSTOM_FUND[tickerName]||FUND[tickerName]||"buenos";
+
+  // ── Helpers de inserción por línea (más robusto que regex sobre bloques) ──
+  function pyInsertInDict(src, dictName, key, val){
+    // Busca la línea que cierra el dict y agrega antes
+    const lines=src.split("\n");
+    // Encontrar el bloque del dict
+    let inDict=false, depth=0, insertAt=-1;
+    for(let i=0;i<lines.length;i++){
+      const l=lines[i];
+      if(!inDict && l.includes(`${dictName} =`) && l.includes("{")){inDict=true;depth=1;continue;}
+      if(!inDict && l.includes(`${dictName}={`)){inDict=true;depth=1;continue;}
+      if(inDict){
+        depth+=( l.split("{").length-1 )-(l.split("}").length-1);
+        if(depth<=0){insertAt=i;break;}
+      }
+    }
+    if(insertAt===-1)return src; // no encontrado, no modificar
+    // Verificar que la clave no existe ya
+    if(src.includes(`"${key}":`)||src.includes(`'${key}':`))return src;
+    lines.splice(insertAt,0,`    "${key}":"${val}",`);
+    return lines.join("\n");
+  }
+
+  function pyRemoveFromDicts(src, key){
+    const escaped=key.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+    // Eliminar cualquier línea que contenga "KEY": o 'KEY':
+    return src.split("\n").filter(l=>!new RegExp(`["']${escaped}["']\s*:`).test(l)).join("\n");
+  }
+
+  function htmlInsertInMap(src, mapName, key, val){
+    // Busca "const MAPNAME={" y agrega la entrada antes del cierre "}"
+    const marker=`const ${mapName}={`;
+    const idx=src.indexOf(marker);
+    if(idx===-1)return src;
+    const closeIdx=src.indexOf("};",idx);
+    if(closeIdx===-1)return src;
+    if(src.includes(`"${key}":`)||src.includes(`${key}:`))return src;
+    return src.substring(0,closeIdx)+`  ${key}:"${val}",\n`+src.substring(closeIdx);
+  }
+
+  function htmlRemoveFromMaps(src, key){
+    const escaped=key.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+    return src.split("\n").filter(l=>!new RegExp(`["']?${escaped}["']?\s*:`).test(l)).join("\n");
+  }
 
   try{
     // ── 1. index.html ─────────────────────────────────────────────────────
     const fileIndex=await getFileSha(token,"index.html",repo);
     if(!fileIndex)throw new Error("No se pudo leer index.html");
     let html=fileIndex.content;
+
     if(action==="add"){
       const s=data.find(d=>d.t===tickerName);
       if(!s)throw new Error("Ticker no encontrado en data");
-      const newLine=`  {t:"${s.t}",co:"${s.co}",sec:"${s.sec}",rsi10:${s.rsi10},rsiW:${s.rsiW},ema200:${s.ema200},price:${s.price},emaTrend:"${s.emaTrend}",bbState:"${s.bbState}",bbRecov:${s.bbRecov},rsiBounce:${s.rsiBounce},divState:"${s.divState}",poc:${s.poc},rsiPrev:null}`;
+      // Insertar en array de data antes del cierre "];
       const insertIdx=html.lastIndexOf("\n];");
-      if(insertIdx!==-1)html=html.substring(0,insertIdx)+",\n"+newLine+html.substring(insertIdx);
-      // TV_MAP entry
-      html=html.replace(/(const TV_MAP=\{[^}]+)(};)/,`$1  ${tickerName}:"${tvSym}",\n$2`);
-      // FUND entry
-      html=html.replace(/(const FUND=\{[^}]+)(};)/,`$1  ${tickerName}:"${fund}",\n$2`);
-    } else if(action==="delete"){
-      const tEsc=tickerName.replace(".","\\.");
-      html=html.replace(new RegExp(`  \\{t:"${tEsc}",[^\n]+\\},?\n`,"g"),"");
-      // Eliminar de TV_MAP y FUND inline si existen
-      html=html.replace(new RegExp(`\\s*["']?${tEsc}["']?:\\s*["'][^"']+["'],?`,"g"),"");
+      if(insertIdx!==-1){
+        const newLine=`  {t:"${s.t}",co:"${s.co}",sec:"${s.sec}",rsi10:${s.rsi10},rsiW:${s.rsiW},ema200:${s.ema200},price:${s.price},emaTrend:"${s.emaTrend}",bbState:"${s.bbState}",bbRecov:${s.bbRecov},rsiBounce:${s.rsiBounce},divState:"${s.divState}",poc:${s.poc},rsiPrev:null}`;
+        html=html.substring(0,insertIdx)+",\n"+newLine+html.substring(insertIdx);
+      }
+      html=htmlInsertInMap(html,"TV_MAP",tickerName,tvSym);
+      html=htmlInsertInMap(html,"FUND",tickerName,fund);
+    } else {
+      // Data array: eliminar línea del ticker
+      html=html.split("\n").filter(l=>!(l.includes(`t:"${tickerName}"`)&&l.includes("rsi10"))).join("\n");
+      html=htmlRemoveFromMaps(html,tickerName);
     }
-    await updateGithubFile(token,"index.html",html,`${action==="add"?"Agregar":"Eliminar"} ${tickerName} en index.html`,repo);
+    await updateGithubFile(token,"index.html",html,`${action==="add"?"Agregar":"Eliminar"} ${tickerName}`,repo);
 
     // ── 2. alert_quotes.py ───────────────────────────────────────────────
     const fileAlert=await getFileSha(token,"alert_quotes.py",repo);
     if(fileAlert){
       let py=fileAlert.content;
-      const tEscPy=tickerName.replace(".","\\.").replace("-","\\-");
       if(action==="add"){
-        // YF_MAP: agregar antes del último }
-        py=py.replace(/(YF_MAP\s*=\s*\{[^}]+?)(\s*\})/,`$1    "${tickerName}":"${yfSym}",\n$2`);
-        // FUND: agregar al final del dict
-        py=py.replace(/(FUND\s*=\s*\{[^}]+?)(\s*\})/,`$1    "${tickerName}":"${fund}",\n$2`);
-        // TV_MAP: agregar al final del dict
-        py=py.replace(/(TV_MAP\s*=\s*\{[^}]+?)(\s*\})/,`$1    "${tickerName}":"${tvSym}",\n$2`);
+        py=pyInsertInDict(py,"YF_MAP",tickerName,yfSym);
+        py=pyInsertInDict(py,"FUND",tickerName,fund);
+        py=pyInsertInDict(py,"TV_MAP",tickerName,tvSym);
       } else {
-        // Eliminar entradas del ticker en los tres dicts
-        py=py.replace(new RegExp(`\\s*["']${tEscPy}["']\\s*:\\s*["'][^"']+["'],?`,"g"),"");
+        py=pyRemoveFromDicts(py,tickerName);
       }
-      await updateGithubFile(token,"alert_quotes.py",py,`${action==="add"?"Agregar":"Eliminar"} ${tickerName} en alert_quotes.py`,repo);
+      await updateGithubFile(token,"alert_quotes.py",py,`${action==="add"?"Agregar":"Eliminar"} ${tickerName}`,repo);
     }
 
     // ── 3. fetch_quotes.py ───────────────────────────────────────────────
     const fileFetch=await getFileSha(token,"fetch_quotes.py",repo);
     if(fileFetch){
       let pyf=fileFetch.content;
-      const tEscPy=tickerName.replace(".","\\.").replace("-","\\-");
       if(action==="add"){
-        pyf=pyf.replace(/(YF_MAP\s*=\s*\{[^}]+?)(\s*\})/,`$1    "${tickerName}":"${yfSym}",\n$2`);
+        pyf=pyInsertInDict(pyf,"YF_MAP",tickerName,yfSym);
       } else {
-        pyf=pyf.replace(new RegExp(`\\s*["']${tEscPy}["']\\s*:\\s*["'][^"']+["'],?`,"g"),"");
+        pyf=pyRemoveFromDicts(pyf,tickerName);
       }
-      await updateGithubFile(token,"fetch_quotes.py",pyf,`${action==="add"?"Agregar":"Eliminar"} ${tickerName} en fetch_quotes.py`,repo);
+      await updateGithubFile(token,"fetch_quotes.py",pyf,`${action==="add"?"Agregar":"Eliminar"} ${tickerName}`,repo);
     }
 
-    if(status){status.style.color="#2ea043";status.textContent=`✓ ${tickerName} ${action==="add"?"agregado":"eliminado"} en index.html, alert_quotes.py y fetch_quotes.py`;}
+    if(status){status.style.color="#2ea043";status.textContent=`✓ ${tickerName} ${action==="add"?"agregado":"eliminado"} en los 3 archivos del repo`;}
   }catch(e){
     if(status){status.style.color="#da3633";status.textContent=`Error GitHub: ${e.message}`;}
   }
