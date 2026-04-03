@@ -29,12 +29,28 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Detect command type
+        id: cmd
+        run: |
+          CMD="${{ github.event.inputs.cmd_operado }}"
+          if [[ "$CMD" == "" ]]; then
+            echo "type=daily" >> $GITHUB_OUTPUT
+          elif [[ "$CMD" == "__FETCH_ONLY__" ]]; then
+            echo "type=fetch_only" >> $GITHUB_OUTPUT
+          elif [[ "$CMD" == !run\ * ]]; then
+            echo "type=run" >> $GITHUB_OUTPUT
+          elif [[ "$CMD" == !operado\ * || "$CMD" == operado:* ]]; then
+            echo "type=operado" >> $GITHUB_OUTPUT
+          else
+            echo "type=unknown" >> $GITHUB_OUTPUT
+          fi
+
       - name: Fetch quotes from Yahoo Finance
-        if: ${{ github.event.inputs.cmd_operado == '' || github.event.inputs.cmd_operado == '__FETCH_ONLY__' }}
+        if: ${{ steps.cmd.outputs.type == 'daily' || steps.cmd.outputs.type == 'fetch_only' }}
         run: python fetch_quotes.py
 
       - name: Commit and push data.json
-        if: ${{ github.event.inputs.cmd_operado == '' || github.event.inputs.cmd_operado == '__FETCH_ONLY__' }}
+        if: ${{ steps.cmd.outputs.type == 'daily' || steps.cmd.outputs.type == 'fetch_only' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -44,7 +60,7 @@ jobs:
           git push
 
       - name: Send Telegram alerts
-        if: ${{ github.event.inputs.cmd_operado == '' || startsWith(github.event.inputs.cmd_operado, '!run ') || startsWith(github.event.inputs.cmd_operado, '!operado ') || startsWith(github.event.inputs.cmd_operado, 'operado:') }}
+        if: ${{ steps.cmd.outputs.type == 'daily' || steps.cmd.outputs.type == 'run' || steps.cmd.outputs.type == 'operado' }}
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -53,7 +69,7 @@ jobs:
         run: python alert_quotes.py
 
       - name: Commit data.json after alerts
-        if: ${{ github.event.inputs.cmd_operado == '' }}
+        if: ${{ steps.cmd.outputs.type == 'daily' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -63,7 +79,7 @@ jobs:
           git push
 
       - name: Commit data.json after operado
-        if: ${{ startsWith(github.event.inputs.cmd_operado, 'operado:') || startsWith(github.event.inputs.cmd_operado, '!operado ') }}
+        if: ${{ steps.cmd.outputs.type == 'operado' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
