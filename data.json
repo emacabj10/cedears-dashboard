@@ -525,7 +525,7 @@
         47.73,
         52.09
       ]
-     },
+ {
   "cycles": {
     "BRK.B": {
       "is_silenced": true,
@@ -558,4 +558,5 @@
     "signals": [],
     "watchlist": [],
     "entradas": []
-  },
+  }
+}
