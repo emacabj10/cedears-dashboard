@@ -526,8 +526,7 @@
         52.09
       ]
     },
-    
-  "cycles": {
+    "cycles": {
     "BRK.B": {
       "is_silenced": true,
       "rsi_hit_50": false,
