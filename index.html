@@ -34,6 +34,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .alert-panel{margin-bottom:1.25rem}
 .alert-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#444441;margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .alert-section-title::after{content:'';flex:1;height:1px;background:#21262d}
+.alert-section-toggle{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#444441;margin-bottom:0;display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 0;user-select:none}
+.alert-section-toggle:hover{color:#8b949e}
+.alert-section-toggle::after{content:'';flex:1;height:1px;background:#21262d}
+.ast-arrow{font-size:10px;color:#444441;margin-left:4px;transition:transform .2s;flex-shrink:0}
+.ast-arrow.open{transform:rotate(180deg)}
+.alert-section-body{overflow:hidden;transition:none}
+.alert-section-body.collapsed{display:none}
 .alert-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
 .alert-item{background:#161b22;border-radius:8px;padding:10px 14px;border:0.5px solid #21262d;display:flex;align-items:flex-start;gap:10px;position:relative}
 .alert-item.alert-buy{border-left:3px solid #2ea043}
@@ -361,28 +368,52 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <!-- Silenciados por ciclo activo -->
   <div class="alert-panel" id="alert-silenced-section" style="display:none">
-    <div class="alert-section-title">⏸ Silenciados — Ciclo activo</div>
-    <div class="alert-list" id="alert-silenced-list"></div>
+    <div class="alert-section-toggle" onclick="toggleSection('silenced')">
+      ⏸ Silenciados — Ciclo activo
+      <span class="ast-arrow open" id="ast-silenced">▲</span>
+    </div>
+    <div class="alert-section-body" id="asb-silenced">
+      <div style="height:8px"></div>
+      <div class="alert-list" id="alert-silenced-list"></div>
+    </div>
   </div>
 
   <div class="alert-panel" id="alert-signals-section">
-    <div class="alert-section-title">🟢 Señales confirmadas — idénticas a Telegram</div>
-    <div class="alert-list" id="alert-signals-list">
-      <div class="alert-empty">Cargando datos del repo...</div>
+    <div class="alert-section-toggle" onclick="toggleSection('signals')">
+      🟢 Señales confirmadas — idénticas a Telegram
+      <span class="ast-arrow open" id="ast-signals">▲</span>
+    </div>
+    <div class="alert-section-body" id="asb-signals">
+      <div style="height:8px"></div>
+      <div class="alert-list" id="alert-signals-list">
+        <div class="alert-empty">Cargando datos del repo...</div>
+      </div>
     </div>
   </div>
 
   <div class="alert-panel" id="alert-watchlist-section">
-    <div class="alert-section-title">🟡 Watchlist — Setup en formación</div>
-    <div class="alert-list" id="alert-watchlist-list">
-      <div class="alert-empty">Cargando...</div>
+    <div class="alert-section-toggle" onclick="toggleSection('watchlist-alerts')">
+      🟡 Watchlist — Setup en formación
+      <span class="ast-arrow open" id="ast-watchlist-alerts">▲</span>
+    </div>
+    <div class="alert-section-body" id="asb-watchlist-alerts">
+      <div style="height:8px"></div>
+      <div class="alert-list" id="alert-watchlist-list">
+        <div class="alert-empty">Cargando...</div>
+      </div>
     </div>
   </div>
 
   <div class="alert-panel" id="alert-radar-section">
-    <div class="alert-section-title">🔵 Radar — Activos bajo observación</div>
-    <div class="alert-list" id="alert-radar-list">
-      <div class="alert-empty">Cargando...</div>
+    <div class="alert-section-toggle" onclick="toggleSection('radar-alerts')">
+      🔵 Radar — Activos bajo observación
+      <span class="ast-arrow open" id="ast-radar-alerts">▲</span>
+    </div>
+    <div class="alert-section-body" id="asb-radar-alerts">
+      <div style="height:8px"></div>
+      <div class="alert-list" id="alert-radar-list">
+        <div class="alert-empty">Cargando...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -423,9 +454,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 
   <div style="margin-top:1.5rem">
-    <div class="alert-section-title">🔵 Radar de oportunidades — activos que se acercan al setup</div>
-    <div class="radar-grid" id="radar-grid">
-      <div class="alert-empty">Cargando...</div>
+    <div class="alert-section-toggle" onclick="toggleSection('radar-wl')">
+      🔵 Radar de oportunidades — activos que se acercan al setup
+      <span class="ast-arrow open" id="ast-radar-wl">▲</span>
+    </div>
+    <div class="alert-section-body" id="asb-radar-wl">
+      <div style="height:8px"></div>
+      <div class="radar-grid" id="radar-grid">
+        <div class="alert-empty">Cargando...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -501,8 +538,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="modal-box">
     <div class="modal-title">Agregar nuevo ticker</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">Ticker (ej: NVDA)</label><input id="new_t" type="text" placeholder="NVDA" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3"></div>
+      <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">Ticker (ej: NVDA)</label><input id="new_t" type="text" placeholder="NVDA" oninput="autoFillYF()" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3"></div>
       <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">Empresa</label><input id="new_co" type="text" placeholder="Nvidia" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3"></div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <label style="font-size:10px;color:#8b949e">Símbolo Yahoo Finance</label>
+        <input id="new_yf" type="text" placeholder="NVDA (o BNB-USD para cripto)" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3">
+        <span style="font-size:10px;color:#444441">Cripto: BTC-USD · Acciones con punto: BRK-B</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <label style="font-size:10px;color:#8b949e">Símbolo TradingView</label>
+        <input id="new_tv" type="text" placeholder="NASDAQ:NVDA" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3">
+        <span style="font-size:10px;color:#444441">Ej: NYSE:V · AMEX:GLD · BINANCE:BTCUSDT</span>
+      </div>
       <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">Sector</label><input id="new_sec" type="text" placeholder="Semiconductores" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3"></div>
       <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:#8b949e">Fundamentals</label>
         <select id="new_fund" style="font-size:12px;padding:5px 7px;border-radius:6px;border:0.5px solid #30363d;background:#161b22;color:#e6edf3">
@@ -598,8 +645,7 @@ let data=[
   {t:"WMT",co:"Walmart",sec:"Retail defensivo",rsi10:53.77,rsiW:60.92,ema200:109.57,price:126.52,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:97,rsiPrev:null},
   {t:"GLD",co:"Gold Shares ETF",sec:"ETF índice",rsi10:21.7,rsiW:44.91,ema200:380,price:413,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:304,rsiPrev:null},
   {t:"NU",co:"Nu Holdings Ltd.",sec:"Regional Banks",rsi10:33.34,rsiW:31.73,ema200:15.2,price:13.51,emaTrend:"lateral",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:12.15,rsiPrev:null},
-  {t:"NVDA",co:"Nvidia",sec:"Semiconductores",rsi10:29.95,rsiW:34.96,ema200:173.67,price:165.17,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:183.64,rsiPrev:null},
-  {t:"AAPL",co:"Apple Inc",sec:"Telecommunications Equipment",rsi10:53.81,rsiW:48.78,ema200:251.27,price:255.92,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:231,rsiPrev:null}
+  {t:"NVDA",co:"Nvidia",sec:"Semiconductores",rsi10:29.95,rsiW:34.96,ema200:173.67,price:165.17,emaTrend:"subiendo",bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",poc:183.64,rsiPrev:null}
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -875,6 +921,14 @@ function togglePanel(type,i){
   else{const was=ep.classList.contains("open");ep.classList.toggle("open");if(!was)ep.innerHTML=buildEditPanel(i);dp.classList.remove("open");eb.textContent=was?"Editar":"Cerrar edición";ab.textContent="Ver análisis";}
 }
 function toggleRef(){const p=document.getElementById("refPanel"),a=document.getElementById("refArrow");p.classList.toggle("open");a.classList.toggle("open");}
+
+function toggleSection(id){
+  const body=document.getElementById("asb-"+id);
+  const arrow=document.getElementById("ast-"+id);
+  if(!body)return;
+  const collapsed=body.classList.toggle("collapsed");
+  if(arrow)arrow.classList.toggle("open",!collapsed);
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TAB SWITCHING
@@ -1449,11 +1503,29 @@ async function fetchAllQuotes(){
 // ═══════════════════════════════════════════════════════════════════════════
 function openAddTicker(){document.getElementById("add-modal").style.display="flex";}
 function closeAddTicker(){document.getElementById("add-modal").style.display="none";}
+// Auto-fill Yahoo Finance symbol from ticker
+function autoFillYF(){
+  const t=(document.getElementById("new_t").value||"").trim().toUpperCase();
+  const yfField=document.getElementById("new_yf");
+  const tvField=document.getElementById("new_tv");
+  if(!t)return;
+  // Known special cases
+  const YF_AUTO={BNB:"BNB-USD",BTC:"BTC-USD",ETH:"ETH-USD","BRK.B":"BRK-B"};
+  const TV_AUTO={BNB:"BINANCE:BNBUSDT",BTC:"BINANCE:BTCUSDT",ETH:"BINANCE:ETHUSDT",
+    SPY:"AMEX:SPY",DIA:"AMEX:DIA",GLD:"AMEX:GLD",QQQ:"NASDAQ:QQQ",
+    "BRK.B":"NYSE:BRK.B",V:"NYSE:V",KO:"NYSE:KO",MCD:"NYSE:MCD",WMT:"NYSE:WMT",
+    BABA:"NYSE:BABA",MELI:"NASDAQ:MELI",NU:"NYSE:NU"};
+  if(yfField&&!yfField.value)yfField.value=YF_AUTO[t]||t;
+  if(tvField&&!tvField.value)tvField.value=TV_AUTO[t]||`NASDAQ:${t}`;
+}
+
 function confirmAddTicker(){
   const t=document.getElementById("new_t").value.trim().toUpperCase();
   const co=document.getElementById("new_co").value.trim();
   const sec=document.getElementById("new_sec").value.trim();
   const fund=document.getElementById("new_fund").value;
+  const yfSym=(document.getElementById("new_yf").value||"").trim()||t.replace(".","-");
+  const tvSym=(document.getElementById("new_tv").value||"").trim()||`NASDAQ:${t}`;
   if(!t||!co){alert("Ticker y empresa son obligatorios.");return;}
   if(data.find(d=>d.t===t)){alert(`El ticker ${t} ya existe.`);return;}
   const newTicker={
@@ -1464,11 +1536,15 @@ function confirmAddTicker(){
     ema200:parseFloat(document.getElementById("new_ema").value)||100,
     poc:parseFloat(document.getElementById("new_poc").value)||100,
     emaTrend:document.getElementById("new_trend").value,
-    bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",_customFund:fund
+    bbState:"inside",bbRecov:false,rsiBounce:false,divState:"none",_customFund:fund,
+    _yfSym:yfSym,_tvSym:tvSym
   };
   CUSTOM_FUND[t]=fund;
+  TV_MAP[t]=tvSym;
   data.push(newTicker);
   saveToStorage();
+  // Clear modal fields
+  ["new_t","new_co","new_sec","new_yf","new_tv"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
   closeAddTicker();
   renderAll();
   if(getGhToken()) syncToGithub("add",t);
@@ -1486,30 +1562,81 @@ function deleteTicker(ticker){
   if(getGhToken()) syncToGithub("delete",ticker);
 }
 
-// GitHub sync para add/delete (igual que antes)
+// GitHub sync para add/delete — actualiza index.html + alert_quotes.py + fetch_quotes.py
 async function syncToGithub(action,tickerName){
   const token=getGhToken();
   if(!token)return;
   const repo=GH_REPO;
   const status=document.getElementById("fetch-status");
-  if(status){status.style.color="#58a6ff";status.textContent=`Sincronizando ${tickerName}...`;}
+  if(status){status.style.color="#58a6ff";status.textContent=`Sincronizando ${tickerName} en GitHub...`;}
+
+  // Símbolo Yahoo Finance — usa el guardado en el ticker si existe
+  const YF_SUFFIX={BNB:"BNB-USD",BTC:"BTC-USD",ETH:"ETH-USD"};
+  const s_add=action==="add"?data.find(d=>d.t===tickerName):null;
+  const yfSym=(s_add&&s_add._yfSym)||YF_SUFFIX[tickerName]||(tickerName.replace(".","-"));
+
+  // Símbolo TradingView — usa el guardado o TV_MAP
+  const tvSym=(s_add&&s_add._tvSym)||TV_MAP[tickerName]||tickerName;
+
+  // Fundamentals del ticker — del CUSTOM_FUND o FUND
+  const fund=CUSTOM_FUND[tickerName]||FUND[tickerName]||"buenos";
+
   try{
-    const file=await getFileSha(token,"index.html",repo);
-    if(!file)throw new Error("No se pudo leer index.html");
-    let html=file.content;
-    const yfSymClean=tickerName.replace(".","-");
+    // ── 1. index.html ─────────────────────────────────────────────────────
+    const fileIndex=await getFileSha(token,"index.html",repo);
+    if(!fileIndex)throw new Error("No se pudo leer index.html");
+    let html=fileIndex.content;
     if(action==="add"){
       const s=data.find(d=>d.t===tickerName);
-      if(!s)throw new Error("Ticker no encontrado");
+      if(!s)throw new Error("Ticker no encontrado en data");
       const newLine=`  {t:"${s.t}",co:"${s.co}",sec:"${s.sec}",rsi10:${s.rsi10},rsiW:${s.rsiW},ema200:${s.ema200},price:${s.price},emaTrend:"${s.emaTrend}",bbState:"${s.bbState}",bbRecov:${s.bbRecov},rsiBounce:${s.rsiBounce},divState:"${s.divState}",poc:${s.poc},rsiPrev:null}`;
       const insertIdx=html.lastIndexOf("\n];");
       if(insertIdx!==-1)html=html.substring(0,insertIdx)+",\n"+newLine+html.substring(insertIdx);
+      // TV_MAP entry
+      html=html.replace(/(const TV_MAP=\{[^}]+)(};)/,`$1  ${tickerName}:"${tvSym}",\n$2`);
+      // FUND entry
+      html=html.replace(/(const FUND=\{[^}]+)(};)/,`$1  ${tickerName}:"${fund}",\n$2`);
     } else if(action==="delete"){
-      const regex=new RegExp(`  \\{t:"${tickerName}",[^\n]+\\},?\n`,"g");
-      html=html.replace(regex,"");
+      const tEsc=tickerName.replace(".","\\.");
+      html=html.replace(new RegExp(`  \\{t:"${tEsc}",[^\n]+\\},?\n`,"g"),"");
+      // Eliminar de TV_MAP y FUND inline si existen
+      html=html.replace(new RegExp(`\\s*["']?${tEsc}["']?:\\s*["'][^"']+["'],?`,"g"),"");
     }
-    const okIndex=await updateGithubFile(token,"index.html",html,`${action==="add"?"Agregar":"Eliminar"} ${tickerName}`,repo);
-    if(status){status.style.color="#2ea043";status.textContent=`✓ ${tickerName} ${action==="add"?"agregado":"eliminado"} en GitHub`;}
+    await updateGithubFile(token,"index.html",html,`${action==="add"?"Agregar":"Eliminar"} ${tickerName} en index.html`,repo);
+
+    // ── 2. alert_quotes.py ───────────────────────────────────────────────
+    const fileAlert=await getFileSha(token,"alert_quotes.py",repo);
+    if(fileAlert){
+      let py=fileAlert.content;
+      const tEscPy=tickerName.replace(".","\\.").replace("-","\\-");
+      if(action==="add"){
+        // YF_MAP: agregar antes del último }
+        py=py.replace(/(YF_MAP\s*=\s*\{[^}]+?)(\s*\})/,`$1    "${tickerName}":"${yfSym}",\n$2`);
+        // FUND: agregar al final del dict
+        py=py.replace(/(FUND\s*=\s*\{[^}]+?)(\s*\})/,`$1    "${tickerName}":"${fund}",\n$2`);
+        // TV_MAP: agregar al final del dict
+        py=py.replace(/(TV_MAP\s*=\s*\{[^}]+?)(\s*\})/,`$1    "${tickerName}":"${tvSym}",\n$2`);
+      } else {
+        // Eliminar entradas del ticker en los tres dicts
+        py=py.replace(new RegExp(`\\s*["']${tEscPy}["']\\s*:\\s*["'][^"']+["'],?`,"g"),"");
+      }
+      await updateGithubFile(token,"alert_quotes.py",py,`${action==="add"?"Agregar":"Eliminar"} ${tickerName} en alert_quotes.py`,repo);
+    }
+
+    // ── 3. fetch_quotes.py ───────────────────────────────────────────────
+    const fileFetch=await getFileSha(token,"fetch_quotes.py",repo);
+    if(fileFetch){
+      let pyf=fileFetch.content;
+      const tEscPy=tickerName.replace(".","\\.").replace("-","\\-");
+      if(action==="add"){
+        pyf=pyf.replace(/(YF_MAP\s*=\s*\{[^}]+?)(\s*\})/,`$1    "${tickerName}":"${yfSym}",\n$2`);
+      } else {
+        pyf=pyf.replace(new RegExp(`\\s*["']${tEscPy}["']\\s*:\\s*["'][^"']+["'],?`,"g"),"");
+      }
+      await updateGithubFile(token,"fetch_quotes.py",pyf,`${action==="add"?"Agregar":"Eliminar"} ${tickerName} en fetch_quotes.py`,repo);
+    }
+
+    if(status){status.style.color="#2ea043";status.textContent=`✓ ${tickerName} ${action==="add"?"agregado":"eliminado"} en index.html, alert_quotes.py y fetch_quotes.py`;}
   }catch(e){
     if(status){status.style.color="#da3633";status.textContent=`Error GitHub: ${e.message}`;}
   }
