@@ -691,89 +691,6 @@ elif _cmd_operado.lower().startswith("!operado "):
     _ticker_op = _cmd_operado.split(" ", 1)[1]
     handle_operado(_ticker_op)
     import sys; sys.exit(0)
-elif _cmd_operado.lower().startswith("!run "):
-    # !run TICKER — fetch completo + mensaje identico al bot normal
-    _run_ticker = _cmd_operado.split(" ", 1)[1].strip().upper()
-    if _run_ticker not in YF_MAP:
-        send_telegram(f"❌ Ticker <b>{_run_ticker}</b> no reconocido en el panel.")
-        import sys; sys.exit(0)
-    print(f"[!run] Fetch completo de {_run_ticker}")
-    _sym_run = YF_MAP[_run_ticker]
-    _q_run   = fetch_ticker(_sym_run)
-    if not _q_run:
-        send_telegram(f"❌ No se pudieron obtener datos para <b>{_run_ticker}</b>.")
-        import sys; sys.exit(0)
-    # Score identico al bot normal
-    _r_price  = _q_run["price"]
-    _r_ema    = _q_run["ema200"] or 1
-    _r_epct   = (_r_price - _r_ema) / _r_ema * 100
-    _r_rsi    = _q_run["rsi10"] or 50
-    _r_rsi_p  = _q_run.get("rsi_prev") or _r_rsi
-    _r_poc    = _q_run.get("poc_proxy") or 1
-    _r_ppct   = (_r_price - _r_poc) / _r_poc * 100
-    _r_b15    = _q_run.get("rsi_bounced_15", False)
-    _r_bb     = _q_run.get("bb_recov", False)
-    _r_div    = _q_run.get("div_bullish", False)
-    _r_ema_ok = _r_epct >= -5
-    _r_ema_md = _r_epct >= -15
-    _r_fund   = FUND.get(_run_ticker, "buenos")
-    _r_score  = sum([_r_b15, (_r_ema_ok or _r_ema_md), _r_bb])
-    _r_tv     = TV_MAP.get(_run_ticker, _run_ticker)
-    _r_link   = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_r_tv}">Ver gráfico en TradingView →</a>'
-    # Clasificacion
-    _r_div_sig = _r_div and _r_bb and (_r_b15 or _r_ema_md) and _r_score >= 2
-    if _r_score == 3 and _r_b15 and _r_rsi <= 45:
-        _r_tipo = "senal"
-        _r_label = f"SEÑAL {_r_score}/3"
-        _r_emoji = "🟢"
-    elif _r_div_sig:
-        _r_tipo = "senal"
-        _r_label = f"SEÑAL DIV {_r_score}/3+div"
-        _r_emoji = "🟢"
-    elif _r_score == 2 and not _r_b15 and _r_rsi <= 40 and _r_ema_md:
-        _r_tipo = "watchlist"
-        _r_label = f"WATCHLIST {_r_score}/3"
-        _r_emoji = "🟡"
-    elif _r_rsi <= 35 or (_r_rsi < 30 and not _r_b15) or (abs(_r_epct) <= 1 and _r_rsi <= 30):
-        _r_tipo = "radar"
-        _r_label = "RADAR"
-        _r_emoji = "🔵"
-    else:
-        _r_tipo = "ignorado"
-        _r_label = "SIN SEÑAL"
-        _r_emoji = "⚪"
-    # Generar analisis y sugerencia identicos al bot
-    _r_analisis = generar_analisis(_run_ticker, _r_score, _q_run, _r_epct, _r_ppct, _r_fund)
-    _r_sugerencia = sugerencia_signal(_r_score, _r_rsi, _r_epct, _r_fund, _r_div, _r_bb,
-                                       ema_ok=_r_ema_ok, ema_ok_media=_r_ema_md)
-    _r_price_fmt = f"${_r_price:,.2f}"
-    if _r_tipo in ("senal", "watchlist"):
-        msg_run = (
-            f"{_r_emoji} <b>{_run_ticker} {_r_price_fmt} — {_r_label}</b>\n"
-            f"\n<b>Indicadores</b>\n"
-            f"📉 {rsi_label_signal(_r_rsi, _r_rsi_p)}\n"
-            f"📈 {ema_label_signal(_r_epct, _q_run['emaTrend'], _r_ema)}\n"
-            f"📦 {poc_label_signal(_r_ppct, _r_poc)}\n"
-            f"🎢 {bb_label_signal(_q_run)}\n"
-            f"\n🔍 <b>Contexto</b>\n"
-            f"{_r_analisis}\n"
-            f"\n💡 <b>Acción</b>\n"
-            f"{_r_sugerencia}\n"
-            f"\n{_r_link}"
-        )
-        send_telegram_with_button(msg_run, _run_ticker) if _r_tipo == "senal" else send_telegram(msg_run)
-    else:
-        _r_rsi_dir = "subiendo" if _r_rsi > _r_rsi_p else "bajando"
-        msg_run = (
-            f"{_r_emoji} <b>{_run_ticker} {_r_price_fmt} — {_r_label}</b>\n"
-            f"RSI(10): {_r_rsi} ({_r_rsi_dir}) · EMA200: ${_r_ema:,.2f} ({_r_epct:+.1f}%)\n"
-            f"Score: {_r_score}/3 · BB: {'Si' if _r_bb else 'No'} · Div: {'Si' if _r_div else 'No'}\n"
-            f"\n{_r_link}"
-        )
-        send_telegram(msg_run)
-    import sys; sys.exit(0)
-
-
 # ── Main ──────────────────────────────────────────────────────────────────────
 print(f"\n{'='*55}")
 print(f"CEDEARS ALERTAS — {now_arg().strftime('%d/%m/%Y %H:%M')} (ARG)")
@@ -942,14 +859,6 @@ if _INTRADAY:
             _tv_sym_i  = TV_MAP.get(ticker, ticker)
             _link_tv_i = f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_i}">Ver gráfico →</a>'
 
-            # Filtro apertura: antes de las 11:00 ARG, skip total del intradiario.
-            # El run diario de las 10:30 ya envió el aviso como watchlist.
-            # No repetir hasta que se libere el filtro.
-            _intra_en_carencia = (now_arg().hour == 10)
-            if _intra_en_carencia:
-                print(f"  [CARENCIA] {ticker}: intradiario silenciado hasta las 11:00 — skip")
-                continue
-
             if not _intra_header_sent:
                 send_telegram(
                     f"🔔 CHEQUEO INTRADIARIO — {now_arg().strftime('%H:%M')}\n"
@@ -1073,17 +982,8 @@ for ticker, sym in YF_MAP.items():
         q["rsi_direction"] = "subiendo" if _rsi_now > _rsi_prev else ("bajando" if _rsi_now < _rsi_prev else "lateral")
         print(f"RSI {q['rsi10']}{rsi_arrow} · ${q['price']} · EMA200=${ema200_val} ({epct_debug:+.1f}%){div_tag}{bb_tag}")
 
-        # ── Fusionar rsiHistory persistido con el calculado ahora ──────────
-        # Si fetch_quotes.py guardo un rsiHistory con un minimo <=30 en run
-        # anterior, lo combinamos con el actual para no perder ese rebote.
-        prev_history = existing.get(ticker, {}).get("rsiHistory", [])
-        curr_history = q.get("rsiHistory", [])
-        # Unimos: los ultimos 15 valores entre historial previo y actual
-        merged_history = (prev_history + curr_history)[-15:]
-        q["rsiHistory"] = merged_history
-        # Recalcular rsi_bounced_15 con el historial fusionado
-        if q.get("rsi10") and q["rsi10"] > 30 and any(r <= 30 for r in merged_history):
-            q["rsi_bounced_15"] = True
+        # rsi_bounced_15 ya viene calculado desde fetch_ticker con las últimas 15 velas.
+        # No se fusiona con historial previo para evitar falsos positivos de sesiones anteriores.
 
 
     if q.get("_fallback"):
@@ -1224,7 +1124,6 @@ date_str = now_arg().strftime("%d/%m/%Y")
 
 # Sesión según hora Argentina
 _hour = now_arg().hour
-_minute = now_arg().minute
 if 9 <= _hour < 13:
     session_name = "APERTURA DE MERCADO"
     is_cierre    = False
@@ -1235,24 +1134,9 @@ else:
     session_name = "CIERRE DE MERCADO"
     is_cierre    = True
 
-# ── Filtro de apertura: primeros 30 min son solo watchlist ───────────────────
-# Si el run diario cae antes de las 11:00 ARG, las señales se degradan a
-# watchlist para evitar trampas de alta volatilidad en la apertura.
-# A las 11:00 en adelante el filtro se libera y las señales verdes se envían.
-_en_carencia = (_hour == 10)   # 10:00–10:59 ARG → solo watchlist
-if _en_carencia:
-    # Mover señales a watchlist — se envían como 🟡 sin botón "Operada"
-    for item in signals_found:
-        ticker_c, score_c, q_c, epct_c, ppct_c, fund_c = item
-        watchlist_found.append((ticker_c, score_c, q_c, epct_c, ppct_c))
-        print(f"  [CARENCIA] {ticker_c}: señal degradada a watchlist (apertura <11:00)")
-    signals_found = []
-    print(f"  [CARENCIA] Filtro activo — solo watchlists hasta las 11:00 ARG")
-
 session_header = (
     f"🔔 {session_name} — {now_arg().strftime('%H:%M')}\n"
     f"Iniciando reporte técnico..."
-    + ("\n⏳ Filtro de apertura activo — señales en modo watchlist hasta las 11:00." if _en_carencia else "")
 )
 
 # ── Persistencia de alertas del día en data.json ─────────────────────────────
