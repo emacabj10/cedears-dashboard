@@ -273,7 +273,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="tabs">
   <button class="tab active" onclick="switchTab('alertas',this)">🔔 Alertas Telegram</button>
   <button class="tab" onclick="switchTab('watchlist',this)">👁 Watchlist / Radar</button>
-  <button class="tab" onclick="switchTab('panel',this)">📊 Panel completo</button>
   <button class="tab" onclick="switchTab('workflow',this)">⚡ Actualizar cotizaciones</button>
 </div>
 
@@ -286,6 +285,84 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="sc"><div class="sl">Radar<br>RSI ≤ 35</div><div class="sv blue" id="c-radar">0</div></div>
     <div class="sc"><div class="sl">Silenciados<br>Ciclo activo</div><div class="sv neu" id="c-sil">0</div></div>
     <div class="sc"><div class="sl">Última actualización</div><div class="sv" style="font-size:13px;color:#6e7681" id="c-upd">—</div></div>
+  </div>
+
+  <!-- Guía de condiciones (antes en Panel completo) -->
+  <div class="ref-toggle" onclick="toggleRef()">
+    <div class="ref-toggle-left">
+      <div class="ref-icon">?</div>
+      <div><div class="ref-title">Guía de condiciones — cómo leer cada señal</div><div class="ref-sub">Rebote RSI · EMA200 · BB · Divergencias · RSI semanal · POC</div></div>
+    </div>
+    <div class="ref-arrow" id="refArrow">▼</div>
+  </div>
+  <div class="ref-panel" id="refPanel">
+    <div class="ref-grid">
+      <div class="ref-card">
+        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">1</div>RSI(10) rebotó desde &lt;30 — Punto 1</div>
+        <div class="ref-card-sub">El RSI cruzó por debajo de 30 y volvió a cruzar hacia arriba en las últimas 15 velas. <strong style="color:#2ea043">Suma 1 punto al score.</strong></div>
+        <div class="ref-section">Marcar SÍ cuando</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">RSI cruzó el 30 hacia arriba hace <strong>menos de 15 velas</strong></div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">RSI actual <strong>&gt; 30</strong> y RSI anterior <strong>≤ 30</strong></div></div>
+        <div class="ref-section">Marcar NO cuando</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">RSI nunca llegó a 30 o el cruce fue hace más de <strong>15 velas</strong></div></div>
+        <div class="ref-section">Condición extra para señal</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text">RSI actual debe ser <strong>≤ 45</strong> para que cuente como señal válida</div></div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">2</div>EMA200 — distancia al precio — Punto 2</div>
+        <div class="ref-card-sub">El precio debe estar cerca o sobre la EMA200. <strong style="color:#2ea043">Suma 1 punto al score.</strong></div>
+        <div class="ref-section">Cuándo suma el punto</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio dentro del <strong>-15%</strong> de la EMA200 (posición media) o por encima</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio dentro del <strong>-5%</strong> de la EMA200 → entrada con posición completa</div></div>
+        <div class="ref-section">No suma cuando</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Precio más del <strong>-15%</strong> bajo EMA200 → va a radar, no watchlist</div></div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">3</div>Bollinger — recuperó banda inferior — Punto 3</div>
+        <div class="ref-card-sub">Una vela cerró fuera de la banda inferior y una posterior cerró dentro. <strong style="color:#2ea043">Suma 1 punto al score.</strong></div>
+        <div class="ref-section">Marcar SÍ cuando</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una vela <strong>cerró</strong> bajo la banda inferior (no solo tocó) — últimas <strong>5 velas</strong></div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una vela posterior cerró dentro de las bandas — recuperación confirmada</div></div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-card-title"><div class="ci ci-w" style="width:16px;height:16px;font-size:10px">÷</div>Divergencias RSI(10) — contexto</div>
+        <div class="ref-card-sub">No suman puntos directamente pero pueden promover de watchlist a señal.</div>
+        <div class="ref-section">Bullish DIV — puede promover a señal</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio hace mínimo más bajo, RSI hace mínimo más alto — últimas <strong>15 velas</strong></div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Si DIV + BB recov + score ≥ 2 → <strong>señal DIV</strong> (equivale a señal verde)</div></div>
+        <div class="ref-section">Bearish DIV — cancela watchlist</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Precio máximo más alto, RSI máximo más bajo → no entrar</div></div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-card-title"><div class="ci ci-w" style="width:16px;height:16px;font-size:10px">S</div>RSI semanal — informativo</div>
+        <div class="ref-card-sub">No afecta el score. Es contexto para decidir el tamaño final.</div>
+        <div class="ref-section">Cómo interpretarlo</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text"><strong>≥ 40</strong> — tendencia semanal saludable, señal diaria más confiable</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>25–39</strong> — tendencia débil, considerá reducir el tamaño</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text"><strong>&lt; 25</strong> — muy bajista. Con fundamentals excelentes puede ser zona de acumulación.</div></div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">%</div>% distancia al POC — FRVP anual</div>
+        <div class="ref-card-sub">Cuanto más negativo, más barata está la acción vs su historia. No suma al score pero define el tamaño.</div>
+        <table class="poc-table">
+          <tr><th>Distancia</th><th>Señal</th></tr>
+          <tr><td class="td-pct poc-ok">Más de -15%</td><td class="poc-ok">Fuerte ✓</td></tr>
+          <tr><td class="td-pct poc-warn">-5% a -15%</td><td class="poc-warn">Moderada ~</td></tr>
+          <tr><td class="td-pct poc-neu">0% a -5%</td><td class="poc-neu">Neutral —</td></tr>
+          <tr><td class="td-pct poc-ng">Por encima</td><td class="poc-ng">No suma —</td></tr>
+        </table>
+        <div class="ref-section" style="margin-top:8px">Score → clasificación</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text"><strong>3/3 + RSI ≤ 45</strong> → Señal verde 🟢</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>2/3 sin RSI rebote + RSI ≤ 40</strong> → Watchlist 🟡</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-neu"></div><div class="ref-text"><strong>RSI ≤ 35</strong> → Radar 🔵</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Silenciados por ciclo activo -->
+  <div class="alert-panel" id="alert-silenced-section" style="display:none">
+    <div class="alert-section-title">⏸ Silenciados — Ciclo activo</div>
+    <div class="alert-list" id="alert-silenced-list"></div>
   </div>
 
   <div class="alert-panel" id="alert-signals-section">
@@ -336,10 +413,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <th>Div.</th>
           <th>Score Telegram</th>
           <th>Señal</th>
+          <th></th>
         </tr>
       </thead>
       <tbody id="wl-tbody">
-        <tr><td colspan="11" style="text-align:center;color:#444441;padding:20px">Cargando...</td></tr>
+        <tr><td colspan="12" style="text-align:center;color:#444441;padding:20px">Cargando...</td></tr>
       </tbody>
     </table>
   </div>
@@ -352,91 +430,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<!-- ═══════════ TAB 3: PANEL COMPLETO ═══════════ -->
-<div class="tab-panel" id="tab-panel">
-  <div class="summary">
-    <div class="sc"><div class="sl">Acumular — posición completa</div><div class="sv ok" id="c1">0</div></div>
-    <div class="sc"><div class="sl">Acumular — media posición</div><div class="sv warn" id="c2">0</div></div>
-    <div class="sc"><div class="sl">Esperar setup</div><div class="sv neu" id="c3">0</div></div>
-    <div class="sc"><div class="sl">Precaución / No entrar</div><div class="sv ng" id="c4">0</div></div>
-    <div class="sc"></div><div class="sc"></div>
-  </div>
-
-  <div class="ref-toggle" onclick="toggleRef()">
-    <div class="ref-toggle-left">
-      <div class="ref-icon">?</div>
-      <div><div class="ref-title">Guía de condiciones — cómo leer cada señal</div><div class="ref-sub">Rebote RSI · Divergencias · BB · EMA lateral · RSI semanal · POC</div></div>
-    </div>
-    <div class="ref-arrow" id="refArrow">▼</div>
-  </div>
-  <div class="ref-panel" id="refPanel">
-    <div class="ref-grid">
-      <div class="ref-card">
-        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">✓</div>Rebotó desde &lt;30 — RSI(10)</div>
-        <div class="ref-card-sub">El RSI cruzó por debajo de 30 y luego volvió a cruzar hacia arriba.</div>
-        <div class="ref-section">Marcar SÍ cuando</div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">RSI cruzó el 30 hacia arriba hace <strong>menos de 15 velas</strong></div></div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Label <strong>"Bull"</strong> del RSI Divergence dentro de las últimas 15 velas</div></div>
-        <div class="ref-section">Marcar NO cuando</div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">RSI nunca llegó a 30 o el cruce fue hace más de <strong>15 velas</strong></div></div>
-      </div>
-      <div class="ref-card">
-        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">÷</div>Divergencias RSI(10)</div>
-        <div class="ref-card-sub">Una sola línea: sin divergencia / bullish / bearish.</div>
-        <div class="ref-section">Bullish — suma a la señal</div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio mínimo más bajo, RSI mínimo más alto · label <strong>"Bull"</strong> ≤15 velas</div></div>
-        <div class="ref-section">Bearish — cancela entrada</div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Precio máximo más alto, RSI máximo más bajo · label <strong>"Bear"</strong> ≤15 velas</div></div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Si está activa → tamaño pasa a <strong>"No entrar"</strong> automáticamente</div></div>
-      </div>
-      <div class="ref-card">
-        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">✓</div>Vela recuperó BB inferior</div>
-        <div class="ref-card-sub">Una vela cerró fuera de la banda inferior y una posterior cerró dentro.</div>
-        <div class="ref-section">Marcar SÍ cuando</div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una vela <strong>cerró</strong> bajo la banda inferior (no solo tocó)</div></div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una posterior cerró dentro — todo en las últimas <strong>5 velas</strong></div></div>
-      </div>
-      <div class="ref-card">
-        <div class="ref-card-title"><div class="ci ci-w" style="width:16px;height:16px;font-size:10px">S</div>RSI semanal — informativo</div>
-        <div class="ref-card-sub">No afecta el score. Es contexto para decidir el tamaño final.</div>
-        <div class="ref-section">Cómo interpretarlo</div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text"><strong>≥ 40</strong> — tendencia semanal saludable, señal diaria más confiable</div></div>
-        <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>25–39</strong> — tendencia débil, considerá reducir el tamaño</div></div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text"><strong>&lt; 25</strong> — muy bajista. Con fundamentals excelentes puede ser zona de acumulación.</div></div>
-      </div>
-      <div class="ref-card">
-        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">%</div>% distancia al POC — FRVP anual</div>
-        <div class="ref-card-sub">Cuanto más negativo, más barata está la acción vs su historia.</div>
-        <table class="poc-table">
-          <tr><th>Distancia</th><th>Señal</th></tr>
-          <tr><td class="td-pct poc-ok">Más de -15%</td><td class="poc-ok">Fuerte ✓</td></tr>
-          <tr><td class="td-pct poc-warn">-5% a -15%</td><td class="poc-warn">Moderada ~</td></tr>
-          <tr><td class="td-pct poc-neu">0% a -5%</td><td class="poc-neu">Neutral —</td></tr>
-          <tr><td class="td-pct poc-ng">Por encima</td><td class="poc-ng">No suma —</td></tr>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="filters">
-    <button class="fbtn active" onclick="filt('all',this)">Todos</button>
-    <button class="fbtn" onclick="filt('buy',this)">Acumular</button>
-    <button class="fbtn" onclick="filt('watch',this)">Media posición</button>
-    <button class="fbtn" onclick="filt('forming',this)">Setup en formación</button>
-    <button class="fbtn" onclick="filt('hold',this)">Esperar</button>
-    <button class="fbtn" onclick="filt('caution',this)">Precaución</button>
-  </div>
-  <div class="sort-bar">
-    <span class="sort-lbl">Ordenar:</span>
-    <button class="sbtn active" onclick="sortBy('az',this)">A–Z</button>
-    <button class="sbtn" onclick="sortBy('rsi',this)">RSI más bajo</button>
-    <button class="sbtn" onclick="sortBy('signal',this)">Por señal</button>
-    <button class="sbtn" onclick="sortBy('poc',this)">Mayor distancia POC</button>
-  </div>
-  <div class="grid" id="grid"></div>
-</div>
-
-<!-- ═══════════ TAB 4: WORKFLOW ═══════════ -->
+<!-- ═══════════ TAB 3: WORKFLOW ═══════════ -->
 <div class="tab-panel" id="tab-workflow">
   <div class="wf-panel">
     <div class="wf-title">⚡ Actualizar cotizaciones sin Telegram</div>
@@ -1015,6 +1009,32 @@ function buildRadarItem(s,sc){
   </div>`;
 }
 
+// Global silenced tickers from data.json (set during syncFromRepo)
+let SILENCED_TICKERS={};
+
+function renderSilenced(){
+  const section=document.getElementById("alert-silenced-section");
+  const list=document.getElementById("alert-silenced-list");
+  const silEntries=Object.entries(SILENCED_TICKERS).filter(([_,c])=>c.is_silenced);
+  document.getElementById("c-sil").textContent=silEntries.length;
+  if(silEntries.length===0){section.style.display="none";return;}
+  section.style.display="block";
+  list.innerHTML=silEntries.map(([t,cyc])=>{
+    const s=data.find(d=>d.t===t);
+    const priceStr=s?`$${s.price.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2})}`:"—";
+    const fase=cyc.rsi_reset?"Fase 3 — esperando rebote":cyc.rsi_hit_50?"Fase 2 — RSI cruzó 50, esperando caída":"Fase 1 — esperando RSI > 50";
+    const pos=cyc.posicion||"completa";
+    return`<div class="alert-item" style="border-left:3px solid #444441">
+      <div class="alert-dot" style="width:8px;height:8px;border-radius:50%;background:#444441;margin-top:6px;flex-shrink:0"></div>
+      <div class="alert-body">
+        <div><span class="alert-ticker">${t} ${priceStr}</span><span class="alert-score" style="background:#161b22;color:#6e7681;margin-left:6px">SILENCIADO</span></div>
+        <div class="alert-price">${s?s.co:t} · Posición: ${pos}</div>
+        <div class="alert-context" style="margin-top:4px">${fase}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
 function renderAlerts(){
   const signals=[],watchlist=[],radar=[];
   data.forEach(s=>{
@@ -1047,7 +1067,13 @@ function renderAlerts(){
   document.getElementById("c-sig2").textContent=signals.filter(x=>x.sc.score===2).length;
   document.getElementById("c-watch").textContent=watchlist.length;
   document.getElementById("c-radar").textContent=radar.length;
-  document.getElementById("c-sil").textContent=0; // silenciados vienen de data.json
+
+  renderSilenced();
+}
+
+function renderAll(){
+  renderAlerts();
+  renderWatchlist();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1106,6 +1132,7 @@ function renderWatchlist(){
       <td style="font-size:10px;color:${div?"#2ea043":s.divState==="bear"?"#da3633":"#444441"}">${div?"Bull ✓":s.divState==="bear"?"Bear ✗":"—"}</td>
       <td><div class="dot3"><div class="d ${d1Cls}" title="RSI"></div><div class="d ${d2Cls}" title="EMA"></div><div class="d ${d3Cls}" title="BB"></div><span style="font-size:10px;color:#6e7681;margin-left:2px">${score}/3</span></div></td>
       <td><span class="sig-chip ${sigMap[categoria]||"sig-hold"}">${sigLbl[categoria]||"—"}</span></td>
+      <td><button onclick="deleteTicker('${s.t}')" style="background:transparent;border:none;color:#444441;cursor:pointer;font-size:12px;padding:2px 6px;border-radius:4px" title="Eliminar ${s.t}" onmouseover="this.style.color='#da3633'" onmouseout="this.style.color='#444441'">✕</button></td>
     </tr>`);
 
     // Radar cards para activos que les faltan 1-2 puntos
@@ -1131,83 +1158,17 @@ function renderWatchlist(){
     }
   });
 
-  tbody.innerHTML=rows.length?rows.join(""):`<tr><td colspan="11" style="text-align:center;color:#444441;padding:20px">No hay activos con el filtro seleccionado</td></tr>`;
+  tbody.innerHTML=rows.length?rows.join(""):`<tr><td colspan="12" style="text-align:center;color:#444441;padding:20px">No hay activos con el filtro seleccionado</td></tr>`;
   radarGrid.innerHTML=radarCards.length?radarCards.join(""):`<div class="alert-empty" style="grid-column:1/-1">No hay activos en zona de radar actualmente.</div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// RENDER PANEL COMPLETO (cards legacy)
+// RENDER PANEL COMPLETO — eliminado, funciones legacy mantenidas como stubs
 // ═══════════════════════════════════════════════════════════════════════════
 let curFilt="all",curSort="az";
-function renderCards(){
-  const g=document.getElementById("grid");g.innerHTML="";let b=0,w=0,h=0,ca=0;
-  let sorted=[...data];
-  if(curSort==="az")sorted.sort((a,b)=>a.t.localeCompare(b.t));
-  else if(curSort==="rsi")sorted.sort((a,b)=>a.rsi10-b.rsi10);
-  else if(curSort==="poc")sorted.sort((a,b)=>pocPct(a.price,a.poc)-pocPct(b.price,b.poc));
-  else{const ord={buy:0,watch:1,hold:2,caution:3};sorted.sort((a,b)=>{const sa=scoreSignal(a),sb=scoreSignal(b);return(ord[sa.sig]||2)-(ord[sb.sig]||2)||sa.rsi10-sb.rsi10;});}
-  sorted.forEach(s=>{
-    const i=data.indexOf(s);
-    const{conds,pts,sig,bdg,posBdg,posSize,posCls,epct,ppct,fund,pocMaxOp,pocExtremo,setupForming}=scoreSignal(s);
-    if(sig==="buy")b++;else if(sig==="watch")w++;else if(sig==="caution")ca++;else h++;
-    if(curFilt!=="all"&&sig!==curFilt)return;
-    const pct=Math.round((pts/5)*100);
-    const bCls={buy:"b-buy",watch:"b-watch",hold:"b-hold",caution:"b-caution",forming:"b-forming"}[sig]||"b-hold";
-    const ciMap={ok:"ci-ok",warn:"ci-w",no:"ci-no",ng:"ci-ng"};
-    const rsiCls=s.rsi10<=30?"ok":s.rsi10>=70?"ng":"neu";
-    const rsiWCls=s.rsiW>=40?"ok":s.rsiW>=25?"warn":"ng";
-    const emaDisCls=epct>=0?"ok":epct>=-8?"warn":"ng";
-    const pocDisCls=ppct<=-15?"ok":ppct<=-5?"warn":ppct<0?"neu":"ng";
-    const trendCls=s.emaTrend==="subiendo"?"trend-up":s.emaTrend==="lateral"?"trend-lat":"trend-dn";
-    const trendTxt=s.emaTrend==="subiendo"?"▲ alcista":s.emaTrend==="lateral"?"→ lateral":"▼ bajista";
-    const condsH=conds.map(c=>`<div class="crow"><div class="ci ${ciMap[c.st]||'ci-no'}">${c.st==="ok"?"✓":c.st==="warn"?"~":c.st==="ng"?"!":"—"}</div><span>${c.txt}</span></div>`).join("");
-    const noteLines=buildAutoNote(s,epct,ppct);
-    const colMap={ok:"#2ea043",warn:"#ba7517",ng:"#da3633",neu:"#6e7681"};
-    const noteLinesH=noteLines.map(l=>`<div class="auto-line"><span class="auto-line-dot" style="color:${colMap[l.col]}">◆</span><span>${l.txt}</span></div>`).join("");
-    const bearAlert=s.divState==="bear"?`<div class="bear-alert">! Divergencia bearish activa — entrada cancelada</div>`:"";
-    const pocMaxBadge=pocMaxOp?`<div style="margin:4px 0;padding:4px 8px;background:#0d2340;border:0.5px solid #58a6ff;border-radius:6px;font-size:10px;color:#58a6ff">★ Zona máxima oportunidad — precio ${ppct.toFixed(1)}% bajo POC · fund. excelentes</div>`:pocExtremo?`<div style="margin:4px 0;padding:4px 8px;background:#0d2340;border:0.5px solid #e3b341;border-radius:6px;font-size:10px;color:#e3b341">⚠ Precio >40% bajo POC — verificar fundamentals antes de entrar</div>`:"";
-    const setupBadge=setupForming?`<div style="margin:4px 0;padding:4px 8px;background:#2d2200;border:0.5px solid #e3b341;border-radius:6px;font-size:10px;color:#e3b341">⟳ RSI(10) ${s.rsi10} bajando hacia 30 — setup en formación</div>`:"";
-    const card=document.createElement("div");card.className=`card s-${sig}`;card.dataset.sig=sig;
-    card.innerHTML=`<div class="card-head"><div><div class="tkr">${s.t}<span class="trend-tag ${trendCls}">${trendTxt}</span></div><div class="co">${s.co} · ${s.sec}</div></div><div class="badge ${bCls}">${bdg}</div></div>
-    ${bearAlert}${pocMaxBadge}${setupBadge}
-    <div class="metrics">
-      <div class="met"><div class="ml">RSI(10)</div><div class="mv ${rsiCls}">${s.rsi10}</div><div class="ms">${s.rsi10<=30?"oversold":"neutral"}</div></div>
-      <div class="met"><div class="ml">RSI sem.</div><div class="mv ${rsiWCls}">${s.rsiW}</div><div class="ms">${s.rsiW>=40?"ok":s.rsiW>=25?"débil":"bajo"}</div></div>
-      <div class="met"><div class="ml">vs EMA200</div><div class="mv ${emaDisCls}">${epct>=0?"+":""}${epct.toFixed(1)}%</div><div class="ms">${s.emaTrend}</div></div>
-      <div class="met"><div class="ml">vs POC</div><div class="mv ${pocDisCls}">${ppct.toFixed(1)}%</div><div class="ms">FRVP</div></div>
-      <div class="met"><div class="ml">Fund.</div><div class="mv" style="font-size:10px;color:#6e7681">${fund}</div><div class="ms">fijo</div></div>
-    </div>
-    <div class="conds">${condsH}</div>
-    <div class="sbar"><span class="slbl">Señal</span><div class="strack"><div class="sfill" style="width:${pct}%;background:${scolor(pts)}"></div></div><span class="snum">${pts}/5</span></div>
-    <div class="pos-row"><span class="ps-lbl">Tamaño sugerido</span><span class="ps-badge ${posCls}">${posBdg}</span><span class="ps-val">${posSize}</span></div>
-    <div class="card-btns"><button class="cbtn" id="abtn_${i}" onclick="togglePanel('analysis',${i})">Ver análisis</button><button class="cbtn" id="ebtn_${i}" onclick="togglePanel('edit',${i})">Editar</button><button class="cbtn" onclick="deleteTicker('${s.t}')" style="flex:0;padding:6px 10px;color:#da3633;border-color:#da363340">✕</button></div>
-    <div class="dpanel" id="dp_${i}">
-      <div class="drow"><span>Precio actual</span><span>$${s.price.toLocaleString()}</span></div>
-      <div class="drow"><span>EMA200</span><span>$${s.ema200.toLocaleString()} (${epct>=0?"+":""}${epct.toFixed(1)}%)</span></div>
-      <div class="drow"><span>Pendiente EMA200</span><span>${s.emaTrend}</span></div>
-      <div class="drow"><span>POC (FRVP anual)</span><span>$${s.poc.toLocaleString()} (${ppct.toFixed(1)}%)</span></div>
-      <div class="drow"><span>RSI(10) diario</span><span>${s.rsi10}</span></div>
-      <div class="drow"><span>RSI semanal</span><span>${s.rsiW}</span></div>
-      <div class="drow"><span>Divergencia</span><span>${s.divState==="bull"?"Bullish activa":s.divState==="bear"?"Bearish activa ⚠":"Sin divergencia"}</span></div>
-      <div class="drow"><span>Estado BB</span><span>${s.bbState==="below"?"Bajo inferior":s.bbState==="above"?"Sobre superior":"Dentro"}</span></div>
-      <div class="drow"><span>Fundamentals</span><span>${fund}</span></div>
-      <div class="auto-note"><div class="auto-note-title">Análisis automático</div><div class="auto-note-lines">${noteLinesH}</div></div>
-    </div>
-    <div class="epanel" id="ep_${i}"></div>`;
-    g.appendChild(card);
-  });
-  document.getElementById("c1").textContent=b;document.getElementById("c2").textContent=w;
-  document.getElementById("c3").textContent=h;document.getElementById("c4").textContent=ca;
-}
 
-function renderAll(){
-  renderAlerts();
-  renderWatchlist();
-  renderCards();
-}
-
-function filt(sig,btn){curFilt=sig;document.querySelectorAll("#tab-panel .fbtn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderCards();}
-function sortBy(type,btn){curSort=type;document.querySelectorAll(".sbtn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderCards();}
+function filt(sig,btn){} // legacy stub — panel completo eliminado
+function sortBy(type,btn){} // legacy stub
 
 // ═══════════════════════════════════════════════════════════════════════════
 // GITHUB API
@@ -1385,7 +1346,7 @@ async function runFetchOnly(){
 
 // También disponible desde la topbar
 async function triggerWorkflow(){
-  switchTab("workflow",document.querySelector('.tab:nth-child(4)'));
+  switchTab("workflow",document.querySelector('.tab:nth-child(3)'));
   setTimeout(()=>runFetchOnly(),100);
 }
 
@@ -1448,10 +1409,10 @@ async function syncFromRepo(){
 
     // Ciclos silenciados
     if(dj.cycles){
+      SILENCED_TICKERS=dj.cycles;
       const sil=Object.entries(dj.cycles).filter(([_,c])=>c.is_silenced);
       if(sil.length>0){
         logWf(`⚡ Activos silenciados en ciclo: ${sil.map(([t])=>t).join(", ")}`, "log-warn");
-        document.getElementById("c-sil").textContent=sil.length;
       }
     }
 
