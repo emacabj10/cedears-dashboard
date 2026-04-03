@@ -526,34 +526,35 @@
         52.09
       ]
    },
-  "cycles":{
-    "BRK.B":{
+    
+  "cycles": {
+    "BRK.B": {
       "is_silenced": true,
       "rsi_hit_50": false,
       "rsi_reset": false
     },
-    "MCD":{
+    "MCD": {
       "is_silenced": true,
       "rsi_hit_50": false,
       "rsi_reset": false
     },
-    "GLD":{
+    "GLD": {
       "is_silenced": true,
       "rsi_hit_50": true,
       "rsi_reset": false
     },
-    "MELI":{
+    "MELI": {
       "is_silenced": true,
       "rsi_hit_50": true,
       "rsi_reset": false
     },
-    "AMZN":{
+    "AMZN": {
       "is_silenced": true,
       "rsi_hit_50": true,
       "rsi_reset": false
     }
   },
-  "daily":{
+  "daily": {
     "date": "2026-04-03",
     "signals": [],
     "watchlist": [],
