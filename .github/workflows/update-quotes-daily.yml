@@ -69,7 +69,9 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           CMD_OPERADO: ${{ github.event.inputs.cmd_operado }}
           CALLBACK_QUERY_ID: ${{ github.event.inputs.callback_query_id }}
-        run: python alert_quotes.py
+        run: |
+          git pull --rebase --autostash
+          python alert_quotes.py
 
       - name: Commit data.json after alerts
         if: ${{ steps.cmd.outputs.type == 'daily' }}
