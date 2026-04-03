@@ -32,15 +32,12 @@ jobs:
       - name: Detect command type
         id: cmd
         run: |
-          # github.event.inputs es null en runs de cron — usar default vacío
           CMD="${{ github.event.inputs.cmd_operado }}"
           # "null" es lo que GitHub expande cuando el input no existe (cron)
           if [[ "$CMD" == "" || "$CMD" == "null" ]]; then
             echo "type=daily" >> $GITHUB_OUTPUT
           elif [[ "$CMD" == "__FETCH_ONLY__" ]]; then
             echo "type=fetch_only" >> $GITHUB_OUTPUT
-          elif [[ "$CMD" == !run\ * ]]; then
-            echo "type=run" >> $GITHUB_OUTPUT
           elif [[ "$CMD" == !operado\ * || "$CMD" == operado:* ]]; then
             echo "type=operado" >> $GITHUB_OUTPUT
           else
@@ -63,7 +60,7 @@ jobs:
           git push
 
       - name: Send Telegram alerts
-        if: ${{ steps.cmd.outputs.type == 'daily' || steps.cmd.outputs.type == 'run' || steps.cmd.outputs.type == 'operado' }}
+        if: ${{ steps.cmd.outputs.type == 'daily' || steps.cmd.outputs.type == 'operado' }}
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
