@@ -881,11 +881,19 @@ if _INTRADAY:
         ema_still_ok = epct_intra >= -15
         signal_still_active = rsi_bounced_15 and ema_still_ok
 
-        # Watchlist: RSI del cierre <= 40 y precio aún cerca de EMA
+        # Watchlist intradiaria: replica la lógica exigente del bot diario.
+        # Requiere score >= 2 del cierre anterior — no basta con RSI bajo 40.
+        # Score del cierre: rsi_bounced_15 + ema_ok + bb_recov
+        _score_saved = sum([
+            bool(rsi_bounced_15),
+            bool(ema_still_ok),
+            bool(bb_recov_saved),
+        ])
         watchlist_still_active = (
-            not rsi_bounced_15
-            and rsi_prev_close <= 40
-            and epct_intra >= -15
+            not rsi_bounced_15          # si ya rebotó es señal, no watchlist
+            and _score_saved >= 2       # mínimo 2 puntos del cierre anterior
+            and rsi_prev_close <= 40    # RSI en zona de setup
+            and epct_intra >= -15       # precio no destruido vs EMA
         )
 
         # Si estaba en watchlist y sigue siendo watchlist → skip (ya fue avisado)
