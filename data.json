@@ -1,5 +1,5 @@
 {
-  "updated": "2026-04-03T11:59:17Z",
+  "updated": "2026-04-03T12:30:08Z",
   "quotes": {
     "AMD": {
       "price": 217.5,
@@ -77,10 +77,10 @@
       ]
     },
     "BNB": {
-      "price": 587.17,
-      "rsi10": 31.35,
+      "price": 587.2,
+      "rsi10": 31.37,
       "rsiPrev": 28.36,
-      "rsiW": 27.37,
+      "rsiW": 27.38,
       "ema200": 767.57,
       "emaTrend": "bajando",
       "rsiHistory": [
@@ -127,11 +127,11 @@
       ]
     },
     "BTC": {
-      "price": 66991.98,
-      "rsi10": 42.73,
+      "price": 67023.03,
+      "rsi10": 42.89,
       "rsiPrev": 42.16,
-      "rsiW": 34.15,
-      "ema200": 84595.97,
+      "rsiW": 34.21,
+      "ema200": 84596.28,
       "emaTrend": "bajando",
       "rsiHistory": [
         47.55,
@@ -177,11 +177,11 @@
       ]
     },
     "ETH": {
-      "price": 2062.91,
-      "rsi10": 47.99,
+      "price": 2062.2,
+      "rsi10": 47.91,
       "rsiPrev": 47.31,
-      "rsiW": 37.35,
-      "ema200": 2718.25,
+      "rsiW": 37.31,
+      "ema200": 2718.24,
       "emaTrend": "bajando",
       "rsiHistory": [
         51.84,
@@ -551,8 +551,6 @@
         48.62
       ]
     },
-   
-    },
     "NU": {
       "price": 14.15,
       "rsi10": 45.91,
@@ -577,41 +575,33 @@
         49.32,
         50.39
       ]
+    },
+    "AAPL": {
+      "price": 255.92,
+      "rsi10": 53.81,
+      "rsiPrev": 53.26,
+      "rsiW": 46.59,
+      "ema200": 251.07,
+      "emaTrend": "lateral",
+      "rsiHistory": [
+        35.99,
+        29.38,
+        35.67,
+        38.83,
+        33.3,
+        32.13,
+        30.95,
+        39.86,
+        40.23,
+        42.76,
+        43.5,
+        35.77,
+        32.38,
+        49.82,
+        53.26
+      ]
     }
   },
-  "cycles": {
-    "BRK.B": {
-      "is_silenced": true,
-      "rsi_hit_50": false,
-      "rsi_reset": false
-    },
-    "MCD": {
-      "is_silenced": true,
-      "rsi_hit_50": false,
-      "rsi_reset": false
-    },
-    "GLD": {
-      "is_silenced": true,
-      "rsi_hit_50": true,
-      "rsi_reset": false
-    },
-    "MELI": {
-      "is_silenced": true,
-      "rsi_hit_50": true,
-      "rsi_reset": false
-    },
-    "AMZN": {
-      "is_silenced": true,
-      "rsi_hit_50": true,
-      "rsi_reset": false
-    }
-  },
-  "daily": {
-    "date": "2026-04-03",
-    "signals": [
-      
-    ],
-    "watchlist": [],
-    "entradas": []
-  }
+  "cycles": {},
+  "daily": {}
 }
