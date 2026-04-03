@@ -33,8 +33,11 @@ jobs:
         id: cmd
         run: |
           CMD="${{ github.event.inputs.cmd_operado }}"
+          # trim de espacios
+          CMD="${CMD#"${CMD%%[![:space:]]*}"}"
+          CMD="${CMD%"${CMD##*[![:space:]]}"}"
           # "null" es lo que GitHub expande cuando el input no existe (cron)
-          if [[ "$CMD" == "" || "$CMD" == "null" ]]; then
+          if [[ "$CMD" == "" || "$CMD" == "null" || "$CMD" == "!run" ]]; then
             echo "type=daily" >> $GITHUB_OUTPUT
           elif [[ "$CMD" == "__FETCH_ONLY__" ]]; then
             echo "type=fetch_only" >> $GITHUB_OUTPUT
