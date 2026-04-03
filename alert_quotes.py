@@ -663,7 +663,7 @@ def handle_operado(ticker_cmd):
     pos_label = "posición completa" if posicion == "completa" else "media posición"
     send_telegram(
         f"✅ <b>{ticker_cmd}</b> marcado como operado.\n"
-        f"{pos_emoji} Entrada registrada como <b>{pos_label}</b>.\n"
+        f"Entrada registrada como <b>{pos_label}</b>.\n"
         f"El bot silenciará alertas de Señal/Watchlist hasta completar el ciclo.\n"
     )
 
@@ -689,7 +689,7 @@ elif _cmd_operado.lower().startswith("!run "):
     # !run TICKER — fetch completo + mensaje identico al bot normal
     _run_ticker = _cmd_operado.split(" ", 1)[1].strip().upper()
     if _run_ticker not in YF_MAP:
-        send_telegram(f"❌ Ticker <b>{_run_ticker}</b> no reconocido en el universo.")
+        send_telegram(f"❌ Ticker <b>{_run_ticker}</b> no reconocido en el panel.")
         import sys; sys.exit(0)
     print(f"[!run] Fetch completo de {_run_ticker}")
     _sym_run = YF_MAP[_run_ticker]
