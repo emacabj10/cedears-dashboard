@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: '00 12 * * 1-5'   # 10:30 ARG — apertura
     - cron: '00 15 * * 1-5'   # 13:30 ARG — media rueda
-    - cron: '0r0 18 * * 1-5'   # 16:30 ARG — cierre
+    - cron: '00 18 * * 1-5'   # 16:30 ARG — cierre
   workflow_dispatch:
     inputs:
       cmd_operado:
