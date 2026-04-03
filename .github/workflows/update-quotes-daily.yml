@@ -2,7 +2,7 @@ name: Update quotes (diario)
 
 on:
   schedule:
-    - cron: '15 10 * * 1-5'   # 10:30 ARG — apertura
+    - cron: '30 10 * * 1-5'   # 10:30 ARG — apertura
     - cron: '30 13 * * 1-5'   # 13:30 ARG — media rueda
     - cron: '30 16 * * 1-5'   # 16:30 ARG — cierre
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
           git push
 
       - name: Send Telegram alerts
-        if: ${{ github.event.inputs.cmd_operado == '' }}
+        if: ${{ github.event.inputs.cmd_operado == '' || startsWith(github.event.inputs.cmd_operado, '!run ') || startsWith(github.event.inputs.cmd_operado, '!operado ') || startsWith(github.event.inputs.cmd_operado, 'operado:') }}
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -63,7 +63,7 @@ jobs:
           git push
 
       - name: Commit data.json after operado
-        if: ${{ github.event.inputs.cmd_operado != '' && github.event.inputs.cmd_operado != '__FETCH_ONLY__' }}
+        if: ${{ startsWith(github.event.inputs.cmd_operado, 'operado:') || startsWith(github.event.inputs.cmd_operado, '!operado ') }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
