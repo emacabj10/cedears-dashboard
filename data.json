@@ -1,5 +1,5 @@
 {
-  "updated": "2026-04-03T14:45:09Z",
+  "updated": "2026-04-03T14:51:31Z",
   "quotes": {
     "AMD": {
       "price": 217.5,
@@ -127,11 +127,11 @@
       ]
     },
     "BTC": {
-      "price": 66868.97,
-      "rsi10": 42.09,
+      "price": 66844.45,
+      "rsi10": 41.99,
       "rsiPrev": 42.16,
-      "rsiW": 33.87,
-      "ema200": 84594.74,
+      "rsiW": 33.81,
+      "ema200": 84594.5,
       "emaTrend": "bajando",
       "rsiHistory": [
         47.55,
@@ -177,7 +177,7 @@
       ]
     },
     "ETH": {
-      "price": 2051.22,
+      "price": 2051.21,
       "rsi10": 46.75,
       "rsiPrev": 47.31,
       "rsiW": 36.78,
@@ -525,41 +525,8 @@
         47.73,
         52.09
       ]
-  },
-  "cycles": {
-    "BRK.B": {
-      "is_silenced": true,
-      "rsi_hit_50": false,
-      "rsi_reset": false
-    },
-    "MCD": {
-      "is_silenced": true,
-      "rsi_hit_50": false,
-      "rsi_reset": false
-    },
-    "GLD": {
-      "is_silenced": true,
-      "rsi_hit_50": true,
-      "rsi_reset": false
-    },
-    "MELI": {
-      "is_silenced": true,
-      "rsi_hit_50": true,
-      "rsi_reset": false
-    },
-    "AMZN": {
-      "is_silenced": true,
-      "rsi_hit_50": true,
-      "rsi_reset": false
     }
   },
-  "daily": {
-    "date": "2026-04-03",
-    "signals": [
-      "META",
-      "TSLA"
-    ],
-    "watchlist": [],
-    "entradas": []
-  }
+  "cycles": {},
+  "daily": {}
 }
