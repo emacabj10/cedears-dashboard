@@ -16,7 +16,7 @@ FUND = {
     "SPY":"excelentes","DIA":"excelentes","BTC":"excelentes",
     "ETH":"buenos","BNB":"buenos","GLD":"buenos",
     "AMD":"buenos","KO":"buenos","PEP":"buenos",
-    "MCD":"buenos","BABA":"buenos","TSLA":"controversiales","NVDA":"excelentes",
+    "MCD":"buenos","BABA":"buenos","TSLA":"controversiales",
 
 
 }
@@ -30,7 +30,7 @@ TV_MAP = {
     "KO":"NYSE:KO","PEP":"NASDAQ:PEP","MCD":"NYSE:MCD",
     "BABA":"NYSE:BABA","TSLA":"NASDAQ:TSLA",
     "GLD":"AMEX:GLD","BTC":"BINANCE:BTCUSDT","ETH":"BINANCE:ETHUSDT",
-    "BNB":"BINANCE:BNBUSDT","NVDA":"NASDAQ:NVDA",
+    "BNB":"BINANCE:BNBUSDT",
 
 
 }
@@ -40,7 +40,7 @@ YF_MAP = {
     "BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD",
     "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
     "MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ",
-    "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD","NVDA":"NVDA",
+    "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD",
 
 
 }
