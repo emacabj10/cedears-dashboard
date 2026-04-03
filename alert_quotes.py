@@ -16,7 +16,8 @@ FUND = {
     "SPY":"excelentes","DIA":"excelentes","BTC":"excelentes",
     "ETH":"buenos","BNB":"buenos","GLD":"buenos",
     "AMD":"buenos","KO":"buenos","PEP":"buenos",
-    "MCD":"buenos","BABA":"buenos","TSLA":"controversiales","NVDA":"excelentes","NU":"buenos","AAPL":"excelentes",
+    "MCD":"buenos","BABA":"buenos","TSLA":"controversiales","NVDA":"excelentes","NU":"buenos","AAPL":"excelentes",    "INTC":"excelentes",
+
 
 }
 
@@ -29,7 +30,8 @@ TV_MAP = {
     "KO":"NYSE:KO","PEP":"NASDAQ:PEP","MCD":"NYSE:MCD",
     "BABA":"NYSE:BABA","TSLA":"NASDAQ:TSLA",
     "GLD":"AMEX:GLD","BTC":"BINANCE:BTCUSDT","ETH":"BINANCE:ETHUSDT",
-    "BNB":"BINANCE:BNBUSDT","NVDA":"NASDAQ:NVDA","NU":"NYSE:NU","AAPL":"NASDAQ:AAPL",
+    "BNB":"BINANCE:BNBUSDT","NVDA":"NASDAQ:NVDA","NU":"NYSE:NU","AAPL":"NASDAQ:AAPL",    "INTC":"NASDAQ:INTC",
+
 
 }
 
@@ -38,7 +40,8 @@ YF_MAP = {
     "BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD",
     "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
     "MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ",
-    "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD","NVDA":"NVDA","NU":"NU","AAPL":"AAPL",
+    "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD","NVDA":"NVDA","NU":"NU","AAPL":"AAPL",    "INTC":"INTC",
+
 
 }
 
