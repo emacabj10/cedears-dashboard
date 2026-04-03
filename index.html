@@ -366,18 +366,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
 
-  <!-- Silenciados por ciclo activo -->
-  <div class="alert-panel" id="alert-silenced-section" style="display:none">
-    <div class="alert-section-toggle" onclick="toggleSection('silenced')">
-      ⏸ Silenciados — Ciclo activo
-      <span class="ast-arrow open" id="ast-silenced">▲</span>
-    </div>
-    <div class="alert-section-body" id="asb-silenced">
-      <div style="height:8px"></div>
-      <div class="alert-list" id="alert-silenced-list"></div>
-    </div>
-  </div>
-
   <div class="alert-panel" id="alert-signals-section">
     <div class="alert-section-toggle" onclick="toggleSection('signals')">
       🟢 Señales confirmadas — idénticas a Telegram
@@ -414,6 +402,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="alert-list" id="alert-radar-list">
         <div class="alert-empty">Cargando...</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Silenciados por ciclo activo — al final -->
+  <div class="alert-panel" id="alert-silenced-section" style="display:none">
+    <div class="alert-section-toggle" onclick="toggleSection('silenced')">
+      ⏸ Silenciados — Ciclo activo
+      <span class="ast-arrow open" id="ast-silenced">▲</span>
+    </div>
+    <div class="alert-section-body" id="asb-silenced">
+      <div style="height:8px"></div>
+      <div class="alert-list" id="alert-silenced-list"></div>
     </div>
   </div>
 </div>
@@ -837,6 +837,7 @@ function liveRsiW(i){const v=parseFloat(document.getElementById(`ep_rsiw_${i}`).
 // STORAGE
 // ═══════════════════════════════════════════════════════════════════════════
 const STORAGE_KEY="cedears_v10_data";
+const OVERRIDES_KEY="cedears_v10_overrides";
 const GH_TOKEN_KEY="cedears_gh_token";
 const WF_CONFIG_KEY="cedears_wf_config";
 const GH_REPO_DEFAULT="emacabj10/cedears-dashboard";
@@ -846,70 +847,145 @@ function getWfConfig(){try{const c=JSON.parse(localStorage.getItem(WF_CONFIG_KEY
 
 async function saveToStorage(){
   try{
-    const payload=JSON.stringify({data,customFund:CUSTOM_FUND,deleted:[...DELETED_TICKERS]});
-    const storage=window.storage||null;
-    if(storage){await storage.set(STORAGE_KEY,payload);}
-    else{localStorage.setItem(STORAGE_KEY,payload);}
+    // Solo guarda ediciones manuales — las cotizaciones siempre vienen del repo
+    const overrides={};
+    data.forEach(s=>{
+      const o={};
+      if(s._manualBounce!==undefined)o.rsiBounce=s.rsiBounce;
+      if(s._manualDiv!==undefined)o.divState=s.divState;
+      if(s._manualBB!==undefined){o.bbState=s.bbState;o.bbRecov=s.bbRecov;}
+      if(s._manualPoc!==undefined)o.poc=s.poc;
+      if(Object.keys(o).length>0)overrides[s.t]=o;
+    });
+    const payload=JSON.stringify({
+      overrides,
+      customFund:CUSTOM_FUND,
+      deleted:[...DELETED_TICKERS],
+      customTickers:data.filter(s=>s._custom).map(s=>({...s}))
+    });
+    localStorage.setItem(OVERRIDES_KEY,payload);
     const ind=document.getElementById("save-indicator");
     if(ind)ind.style.display="flex";
   }catch(e){}
 }
 async function loadFromStorage(){
+  // 1. Cargar overrides manuales desde localStorage
   try{
-    let saved=null;
-    const storage=window.storage||null;
-    if(storage){const result=await storage.get(STORAGE_KEY);if(result)saved=result.value;}
-    else{saved=localStorage.getItem(STORAGE_KEY);}
+    const saved=localStorage.getItem(OVERRIDES_KEY);
     if(saved){
       const parsed=JSON.parse(saved);
-      const savedData=parsed.data||parsed;
       const savedCustomFund=parsed.customFund||{};
       const savedDeleted=parsed.deleted||[];
+      const savedOverrides=parsed.overrides||{};
+      const savedCustomTickers=parsed.customTickers||[];
       Object.assign(CUSTOM_FUND,savedCustomFund);
       savedDeleted.forEach(t=>{DELETED_TICKERS.add(t);});
       data=data.filter(d=>!DELETED_TICKERS.has(d.t));
-      const baseTickers=data.map(d=>d.t);
-      savedData.forEach(s=>{
-        const existing=data.find(d=>d.t===s.t);
-        if(existing){
-          existing.rsi10=s.rsi10??existing.rsi10;existing.rsiW=s.rsiW??existing.rsiW;
-          existing.ema200=s.ema200??existing.ema200;existing.price=s.price??existing.price;
-          existing.emaTrend=s.emaTrend??existing.emaTrend;existing.bbState=s.bbState??existing.bbState;
-          existing.bbRecov=s.bbRecov??existing.bbRecov;existing.rsiBounce=s.rsiBounce??existing.rsiBounce;
-          existing.divState=s.divState??existing.divState;existing.poc=s.poc??existing.poc;
-          existing.rsiPrev=s.rsiPrev??existing.rsiPrev;
-        } else if(!baseTickers.includes(s.t)){
-          data.push({t:s.t,co:s.co||s.t,sec:s.sec||"Sin sector",rsi10:s.rsi10||50,rsiW:s.rsiW||50,
-            ema200:s.ema200||100,price:s.price||100,emaTrend:s.emaTrend||"bajando",
-            bbState:s.bbState||"inside",bbRecov:s.bbRecov||false,rsiBounce:s.rsiBounce||false,
-            divState:s.divState||"none",poc:s.poc||100});
+      // Restaurar tickers custom agregados manualmente
+      savedCustomTickers.forEach(s=>{
+        if(!data.find(d=>d.t===s.t)&&!DELETED_TICKERS.has(s.t)){
+          data.push({...s});
         }
       });
-      const ind=document.getElementById("save-indicator");
-      if(ind)ind.style.display="flex";
+      // Aplicar overrides manuales sobre los datos base
+      Object.entries(savedOverrides).forEach(([t,o])=>{
+        const existing=data.find(d=>d.t===t);
+        if(existing){
+          if(o.rsiBounce!==undefined){existing.rsiBounce=o.rsiBounce;existing._manualBounce=true;}
+          if(o.divState!==undefined){existing.divState=o.divState;existing._manualDiv=true;}
+          if(o.bbState!==undefined){existing.bbState=o.bbState;existing._manualBB=true;}
+          if(o.bbRecov!==undefined){existing.bbRecov=o.bbRecov;existing._manualBB=true;}
+          if(o.poc!==undefined){existing.poc=o.poc;existing._manualPoc=true;}
+        }
+      });
     }
   }catch(e){}
+
+  // 2. Auto-fetch de data.json del repo (siempre, si hay token o repo público)
+  try{
+    const cfg=getWfConfig();
+    const token=cfg.token||getGhToken();
+    const repo=cfg.repo||GH_REPO_DEFAULT;
+    let dj=null;
+    // Intento 1: GitHub API autenticada (más confiable, evita CORS)
+    if(token){
+      try{
+        const r=await fetch(`https://api.github.com/repos/${repo}/contents/data.json`,{
+          headers:{"Authorization":`Bearer ${token}`,"Accept":"application/vnd.github+json"}
+        });
+        if(r.ok){
+          const d=await r.json();
+          const raw=atob(d.content.replace(/\n/g,""));
+          const bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));
+          dj=JSON.parse(new TextDecoder("utf-8").decode(bytes));
+        }
+      }catch(e2){console.warn("GitHub API fetch falló, intentando raw...", e2.message);}
+    }
+    // Intento 2: raw.githubusercontent.com (público, sin auth)
+    if(!dj){
+      try{
+        const r=await fetch(`https://raw.githubusercontent.com/${repo}/main/data.json?nocache=${Date.now()}`);
+        if(r.ok)dj=await r.json();
+      }catch(e3){console.warn("raw.githubusercontent fetch falló:", e3.message);}
+    }
+    if(dj&&dj.quotes){
+      // Aplicar cotizaciones del repo — NO sobreescribe overrides manuales
+      for(const s of data){
+        const q=dj.quotes[s.t];
+        if(!q)continue;
+        if(q.price!=null)s.price=q.price;
+        if(q.rsi10!=null)s.rsi10=q.rsi10;
+        if(q.rsiW!=null)s.rsiW=q.rsiW;
+        if(q.ema200!=null){s.ema200=q.ema200;if(q.emaTrend)s.emaTrend=q.emaTrend;}
+        if(q.rsiPrev!=null)s.rsiPrev=q.rsiPrev;
+        // Indicadores del bot — solo si no hay override manual
+        if(q.bb_recov!=null&&!s._manualBB)s.bbRecov=q.bb_recov;
+        if(q.bb_below!=null&&!s._manualBB)s.bbState=q.bb_below?"below":(q.bb_above?"above":"inside");
+        if(q.rsi_bounced_15!=null&&!s._manualBounce)s.rsiBounce=q.rsi_bounced_15;
+        if(q.div_bullish!=null&&!s._manualDiv)s.divState=q.div_bullish?"bull":s.divState==="bear"?"bear":"none";
+      }
+      if(dj.cycles){
+        SILENCED_TICKERS=dj.cycles;
+      }
+      if(dj.updated||dj.daily?.date){
+        const upd=dj.updated||dj.daily?.date;
+        const el=document.getElementById("c-upd");
+        if(el)el.textContent=upd.replace("T"," ").slice(0,16);
+      }
+      const fetchStatus=document.getElementById("fetch-status");
+      if(fetchStatus){
+        const now=new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+        fetchStatus.style.color="#2ea043";
+        fetchStatus.textContent=`✓ Datos del repo actualizados (${now})`;
+      }
+    }
+  }catch(e){
+    // Si falla el fetch, usa solo los overrides — el dashboard igual muestra datos
+    console.warn("Auto-fetch data.json falló:", e.message);
+  }
+
+  const ind=document.getElementById("save-indicator");
+  if(ind)ind.style.display="flex";
 }
 async function clearStorage(){
   try{
-    const storage=window.storage||null;
-    if(storage){await storage.delete(STORAGE_KEY);}
-    else{localStorage.removeItem(STORAGE_KEY);}
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(OVERRIDES_KEY);
     DELETED_TICKERS.clear();location.reload();
   }catch(e){location.reload();}
 }
 function applyOne(i){
   const s=data[i];
   s.rsi10=parseFloat(document.getElementById(`ep_rsi_${i}`).value)||s.rsi10;
-  s.rsiBounce=document.getElementById(`ep_bnc_${i}`).value==="true";
-  s.divState=document.getElementById(`ep_div_${i}`).value;
+  s.rsiBounce=document.getElementById(`ep_bnc_${i}`).value==="true"; s._manualBounce=true;
+  s.divState=document.getElementById(`ep_div_${i}`).value;            s._manualDiv=true;
   s.rsiW=parseFloat(document.getElementById(`ep_rsiw_${i}`).value)||s.rsiW;
   s.bbState=document.getElementById(`ep_bb_${i}`).value;
-  s.bbRecov=document.getElementById(`ep_bbr_${i}`).value==="true";
+  s.bbRecov=document.getElementById(`ep_bbr_${i}`).value==="true";    s._manualBB=true;
   s.price=parseFloat(document.getElementById(`ep_px_${i}`).value)||s.price;
   s.ema200=parseFloat(document.getElementById(`ep_ema_${i}`).value)||s.ema200;
   s.emaTrend=document.getElementById(`ep_emat_${i}`).value;
-  s.poc=parseFloat(document.getElementById(`ep_poc_${i}`).value)||s.poc;
+  s.poc=parseFloat(document.getElementById(`ep_poc_${i}`).value)||s.poc; s._manualPoc=true;
   saveToStorage();
   renderAll();
   const ep=document.getElementById(`ep_${i}`);if(ep)ep.classList.add("open");
@@ -1450,10 +1526,10 @@ async function syncFromRepo(){
         if(q.ema200!=null){s.ema200=q.ema200;if(q.emaTrend)s.emaTrend=q.emaTrend;}
         if(q.rsiPrev!=null)s.rsiPrev=q.rsiPrev;
         // Indicadores calculados por el bot
-        if(q.bb_recov!=null)s.bbRecov=q.bb_recov;
-        if(q.bb_below!=null)s.bbState=q.bb_below?"below":(q.bb_above?"above":"inside");
-        if(q.rsi_bounced_15!=null)s.rsiBounce=q.rsi_bounced_15;
-        if(q.div_bullish!=null)s.divState=q.div_bullish?"bull":s.divState==="bear"?"bear":"none";
+        if(q.bb_recov!=null&&!s._manualBB)s.bbRecov=q.bb_recov;
+        if(q.bb_below!=null&&!s._manualBB)s.bbState=q.bb_below?"below":(q.bb_above?"above":"inside");
+        if(q.rsi_bounced_15!=null&&!s._manualBounce)s.rsiBounce=q.rsi_bounced_15;
+        if(q.div_bullish!=null&&!s._manualDiv)s.divState=q.div_bullish?"bull":s.divState==="bear"?"bear":"none";
         updated++;
         logWf(`  ✓ ${s.t}: precio=$${q.price} RSI=${q.rsi10} EMA200=$${q.ema200}`, "log-ok");
       } else {
