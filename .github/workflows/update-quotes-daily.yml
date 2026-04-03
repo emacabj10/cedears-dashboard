@@ -32,8 +32,10 @@ jobs:
       - name: Detect command type
         id: cmd
         run: |
+          # github.event.inputs es null en runs de cron — usar default vacío
           CMD="${{ github.event.inputs.cmd_operado }}"
-          if [[ "$CMD" == "" ]]; then
+          # "null" es lo que GitHub expande cuando el input no existe (cron)
+          if [[ "$CMD" == "" || "$CMD" == "null" ]]; then
             echo "type=daily" >> $GITHUB_OUTPUT
           elif [[ "$CMD" == "__FETCH_ONLY__" ]]; then
             echo "type=fetch_only" >> $GITHUB_OUTPUT
@@ -44,6 +46,7 @@ jobs:
           else
             echo "type=unknown" >> $GITHUB_OUTPUT
           fi
+          echo "DEBUG cmd_operado=[${CMD}]"
 
       - name: Fetch quotes from Yahoo Finance
         if: ${{ steps.cmd.outputs.type == 'daily' || steps.cmd.outputs.type == 'fetch_only' }}
