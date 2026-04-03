@@ -16,7 +16,7 @@ FUND = {
     "SPY":"excelentes","DIA":"excelentes","BTC":"excelentes",
     "ETH":"buenos","BNB":"buenos","GLD":"buenos",
     "AMD":"buenos","KO":"buenos","PEP":"buenos",
-    "MCD":"buenos","BABA":"buenos","TSLA":"controversiales","NVDA":"excelentes","AAPL":"excelentes","NU":"buenos",
+    "MCD":"buenos","BABA":"buenos","TSLA":"controversiales","NVDA":"excelentes","NU":"buenos",
 }
 
 # Mapa TradingView: símbolo exacto para la URL del gráfico
@@ -28,7 +28,7 @@ TV_MAP = {
     "KO":"NYSE:KO","PEP":"NASDAQ:PEP","MCD":"NYSE:MCD",
     "BABA":"NYSE:BABA","TSLA":"NASDAQ:TSLA",
     "GLD":"AMEX:GLD","BTC":"BINANCE:BTCUSDT","ETH":"BINANCE:ETHUSDT",
-    "BNB":"BINANCE:BNBUSDT","NVDA":"NASDAQ:NVDA","AAPL":"NASDAQ:AAPL","NU":"NYSE:NU",
+    "BNB":"BINANCE:BNBUSDT","NVDA":"NASDAQ:NVDA","NU":"NYSE:NU",
 }
 
 YF_MAP = {
@@ -36,7 +36,7 @@ YF_MAP = {
     "BRK.B":"BRK-B","BTC":"BTC-USD","DIA":"DIA","ETH":"ETH-USD",
     "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
     "MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ",
-    "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD","NVDA":"NVDA","AAPL":"AAPL","NU":"NU",
+    "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD","NVDA":"NVDA","NU":"NU",
 }
 
 BOT_NOTES = [
