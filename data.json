@@ -527,7 +527,6 @@
       ]
     }
   },
-  },
   "cycles": {
     "BRK.B": {
       "is_silenced": true,
