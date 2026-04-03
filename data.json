@@ -527,6 +527,7 @@
       ]
     }
   },
+  },
   "cycles": {
     "BRK.B": {
       "is_silenced": true,
@@ -553,10 +554,7 @@
       "rsi_hit_50": true,
       "rsi_reset": false
     }
-    },
-  "cycles": {},
-  "daily": {
-    "date": "2026-04-03",
+  },
     "signals": [],
     "watchlist": [],
     "entradas": []
