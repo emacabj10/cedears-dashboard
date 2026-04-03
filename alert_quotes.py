@@ -875,26 +875,51 @@ if _INTRADAY:
 
         epct_intra = (current_price - ema200_saved) / ema200_saved * 100
 
-        # Verificar si la señal del cierre sigue activa con precio actual:
-        # - RSI del cierre anterior indicaba rebote (rsi_bounced_15)
-        # - Precio actual aún cerca o sobre EMA200 (dentro del -15%)
-        ema_still_ok = epct_intra >= -15
-        signal_still_active = rsi_bounced_15 and ema_still_ok
+        # ── Mismas variables que usa score_signal ────────────────────────────
+        _ema_ok_i      = epct_intra >= -5
+        _ema_ok_med_i  = epct_intra >= -15
+        _div_i         = saved.get("div_bullish", False)
+        _rsi10_i       = rsi_prev_close   # RSI del cierre anterior — no intradiario
 
-        # Watchlist intradiaria: replica la lógica exigente del bot diario.
-        # Requiere score >= 2 del cierre anterior — no basta con RSI bajo 40.
-        # Score del cierre: rsi_bounced_15 + ema_ok + bb_recov
-        _score_saved = sum([
+        # Score con precio actual (EMA recalculada con precio vivo, RSI y BB del cierre)
+        _score_i = sum([
             bool(rsi_bounced_15),
-            bool(ema_still_ok),
+            bool(_ema_ok_i or _ema_ok_med_i),
             bool(bb_recov_saved),
         ])
-        watchlist_still_active = (
-            not rsi_bounced_15          # si ya rebotó es señal, no watchlist
-            and _score_saved >= 2       # mínimo 2 puntos del cierre anterior
-            and rsi_prev_close <= 40    # RSI en zona de setup
-            and epct_intra >= -15       # precio no destruido vs EMA
+
+        # ── Condiciones SEÑAL — idénticas al bot diario ──────────────────────
+        _senal_normal = (
+            _score_i == 3
+            and rsi_bounced_15
+            and _rsi10_i <= 45
         )
+        _senal_div = (
+            _div_i
+            and bb_recov_saved
+            and (rsi_bounced_15 or _ema_ok_med_i)
+            and _score_i >= 2
+        )
+        signal_still_active = _senal_normal or _senal_div
+
+        # ── Condiciones WATCHLIST — idénticas al bot diario ──────────────────
+        _watch_score2 = (
+            _score_i == 2
+            and not rsi_bounced_15
+            and _rsi10_i <= 40
+            and _ema_ok_med_i
+        )
+        _watch_bb_ema = (
+            bb_recov_saved
+            and _ema_ok_i
+            and not rsi_bounced_15
+        )
+        _watch_div = (
+            _div_i
+            and _score_i <= 1
+            and _rsi10_i <= 40
+        )
+        watchlist_still_active = _watch_score2 or _watch_bb_ema or _watch_div
 
         # Si estaba en watchlist y sigue siendo watchlist → skip (ya fue avisado)
         if _intra_in_watchlist and not signal_still_active:
@@ -904,8 +929,8 @@ if _INTRADAY:
             print(f"  [INTRADAY] {ticker}: UPGRADE watchlist→señal intradiario")
 
         print(f"  [INTRADAY] {ticker}: precio=${current_price} EMA200=${ema200_saved} "
-              f"({epct_intra:+.1f}%) RSI_cierre={rsi_prev_close} "
-              f"bounced={rsi_bounced_15} → señal={signal_still_active} watch={watchlist_still_active}")
+              f"({epct_intra:+.1f}%) RSI_cierre={rsi_prev_close} score={_score_i}/3 "
+              f"bounced={rsi_bounced_15} div={_div_i} → señal={signal_still_active} watch={watchlist_still_active}")
 
         if signal_still_active:
             _tv_sym_i  = TV_MAP.get(ticker, ticker)
@@ -931,7 +956,7 @@ if _INTRADAY:
             _poc_intra = saved.get("poc_proxy") or 1
             _ppct_intra = (current_price - _poc_intra) / _poc_intra * 100
             _fund_intra = FUND.get(ticker, "buenos")
-            _score_intra = sum([rsi_bounced_15, ema_still_ok, bb_recov_saved])
+            _score_intra = _score_i
             _rsi_p_intra = saved.get("rsi_prev") or rsi_prev_close
             _analisis_intra = generar_analisis(ticker, _score_intra, _q_intra, epct_intra, _ppct_intra, _fund_intra)
             _suger_intra = sugerencia_signal(_score_intra, rsi_prev_close, epct_intra, _fund_intra,
@@ -970,7 +995,7 @@ if _INTRADAY:
             _poc_intra_w = saved.get("poc_proxy") or 1
             _ppct_intra_w = (current_price - _poc_intra_w) / _poc_intra_w * 100
             _fund_intra_w = FUND.get(ticker, "buenos")
-            _score_intra_w = sum([rsi_bounced_15, ema_still_ok, bb_recov_saved])
+            _score_intra_w = _score_i
             _rsi_p_intra_w = saved.get("rsi_prev") or rsi_prev_close
             _analisis_intra_w = generar_analisis(ticker, _score_intra_w, _q_intra_w, epct_intra, _ppct_intra_w, _fund_intra_w)
             _suger_intra_w = sugerencia_watchlist(_score_intra_w, rsi_prev_close, epct_intra, _fund_intra_w,
