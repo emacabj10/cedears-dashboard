@@ -8,7 +8,7 @@ YF_MAP = {
     "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
     "MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ",
     "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT",
-    "GLD":"GLD","NVDA":"NVDA","AAPL":"AAPL",    "INTC":"INTC",
+    "GLD":"GLD","NVDA":"NVDA",    "INTC":"INTC",
 
 
 }
