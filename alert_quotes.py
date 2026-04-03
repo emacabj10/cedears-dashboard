@@ -1299,8 +1299,12 @@ for ticker, score, q, epct, ppct, fund in signals_found:
     poc    = q["poc_proxy"] or 0
     div    = q.get("div_bullish", False)
     bb_rec = q.get("bb_recov", False)
+    _ema200_s = q.get("ema200") or 1
+    _ema_ok_s      = epct >= -5
+    _ema_ok_med_s  = epct >= -15
 
-    sugerencia = sugerencia_signal(score, rsi10, epct, fund, div, bb_rec, ema_ok=ema_ok, ema_ok_media=ema_ok_media)
+    sugerencia = sugerencia_signal(score, rsi10, epct, fund, div, bb_rec,
+                                   ema_ok=_ema_ok_s, ema_ok_media=_ema_ok_med_s)
     analisis   = generar_analisis(ticker, score, q, epct, ppct, fund)
 
     _tv_sym  = TV_MAP.get(ticker, ticker)
