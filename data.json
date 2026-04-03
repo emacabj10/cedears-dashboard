@@ -525,8 +525,7 @@
         47.73,
         52.09
       ]
-    }
-  },
+     },
   "cycles": {
     "BRK.B": {
       "is_silenced": true,
@@ -554,7 +553,13 @@
       "rsi_reset": false
     }
   },
-    "signals": [],
+  "daily": {
+    "date": "2026-04-03",
+    "signals": [
+      "META",
+      "TSLA"
+    ],
     "watchlist": [],
     "entradas": []
-
+  }
+}
