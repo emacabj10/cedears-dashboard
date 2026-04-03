@@ -2,7 +2,7 @@ name: Update quotes (diario)
 
 on:
   schedule:
-    - cron: '30 10 * * 1-5'   # 10:30 ARG — apertura
+    - cron: '15 10 * * 1-5'   # 10:30 ARG — apertura
     - cron: '30 13 * * 1-5'   # 13:30 ARG — media rueda
     - cron: '30 16 * * 1-5'   # 16:30 ARG — cierre
   workflow_dispatch:
