@@ -836,10 +836,12 @@ if _INTRADAY:
             and _rsi10_i <= 40
             and _ema_ok_med_i
         )
+        # bb_ema_watchlist: RSI <= 40 evita falsos positivos con RSI neutro sobre EMA
         _watch_bb_ema = (
             bb_recov_saved
             and _ema_ok_i
             and not rsi_bounced_15
+            and _rsi10_i <= 40
         )
         _watch_div = (
             _div_i
@@ -1055,31 +1057,27 @@ for ticker, sym in YF_MAP.items():
                 f"Si la señal confirma, podés evaluar una <b>nueva entrada</b>.\n"
             )
 
-    # ── Clasificación normal (respetando silencio) ────────────────────────────
+    # ── Clasificación — condiciones ──────────────────────────────────────────
 
-    # ── rsi_direction: detectar si el RSI está subiendo o bajando ───────────────
-    rsi_direction = q.get("rsi_direction", "lateral")
-
-    # ── Clasificación — condiciones actualizadas ──────────────────────────────
-
-    # CAMBIO 2: watchlist score=2 solo si el punto faltante NO es EMA profunda
-    # Si epct < -15% con score=2 → va a radar, no watchlist
+    # watchlist_score2: score=2, sin rebote RSI, RSI en zona baja, precio no muy lejos de EMA
     watchlist_score2 = (
         score == 2
         and not rsi_bounced_15
         and rsi10 <= 40
-        and epct >= -15   # si falta EMA por mucho → radar
+        and epct >= -15
     )
 
-    # bb_ema_watchlist: BB recuperado + cerca EMA + sin rebote RSI aún
+    # bb_ema_watchlist: BB recuperado + precio cerca EMA + sin rebote RSI + RSI en zona baja
+    # RSI <= 40 evita falsos positivos como GOOGL con RSI 50 sobre EMA
     bb_ema_watchlist = (
         bb_recov
         and epct >= -5
         and not rsi_bounced_15
+        and rsi10 <= 40
     )
 
-    # CAMBIO 1: Señal DIV más exigente
-    # Requiere: bb_recov obligatorio + (RSI rebotó O precio cerca EMA) + score>=2
+    # div_to_signal: divergencia bullish + BB + (rebote RSI o precio cerca EMA) + score>=2
+    # La divergencia puede reemplazar el rebote RSI como confirmación
     div_to_signal = (
         div
         and bb_recov
@@ -1087,12 +1085,8 @@ for ticker, sym in YF_MAP.items():
         and score >= 2
     )
 
-    # CAMBIO 5: div_to_watchlist cubre score<=1 (antes solo score==1)
-    # Cubre el hueco RSI 35-40 con div y score=0 que antes quedaba ignorado
+    # div_to_watchlist: divergencia con score bajo — setup embrionario a monitorear
     div_to_watchlist = div and score <= 1 and rsi10 <= 40
-
-    # CAMBIO 3: radar EMA solo si RSI <= 50 (evita activos neutrales)
-    div_to_radar = div and score == 0 and rsi10 <= 35
 
     # Activo silenciado: solo puede aparecer en radar si rsi_reset=True y RSI < 45
     if is_silenced:
@@ -1112,10 +1106,9 @@ for ticker, sym in YF_MAP.items():
         reason = "bb_ema" if bb_ema_watchlist else ("div" if div_to_watchlist else "score+rsi")
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → watchlist ({reason})")
         watchlist_found.append((ticker, score, q, epct, ppct))
-    elif (rsi10 <= 35) or (rsi10 < 30 and not rsi_bounced_15) or (abs(epct) <= 1 and rsi10 <= 30) or div_to_radar:
-        has_div = div and rsi10 <= 35
+    elif rsi10 <= 35 or (rsi10 < 30 and not rsi_bounced_15):
         dir_tag = f" {rsi_direction}" if rsi_direction != "lateral" else ""
-        print(f"  ... {ticker}: rsi={rsi10}{dir_tag} score={score}/3 → radar{' (div)' if has_div else ''}")
+        print(f"  ... {ticker}: rsi={rsi10}{dir_tag} score={score}/3 → radar")
         radar_info.append((ticker, q, epct, ppct, score))
     else:
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → ignorado")
