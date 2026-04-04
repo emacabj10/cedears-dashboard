@@ -560,7 +560,10 @@
       "META",
       "TSLA"
     ],
-    "watchlist": [],
+    "watchlist": [
+      "BABA",
+      "GOOGL"
+    ],
     "entradas": []
   }
 }
