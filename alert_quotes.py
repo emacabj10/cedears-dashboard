@@ -999,6 +999,8 @@ for ticker, sym in YF_MAP.items():
     all_results.append((ticker, score, q, epct, ppct))
 
     rsi10 = q["rsi10"] or 50
+    # rsi_bounced_15 viene de q (calculado en fetch_ticker), rsi_bounced es 1 vela (fallback)
+    rsi_bounced_15 = q.get("rsi_bounced_15", rsi_bounced)
 
     div      = q.get("div_bullish", False)
     bb_recov = q.get("bb_recov", False)
