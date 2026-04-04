@@ -162,9 +162,6 @@ def fetch_ticker(sym):
         bb_near_lo = (not bb_below) and bb_lo and ((price - bb_lo) / bb_lo * 100 < 2)
 
         # ── Historial RSI — ultimas 15 velas ───────────────────────────────────
-        # Calculamos el RSI de cada una de las ultimas 15 velas y lo
-        # guardamos en rsiHistory. Persiste en data.json entre runs,
-        # evitando perder rebotes como el de 17.91 de META.
         rsi_history = []
         for lookback in range(15, 0, -1):   # vela 15 atras -> vela 1 atras
             if len(closes) > lookback:
@@ -172,11 +169,18 @@ def fetch_ticker(sym):
                 if past_rsi is not None:
                     rsi_history.append(round(past_rsi, 2))
 
-        # rsi_bounced_15: alguna vela toco <=30 y la actual > 30
+        # rsi_bounced_15: el RSI tocó <=30 en las últimas 15 velas Y está
+        # subiendo desde ese mínimo — es decir, el RSI actual es mayor que
+        # el mínimo registrado Y mayor que el RSI de la vela anterior.
+        # Esto evita falsos positivos cuando el RSI bajó a 28 hace 12 velas
+        # pero ahora está en 42 bajando de nuevo.
+        _rsi_min_in_window = min(rsi_history) if rsi_history else 100
         rsi_bounced_15 = (
             rsi10 is not None
-            and rsi10 > 30
-            and any(r <= 30 for r in rsi_history)
+            and rsi_prev is not None
+            and rsi10 > 30                        # salió del oversold
+            and _rsi_min_in_window <= 30           # sí tocó <=30 en la ventana
+            and rsi10 > rsi_prev                   # RSI subiendo (momentum alcista)
         )
 
         # ── Divergencia alcista — ventana de 15 velas ────────────────────────
