@@ -1060,7 +1060,7 @@ for ticker, sym in YF_MAP.items():
     # Si epct < -15% con score=2 → va a radar, no watchlist
     watchlist_score2 = (
         score == 2
-        and not rsi_bounced
+        and not rsi_bounced_15
         and rsi10 <= 40
         and epct >= -15   # si falta EMA por mucho → radar
     )
@@ -1069,7 +1069,7 @@ for ticker, sym in YF_MAP.items():
     bb_ema_watchlist = (
         bb_recov
         and epct >= -5
-        and not rsi_bounced
+        and not rsi_bounced_15
     )
 
     # CAMBIO 1: Señal DIV más exigente
@@ -1077,7 +1077,7 @@ for ticker, sym in YF_MAP.items():
     div_to_signal = (
         div
         and bb_recov
-        and (rsi_bounced or epct >= -15)
+        and (rsi_bounced_15 or epct >= -15)
         and score >= 2
     )
 
@@ -1095,7 +1095,7 @@ for ticker, sym in YF_MAP.items():
             radar_info.append((ticker, q, epct, ppct, score))
         else:
             print(f"  [CICLO] {ticker}: silenciado — ignorado (RSI={rsi10} hit50={rsi_hit_50} reset={rsi_reset})")
-    elif score == 3 and rsi_bounced and rsi10 <= 45:
+    elif score == 3 and rsi_bounced_15 and rsi10 <= 45:
         dir_tag = f" {rsi_direction}" if rsi_direction != "lateral" else ""
         print(f"  >>> SEÑAL 3/3: {ticker} rsi={rsi10}{dir_tag} rsi_prev={q.get('rsi_prev')} bb_recov={bb_recov} epct={epct:.1f}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
@@ -1106,7 +1106,7 @@ for ticker, sym in YF_MAP.items():
         reason = "bb_ema" if bb_ema_watchlist else ("div" if div_to_watchlist else "score+rsi")
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → watchlist ({reason})")
         watchlist_found.append((ticker, score, q, epct, ppct))
-    elif (rsi10 <= 35) or (rsi10 < 30 and not rsi_bounced) or (abs(epct) <= 1 and rsi10 <= 30) or div_to_radar:
+    elif (rsi10 <= 35) or (rsi10 < 30 and not rsi_bounced_15) or (abs(epct) <= 1 and rsi10 <= 30) or div_to_radar:
         has_div = div and rsi10 <= 35
         dir_tag = f" {rsi_direction}" if rsi_direction != "lateral" else ""
         print(f"  ... {ticker}: rsi={rsi10}{dir_tag} score={score}/3 → radar{' (div)' if has_div else ''}")
