@@ -87,7 +87,7 @@ def calc_ema_trend(closes, period=200):
         ema = c*k + ema*(1-k); emas.append(ema)
     last20 = emas[-20:]
     slope = (last20[-1]-last20[0])/last20[0]*100
-    return "subiendo" if slope>0.8 else ("bajando" if slope<-0.8 else "lateral")
+    return "subiendo" if slope>1.5 else ("bajando" if slope<-1.5 else "lateral")
 
 def calc_bb_lower(closes, period=20, std=2):
     if len(closes) < period: return None
@@ -146,8 +146,9 @@ def fetch_ticker(sym):
         # ── Rebote Bollinger — ventana de 5 velas ────────────────────────────
         # Alguna de las últimas 4 velas cerró debajo de bb_lo en ese momento,
         # y la vela actual cerró encima (recuperó la banda).
+        # price > price_prev confirma momentum alcista — filtra dead cat bounces.
         bb_recov = False
-        if bb_lo is not None and price >= bb_lo:
+        if bb_lo is not None and price >= bb_lo and price > price_prev:
             for lookback in range(1, 6):   # velas 1..5 hacia atrás
                 if len(closes) > lookback:
                     past_close = closes[-(lookback + 1)]
@@ -208,6 +209,7 @@ def fetch_ticker(sym):
 
                 if (rsi_at_rec is not None and rsi_at_ant is not None
                         and min_price_rec < min_price_ant   # precio: mínimo más bajo
+                        and (min_price_ant - min_price_rec) / min_price_ant >= 0.02  # separación mínima 2%
                         and rsi_at_rec > rsi_at_ant):       # RSI: mínimo más alto
                     div_bullish = True
 
@@ -549,6 +551,12 @@ def score_signal(ticker, q):
 
     return score, forming, epct, ppct, fund, rsi_bounced_15, rsi_oversold, ema_ok, ema_ok_media
 
+def squeeze_note(q):
+    """Devuelve una línea de advertencia si hay BB squeeze, vacío si no."""
+    if q.get("bb_squeeze"):
+        return "\n⚠️ <b>Nota:</b> BB en compresión — esperar ruptura de rango antes de ejecutar."
+    return ""
+
 def send_telegram(message):
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         print("Sin credenciales:\n" + message); return
@@ -884,6 +892,7 @@ if _INTRADAY:
             _suger_intra = sugerencia_signal(_score_intra, rsi_prev_close, epct_intra, _fund_intra,
                                               saved.get("div_bullish", False), bb_recov_saved,
                                               ema_ok=(epct_intra >= -5), ema_ok_media=(epct_intra >= -10))
+            _div_note_intra = "\n🔀 <b>Nota:</b> Señal promovida por divergencia alcista." if _q_intra.get("promoted_by_div") else ""
             msg_intra = (
                 f"🟢 <b>{ticker} ${current_price:,.2f} — SEÑAL {_score_intra}/3 (Intradiario)</b>\n"
                 f"\n<b>Indicadores</b>\n"
@@ -894,7 +903,9 @@ if _INTRADAY:
                 f"\n🔍 <b>Contexto</b>\n"
                 f"{_analisis_intra}\n"
                 f"\n💡 <b>Acción</b>\n"
-                f"{_suger_intra}\n"
+                f"{_suger_intra}"
+                f"{_div_note_intra}"
+                f"{squeeze_note(_q_intra)}\n"
                 f"\n{_link_tv_i}"
             )
             send_telegram_with_button(msg_intra, ticker)
@@ -934,7 +945,8 @@ if _INTRADAY:
                 f"\n🔍 <b>Contexto</b>\n"
                 f"{_analisis_intra_w}\n"
                 f"\n💡 <b>Acción</b>\n"
-                f"{_suger_intra_w}\n"
+                f"{_suger_intra_w}"
+                f"{squeeze_note(_q_intra_w)}\n"
                 f"\n{_link_tv_iw}"
             )
             send_telegram(msg_intra_w)
@@ -1104,7 +1116,9 @@ for ticker, sym in YF_MAP.items():
         print(f"  >>> SEÑAL 3/3: {ticker} rsi={rsi10}{dir_tag} rsi_prev={q.get('rsi_prev')} bb_recov={bb_recov} epct={epct:.1f}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
     elif div_to_signal:
-        print(f"  >>> SEÑAL DIV {score}/3+div: {ticker} rsi={rsi10} epct={epct:.1f} bb_recov={bb_recov}")
+        score = 3
+        q["promoted_by_div"] = True
+        print(f"  >>> SEÑAL DIV 3/3+div: {ticker} rsi={rsi10} epct={epct:.1f} bb_recov={bb_recov}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
     elif watchlist_score2 or bb_ema_watchlist or div_to_watchlist:
         reason = "bb_ema" if bb_ema_watchlist else ("div" if div_to_watchlist else "score+rsi")
@@ -1209,6 +1223,7 @@ for ticker, score, q, epct, ppct, fund in signals_found:
         _header_sent = True
 
     _price_fmt = f"${q['price']:,.2f}"
+    _div_note = "\n🔀 <b>Nota:</b> Señal promovida por divergencia alcista." if q.get("promoted_by_div") else ""
     msg = (
         f"🟢 <b>{ticker} {_price_fmt} — SEÑAL {score}/3 (Diario)</b>\n"
         f"\n<b>Indicadores</b>\n"
@@ -1219,7 +1234,9 @@ for ticker, score, q, epct, ppct, fund in signals_found:
         f"\n🔍 <b>Contexto</b>\n"
         f"{analisis}\n"
         f"\n💡 <b>Acción</b>\n"
-        f"{sugerencia}\n"
+        f"{sugerencia}"
+        f"{_div_note}"
+        f"{squeeze_note(q)}\n"
         f"\n{_link_tv}"
     )
     print(f"\n{msg}\n")
@@ -1265,7 +1282,8 @@ for ticker, score, q, epct, ppct in watchlist_found:
         f"\n🔍 <b>Contexto</b>\n"
         f"{analisis}\n"
         f"\n💡 <b>Acción</b>\n"
-        f"{sugerencia}\n"
+        f"{sugerencia}"
+        f"{squeeze_note(q)}\n"
         f"\n{_link_tv_w}"
     )
     print(f"\n{msg}\n")
@@ -1276,7 +1294,7 @@ for ticker, score, q, epct, ppct in watchlist_found:
     if ticker not in _daily["watchlist"]:
         _daily["watchlist"].append(ticker)
 
-# ── Guardar historial del día + ciclos ───────────────────────────────────────
+# ── Guardar historial del día + ciclos + quotes ──────────────────────────────
 try:
     with open("data.json", "r") as f:
         _dj_full = json.load(f)
@@ -1284,6 +1302,11 @@ except Exception:
     _dj_full = {}
 _dj_full["daily"]  = _daily
 _dj_full["cycles"] = cycles
+# Persistir quotes frescos para que el modo intradiario los lea (incluye promoted_by_div)
+_quotes_to_save = {}
+for _t, _q_raw, _ep, _pp, _sc in all_results:
+    _quotes_to_save[_t] = _q_raw
+_dj_full["quotes"] = _quotes_to_save
 with open("data.json", "w") as f:
     json.dump(_dj_full, f, indent=2, ensure_ascii=False)
 
