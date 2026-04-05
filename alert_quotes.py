@@ -1112,6 +1112,7 @@ for ticker, sym in YF_MAP.items():
         else:
             print(f"  [CICLO] {ticker}: silenciado — ignorado (RSI={rsi10} hit50={rsi_hit_50} reset={rsi_reset})")
     elif score == 3 and rsi_bounced_15 and rsi10 <= 45:
+        q["promoted_by_div"] = False   # señal orgánica, no promovida
         dir_tag = f" {rsi_direction}" if rsi_direction != "lateral" else ""
         print(f"  >>> SEÑAL 3/3: {ticker} rsi={rsi10}{dir_tag} rsi_prev={q.get('rsi_prev')} bb_recov={bb_recov} epct={epct:.1f}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
@@ -1121,14 +1122,17 @@ for ticker, sym in YF_MAP.items():
         print(f"  >>> SEÑAL DIV 3/3+div: {ticker} rsi={rsi10} epct={epct:.1f} bb_recov={bb_recov}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
     elif watchlist_score2 or bb_ema_watchlist or div_to_watchlist:
+        q["promoted_by_div"] = False   # limpiar flag si no aplica
         reason = "bb_ema" if bb_ema_watchlist else ("div" if div_to_watchlist else "score+rsi")
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → watchlist ({reason})")
         watchlist_found.append((ticker, score, q, epct, ppct))
     elif rsi10 <= 35 or (rsi10 < 30 and not rsi_bounced_15):
+        q["promoted_by_div"] = False   # limpiar flag si no aplica
         dir_tag = f" {rsi_direction}" if rsi_direction != "lateral" else ""
         print(f"  ... {ticker}: rsi={rsi10}{dir_tag} score={score}/3 → radar")
         radar_info.append((ticker, q, epct, ppct, score))
     else:
+        q["promoted_by_div"] = False   # limpiar flag si no aplica
         print(f"  ... {ticker}: rsi={rsi10} score={score}/3 → ignorado")
 
     time.sleep(0.5)
