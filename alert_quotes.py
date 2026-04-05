@@ -79,14 +79,14 @@ def calc_ema(closes, period=200):
     return round(ema, 2)
 
 def calc_ema_trend(closes, period=200):
-    if len(closes) < period+10: return "lateral"
+    if len(closes) < period+20: return "lateral"
     k = 2/(period+1)
     ema = sum(closes[:period])/period
     emas = []
     for c in closes[period:]:
         ema = c*k + ema*(1-k); emas.append(ema)
-    last10 = emas[-10:]
-    slope = (last10[-1]-last10[0])/last10[0]*100
+    last20 = emas[-20:]
+    slope = (last20[-1]-last20[0])/last20[0]*100
     return "subiendo" if slope>1.5 else ("bajando" if slope<-1.5 else "lateral")
 
 def calc_bb_lower(closes, period=20, std=2):
@@ -297,26 +297,26 @@ def ema_label_watchlist(epct, ema_trend):
 def poc_label_signal(ppct, poc):
     """Labels POC para señal confirmada"""
     if ppct <= -25:
-        return f"POC: {ppct:.1f}% bajo (${poc:,.0f}) — Máxima oportunidad (Desviación importante del valor real)"
+        return f"POC: {ppct:.1f}% bajo (${poc:,.0f}) — Zona de valor estimada (Desviación importante respecto al precio histórico)"
     elif ppct <= -15:
-        return f"POC: {ppct:.1f}% bajo (${poc:,.0f}) — Zona de Valor (Precio \"barato\")"
+        return f"POC: {ppct:.1f}% bajo (${poc:,.0f}) — Zona de valor estimada (Precio históricamente barato)"
     elif ppct <= -5:
-        return f"POC: {ppct:.1f}% bajo (${poc:,.0f}) — Cerca de zona de valor"
+        return f"POC: {ppct:.1f}% bajo (${poc:,.0f}) — Cerca de zona de valor estimada"
     elif abs(ppct) <= 2:
-        return f"POC: ${poc:,.0f} — En Punto de Equilibrio (Alta liquidez)"
+        return f"POC: ${poc:,.0f} — En zona de equilibrio estimada (aprox.)"
     else:
-        return f"POC: +{ppct:.1f}% sobre (${poc:,.0f}) — Extendiendo sobre valor (Posible toma de ganancias)"
+        return f"POC: +{ppct:.1f}% sobre (${poc:,.0f}) — Extendido sobre valor estimado (Posible toma de ganancias)"
 
 def poc_label_watchlist(ppct, poc, price):
     """Labels POC para watchlist"""
     if ppct <= -10:
-        return f"POC: -{abs(ppct):.1f}% — Subvaluada respecto al perfil de volumen (Oportunidad en desarrollo)"
+        return f"POC: -{abs(ppct):.1f}% — Por debajo de zona de valor estimada (Posible oportunidad en desarrollo)"
     elif ppct <= -2:
-        return f"POC: ${poc:,.0f} — Precio actual ${price:,} (Regresando a zona de alta liquidez)"
+        return f"POC: ${poc:,.0f} — Precio actual ${price:,} (Aproximándose a zona de equilibrio estimada)"
     elif abs(ppct) <= 2:
-        return f"POC: ${poc:,.0f} — Intentando hacer pie en el volumen máximo"
+        return f"POC: ${poc:,.0f} — En zona de equilibrio estimada (aprox.)"
     else:
-        return f"POC: +{ppct:.1f}% sobre (${poc:,.0f}) — Sobre valor justo"
+        return f"POC: +{ppct:.1f}% sobre (${poc:,.0f}) — Sobre valor estimado"
 
 def bb_label_signal(q):
     """Labels BB para señal confirmada"""
@@ -396,14 +396,14 @@ def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov, ema_ok=None, ema_
     score 3         = señal completa
     score 2 + div   = señal promovida por divergencia
     ema_ok          = precio dentro del -5% de EMA  → posición completa
-    ema_ok_media    = precio entre -5% y -15% de EMA → posición media
+    ema_ok_media    = precio entre -5% y -10% de EMA → posición media
     """
     if score not in (2, 3):
         return "Señal incompleta. Monitorear — no operar aún."
 
     # Calcular flags si no vienen del caller
     if ema_ok is None:       ema_ok       = epct >= -5
-    if ema_ok_media is None: ema_ok_media = epct >= -15
+    if ema_ok_media is None: ema_ok_media = epct >= -10
 
     # Señal promovida por divergencia (score 2): más conservador
     if score == 2 and div:
@@ -439,7 +439,7 @@ def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov, ema_ok=None, ema_
             "Zona de confluencia técnica — favorable para acumulación."
         )
 
-    # Entre -5% y -15% de EMA: posición media, esperar recuperación
+    # Entre -5% y -10% de EMA: posición media, esperar recuperación
     if ema_ok_media and not ema_ok:
         return (
             f"Entrada con media posición ({abs(epct):.1f}% bajo EMA200). "
@@ -532,10 +532,10 @@ def score_signal(ticker, q):
 
     # ── Punto 2: EMA200 — dos niveles ──────────────────────────────────────────
     # ema_ok       : precio dentro del -5%  → posición completa
-    # ema_ok_media : precio entre -5% y -15% → posición media
+    # ema_ok_media : precio entre -5% y -10% → posición media
     # Ambos suman el punto; la sugerencia de tamaño la maneja sugerencia_signal
     ema_ok       = epct >= -5
-    ema_ok_media = epct >= -15
+    ema_ok_media = epct >= -10
     if ema_ok or ema_ok_media:
         score += 1
 
@@ -804,7 +804,7 @@ if _INTRADAY:
 
         # ── Mismas variables que usa score_signal ────────────────────────────
         _ema_ok_i      = epct_intra >= -5
-        _ema_ok_med_i  = epct_intra >= -15
+        _ema_ok_med_i  = epct_intra >= -10
         _div_i         = saved.get("div_bullish", False)
         _rsi10_i       = rsi_prev_close   # RSI del cierre anterior — no intradiario
 
@@ -820,6 +820,7 @@ if _INTRADAY:
             _score_i == 3
             and rsi_bounced_15
             and _rsi10_i <= 45
+            and epct_intra >= -10   # guardia: precio no se alejó desde el cierre anterior
         )
         _senal_div = (
             _div_i
@@ -882,7 +883,7 @@ if _INTRADAY:
             _analisis_intra = generar_analisis(ticker, _score_intra, _q_intra, epct_intra, _ppct_intra, _fund_intra)
             _suger_intra = sugerencia_signal(_score_intra, rsi_prev_close, epct_intra, _fund_intra,
                                               saved.get("div_bullish", False), bb_recov_saved,
-                                              ema_ok=(epct_intra >= -5), ema_ok_media=(epct_intra >= -15))
+                                              ema_ok=(epct_intra >= -5), ema_ok_media=(epct_intra >= -10))
             msg_intra = (
                 f"🟢 <b>{ticker} ${current_price:,.2f} — SEÑAL {_score_intra}/3 (Intradiario)</b>\n"
                 f"\n<b>Indicadores</b>\n"
@@ -1067,7 +1068,7 @@ for ticker, sym in YF_MAP.items():
         score == 2
         and not rsi_bounced_15
         and rsi10 <= 45
-        and epct >= -15
+        and epct >= -10
     )
 
     # bb_ema_watchlist: BB recuperado + precio cerca EMA + sin rebote RSI + RSI en zona baja
@@ -1084,7 +1085,7 @@ for ticker, sym in YF_MAP.items():
     div_to_signal = (
         div
         and bb_recov
-        and (rsi_bounced_15 or epct >= -15)
+        and (rsi_bounced_15 or epct >= -10)
         and score >= 2
     )
 
@@ -1193,7 +1194,7 @@ for ticker, score, q, epct, ppct, fund in signals_found:
     bb_rec = q.get("bb_recov", False)
     _ema200_s = q.get("ema200") or 1
     _ema_ok_s      = epct >= -5
-    _ema_ok_med_s  = epct >= -15
+    _ema_ok_med_s  = epct >= -10
 
     sugerencia = sugerencia_signal(score, rsi10, epct, fund, div, bb_rec,
                                    ema_ok=_ema_ok_s, ema_ok_media=_ema_ok_med_s)
