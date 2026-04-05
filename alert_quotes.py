@@ -1,3 +1,4 @@
+El contenido es generado por usuarios y no está verificado.
 import json, urllib.request, urllib.error, time, os, random
 from datetime import datetime, timezone, timedelta
 
@@ -17,11 +18,8 @@ FUND = {
     "ETH":"buenos","BNB":"buenos","GLD":"buenos",
     "AMD":"buenos","KO":"buenos","PEP":"buenos",
     "MCD":"buenos","BABA":"buenos","TSLA":"controversiales",
-
-
 }
 
-# Mapa TradingView: símbolo exacto para la URL del gráfico
 TV_MAP = {
     "MSFT":"NASDAQ:MSFT","GOOGL":"NASDAQ:GOOGL","AMZN":"NASDAQ:AMZN",
     "META":"NASDAQ:META","BRK.B":"NYSE:BRK.B","V":"NYSE:V",
@@ -31,8 +29,6 @@ TV_MAP = {
     "BABA":"NYSE:BABA","TSLA":"NASDAQ:TSLA",
     "GLD":"AMEX:GLD","BTC":"BINANCE:BTCUSDT","ETH":"BINANCE:ETHUSDT",
     "BNB":"BINANCE:BNBUSDT",
-
-
 }
 
 YF_MAP = {
@@ -41,8 +37,6 @@ YF_MAP = {
     "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
     "MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ",
     "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD",
-
-
 }
 
 BOT_NOTES = [
@@ -54,8 +48,6 @@ BOT_NOTES = [
     "Zona de acumulación institucional histórica en varios activos. Atención.",
 ]
 
-
-# ── Indicadores ───────────────────────────────────────────────────────────────
 def calc_rsi(closes, period=10):
     if len(closes) < period + 1: return None
     gains = losses = 0
@@ -119,7 +111,6 @@ def calc_poc_proxy(closes):
     return round(min(window) * 1.15, 2)
 
 def fetch_ticker(sym):
-    # 2y para que la EMA200 tenga suficiente historial y sea precisa
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=2y"
     headers = {"User-Agent":"Mozilla/5.0","Accept":"application/json"}
     req = urllib.request.Request(url, headers=headers)
@@ -128,7 +119,7 @@ def fetch_ticker(sym):
             data = json.loads(r.read())
         result = data["chart"]["result"][0]
         closes = [c for c in result["indicators"]["quote"][0]["close"] if c is not None]
-        if len(closes) < 210: return None  # mínimo 210 para EMA200 confiable
+        if len(closes) < 210: return None
         price     = round(closes[-1], 2)
         rsi10     = calc_rsi(closes, 10)
         rsi_prev  = calc_rsi(closes[:-1], 10)
@@ -143,12 +134,9 @@ def fetch_ticker(sym):
         poc_proxy = calc_poc_proxy(closes)
         price_prev = closes[-2] if len(closes) >= 2 else price
 
-        # ── Rebote Bollinger — ventana de 5 velas ────────────────────────────
-        # Alguna de las últimas 4 velas cerró debajo de bb_lo en ese momento,
-        # y la vela actual cerró encima (recuperó la banda).
         bb_recov = False
         if bb_lo is not None and price >= bb_lo:
-            for lookback in range(1, 6):   # velas 1..5 hacia atrás
+            for lookback in range(1, 6):
                 if len(closes) > lookback:
                     past_close = closes[-(lookback + 1)]
                     past_bb_lo = calc_bb_lower(closes[:-(lookback)], 20, 2)
@@ -161,54 +149,37 @@ def fetch_ticker(sym):
         bb_squeeze = (bb_wid[0] < bb_wid[1] * 0.85) if bb_wid else False
         bb_near_lo = (not bb_below) and bb_lo and ((price - bb_lo) / bb_lo * 100 < 2)
 
-        # ── Historial RSI — ultimas 15 velas ───────────────────────────────────
         rsi_history = []
-        for lookback in range(15, 0, -1):   # vela 15 atras -> vela 1 atras
+        for lookback in range(15, 0, -1):
             if len(closes) > lookback:
                 past_rsi = calc_rsi(closes[:-(lookback)], 10)
                 if past_rsi is not None:
                     rsi_history.append(round(past_rsi, 2))
 
-        # rsi_bounced_15: el RSI tocó <=30 en las últimas 15 velas Y está
-        # subiendo desde ese mínimo — es decir, el RSI actual es mayor que
-        # el mínimo registrado Y mayor que el RSI de la vela anterior.
-        # Esto evita falsos positivos cuando el RSI bajó a 28 hace 12 velas
-        # pero ahora está en 42 bajando de nuevo.
         _rsi_min_in_window = min(rsi_history) if rsi_history else 100
         rsi_bounced_15 = (
             rsi10 is not None
             and rsi_prev is not None
-            and rsi10 > 30                        # salió del oversold
-            and _rsi_min_in_window <= 30           # sí tocó <=30 en la ventana
-            and rsi10 > rsi_prev                   # RSI subiendo (momentum alcista)
+            and rsi10 > 30
+            and _rsi_min_in_window <= 30
+            and rsi10 > rsi_prev
         )
 
-        # ── Divergencia alcista — ventana de 15 velas ────────────────────────
-        # Mínimo de precio reciente más bajo que mínimo anterior,
-        # pero RSI en ese punto más alto que RSI en el mínimo anterior.
         div_bullish = False
         if rsi10 is not None and len(closes) >= 30:
             window = 15
-            # Ventana reciente: últimas 15 velas (sin la actual)
             rec_closes = closes[-(window + 1):-1]
-            # Ventana anterior: las 15 velas previas a esa
             ant_closes = closes[-(window * 2 + 1):-(window + 1)]
-
             if len(rec_closes) == window and len(ant_closes) == window:
-                # Índice del mínimo en cada ventana
                 idx_rec = rec_closes.index(min(rec_closes))
                 idx_ant = ant_closes.index(min(ant_closes))
-
                 min_price_rec = rec_closes[idx_rec]
                 min_price_ant = ant_closes[idx_ant]
-
-                # RSI calculado hasta ese punto en cada ventana
                 rsi_at_rec = calc_rsi(closes[:-(window + 1) + idx_rec + 1], 10)
                 rsi_at_ant = calc_rsi(closes[:-(window * 2 + 1) + idx_ant + 1], 10)
-
                 if (rsi_at_rec is not None and rsi_at_ant is not None
-                        and min_price_rec < min_price_ant   # precio: mínimo más bajo
-                        and rsi_at_rec > rsi_at_ant):       # RSI: mínimo más alto
+                        and min_price_rec < min_price_ant
+                        and rsi_at_rec > rsi_at_ant):
                     div_bullish = True
 
         return {
@@ -228,10 +199,6 @@ def fetch_ticker(sym):
         print(f"  Error: {e}"); return None
 
 def fetch_price_only(sym):
-    """Fetch liviano: solo precio actual vía Yahoo Finance (sin historial completo).
-    Usado en el chequeo intradiario para confirmar que la señal del cierre anterior
-    sigue activa — no recalcula RSI ni indicadores.
-    """
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=5d"
     headers = {"User-Agent":"Mozilla/5.0","Accept":"application/json"}
     req = urllib.request.Request(url, headers=headers)
@@ -244,10 +211,7 @@ def fetch_price_only(sym):
     except Exception as e:
         print(f"  [price_only] Error {sym}: {e}"); return None
 
-# ── Labels por indicador ──────────────────────────────────────────────────────
-
 def rsi_label_signal(rsi10, rsi_prev):
-    """Labels RSI para señal confirmada"""
     if rsi10 > 30 and rsi_prev <= 30:
         return f"RSI(10): {rsi10} — Rebotó (Cruzó de 30)"
     elif rsi10 <= 30:
@@ -260,7 +224,6 @@ def rsi_label_signal(rsi10, rsi_prev):
         return f"RSI(10): {rsi10} — Zona Neutral (Sin dirección clara)"
 
 def rsi_label_watchlist(rsi10, rsi_prev):
-    """Labels RSI para watchlist/setup en formación"""
     if rsi10 <= 30:
         return f"RSI(10): {rsi10} — En Oversold (Bajo 30, sin rebote confirmado aún)"
     elif rsi10 <= 35 and rsi_prev and rsi_prev > rsi10:
@@ -273,7 +236,6 @@ def rsi_label_watchlist(rsi10, rsi_prev):
         return f"RSI(10): {rsi10} — Consolidando en zona neutral"
 
 def ema_label_signal(epct, ema_trend, ema200):
-    """Labels EMA200 para señal confirmada"""
     if epct >= 0:
         return f"EMA200: +{epct:.1f}% sobre la media — Tendencia Alcista (Soporte dinámico)"
     elif abs(epct) <= 3:
@@ -284,7 +246,6 @@ def ema_label_signal(epct, ema_trend, ema200):
         return f"EMA200: {epct:.1f}% bajo la media — Tendencia Bajista (Resistencia dinámica)"
 
 def ema_label_watchlist(epct, ema_trend):
-    """Labels EMA200 para watchlist"""
     if epct >= 0 and epct <= 5:
         return f"EMA200: +{epct:.1f}% — Precio buscando soporte en la media de 200"
     elif epct >= 0 and epct > 5:
@@ -295,7 +256,6 @@ def ema_label_watchlist(epct, ema_trend):
         return f"EMA200: {epct:.1f}% — Bajo la media (Resistencia dinámica activa)"
 
 def poc_label_signal(ppct, poc):
-    """Labels POC para señal confirmada"""
     if ppct <= -25:
         return f"POC: {ppct:.1f}% bajo (${poc:,.0f}) — Máxima oportunidad (Desviación importante del valor real)"
     elif ppct <= -15:
@@ -308,7 +268,6 @@ def poc_label_signal(ppct, poc):
         return f"POC: +{ppct:.1f}% sobre (${poc:,.0f}) — Extendiendo sobre valor (Posible toma de ganancias)"
 
 def poc_label_watchlist(ppct, poc, price):
-    """Labels POC para watchlist"""
     if ppct <= -10:
         return f"POC: -{abs(ppct):.1f}% — Subvaluada respecto al perfil de volumen (Oportunidad en desarrollo)"
     elif ppct <= -2:
@@ -319,7 +278,6 @@ def poc_label_watchlist(ppct, poc, price):
         return f"POC: +{ppct:.1f}% sobre (${poc:,.0f}) — Sobre valor justo"
 
 def bb_label_signal(q):
-    """Labels BB para señal confirmada"""
     if q.get("bb_recov"):
         return "BB: Recuperó banda inferior (Rebote Bollinger confirmado)"
     elif q.get("bb_squeeze"):
@@ -332,7 +290,6 @@ def bb_label_signal(q):
         return "BB: Precio dentro de bandas"
 
 def bb_label_watchlist(q):
-    """Labels BB para watchlist"""
     if q.get("bb_below"):
         return "BB: Velas cerrando fuera de la banda (Extremo de pánico)"
     elif q.get("bb_near_lo"):
@@ -343,11 +300,6 @@ def bb_label_watchlist(q):
         return "BB: Precio dentro de bandas"
 
 def generar_analisis(ticker, score, q, epct, ppct, fund):
-    """
-    Contexto compacto sin redundar lo que ya muestran los indicadores.
-    Línea 1 — Contexto de mercado (tendencia, fase)
-    Línea 2 — Dato diferencial: divergencia, impulso RSI o estado de capitulación
-    """
     rsi10     = q.get("rsi10") or 50
     rsi_prev  = q.get("rsi_prev") or rsi10
     ema_trend = q.get("emaTrend") or "lateral"
@@ -358,7 +310,6 @@ def generar_analisis(ticker, score, q, epct, ppct, fund):
 
     lineas = []
 
-    # ── Línea 1: Contexto de mercado (sin repetir el label de EMA) ───────────
     if epct >= 0 and ema_trend == "subiendo":
         ctx = "Tendencia alcista de largo plazo intacta. Corrección técnica dentro de estructura positiva."
     elif epct >= 0 and ema_trend == "lateral":
@@ -373,7 +324,6 @@ def generar_analisis(ticker, score, q, epct, ppct, fund):
         ctx = f"Corrección profunda ({abs(epct):.1f}% bajo EMA200). Zona de capitulación con tendencia bajista de corto plazo vigente."
     lineas.append(ctx)
 
-    # ── Línea 2: Dato diferencial (impulso, divergencia, capitulación) ───────
     if div:
         lineas.append(f"Divergencia alcista confirmada — precio hace mínimo más bajo pero el RSI marca mínimo más alto. Cambio de impulso favorable.")
     elif rsi10 > 30 and rsi_prev <= 30:
@@ -389,127 +339,71 @@ def generar_analisis(ticker, score, q, epct, ppct, fund):
 
     return "\n".join(lineas)
 
-
 def sugerencia_signal(score, rsi10, epct, fund, div, bb_recov, ema_ok=None, ema_ok_media=None):
-    """
-    Solo decisión operativa — sin repetir datos técnicos que ya están en Contexto.
-    score 3         = señal completa
-    score 2 + div   = señal promovida por divergencia
-    ema_ok          = precio dentro del -5% de EMA  → posición completa
-    ema_ok_media    = precio entre -5% y -15% de EMA → posición media
-    """
     if score not in (2, 3):
         return "Señal incompleta. Monitorear — no operar aún."
-
-    # Calcular flags si no vienen del caller
     if ema_ok is None:       ema_ok       = epct >= -5
     if ema_ok_media is None: ema_ok_media = epct >= -15
 
-    # Señal promovida por divergencia (score 2): más conservador
     if score == 2 and div:
         if ema_ok:
-            return (
-                "Entrada con media posición. "
-                "Ampliá a posición completa cuando el setup complete los 3 puntos."
-            )
+            return ("Entrada con media posición. "
+                    "Ampliá a posición completa cuando el setup complete los 3 puntos.")
         else:
-            return (
-                f"Entrada con media posición ({abs(epct):.1f}% bajo EMA200). "
-                "Esperá confirmación adicional antes de ampliar."
-            )
+            return (f"Entrada con media posición ({abs(epct):.1f}% bajo EMA200). "
+                    "Esperá confirmación adicional antes de ampliar.")
 
-    # Con divergencia en señal 3/3 + cerca EMA: entrada reforzada
     if div and ema_ok:
-        return (
-            "Entrada con posición completa. "
-            "Ampliá si la siguiente vela confirma continuidad alcista."
-        )
+        return ("Entrada con posición completa. "
+                "Ampliá si la siguiente vela confirma continuidad alcista.")
 
-    # Precio sobre EMA200 + BB: setup más limpio posible
     if epct >= 0 and bb_recov:
-        return (
-            "Entrada con posición completa. "
-            "La EMA200 actúa como soporte dinámico de largo plazo."
-        )
+        return ("Entrada con posición completa. "
+                "La EMA200 actúa como soporte dinámico de largo plazo.")
 
-    # Testeando EMA200 (dentro del -5%) + BB recuperado
     if ema_ok and bb_recov:
-        return (
-            "Entrada con posición completa. "
-            "Zona de confluencia técnica — favorable para acumulación."
-        )
+        return ("Entrada con posición completa. "
+                "Zona de confluencia técnica — favorable para acumulación.")
 
-    # Entre -5% y -15% de EMA: posición media, esperar recuperación
     if ema_ok_media and not ema_ok:
-        return (
-            f"Entrada con media posición ({abs(epct):.1f}% bajo EMA200). "
-            "Ampliá a posición completa cuando el precio recupere la media."
-        )
+        return (f"Entrada con media posición ({abs(epct):.1f}% bajo EMA200). "
+                "Ampliá a posición completa cuando el precio recupere la media.")
 
-    # Default conservador
-    return (
-        "Entrada con media posición. "
-        "Confirmá tendencia en TradingView antes de ejecutar."
-    )
-
+    return ("Entrada con media posición. "
+            "Confirmá tendencia en TradingView antes de ejecutar.")
 
 def sugerencia_watchlist(score, rsi10, epct, fund, div, bb_recov, bb_below, rsi_bounced):
-    """
-    Solo indica qué falta y qué hacer — sin repetir datos técnicos ya visibles en Contexto.
-    """
     ema_ok = epct >= -5
     rsi_ok = rsi_bounced
     bb_ok  = bb_recov
 
-    # Caso 1: EMA + BB confirmados, falta RSI
     if ema_ok and bb_ok and not rsi_ok:
         if rsi10 <= 30:
             return "Esperá el cruce del RSI sobre 30. Cuando cruce, los 3 puntos estarán completos: entrada con posición completa."
         else:
             return f"Falta que el RSI baje a oversold y rebote sobre 30. El setup puede madurar en las próximas ruedas."
 
-    # Caso 2: RSI + EMA confirmados, falta BB
     if rsi_ok and ema_ok and not bb_ok:
         if bb_below:
             return "Esperá que el precio cierre dentro de las bandas de BB — es la confirmación que falta."
         else:
             return "Falta el rebote desde la banda inferior de BB. Monitorear: si presiona y rebota, setup completo."
 
-    # Caso 3: RSI + BB confirmados, falta EMA
     if rsi_ok and bb_ok and not ema_ok:
-        return (
-            f"Falta recuperar la EMA200 (precio {abs(epct):.1f}% abajo). "
-            "Cuando complete, entrada con media posición — ampliá si el precio recupera la media."
-        )
+        return (f"Falta recuperar la EMA200 (precio {abs(epct):.1f}% abajo). "
+                "Cuando complete, entrada con media posición — ampliá si el precio recupera la media.")
 
-    # Caso 4: divergencia activa
     if div:
         falta = "RSI" if not rsi_ok else ("BB" if not bb_ok else "EMA")
-        return (
-            f"Falta confirmar {falta} para completar la señal. "
-            "Cuando se complete, entrada con posición completa."
-        )
+        return (f"Falta confirmar {falta} para completar la señal. "
+                "Cuando se complete, entrada con posición completa.")
 
-    # Caso 5: RSI cerca de oversold
     if rsi10 <= 35:
         return "Esperá las confirmaciones faltantes. Si completa los 3 puntos desde esta zona, entrada de alta calidad."
 
-    # Default
     return "Esperá que los 3 puntos se confirmen antes de entrar. No anticipar el setup."
 
-# ── Scoring — NUEVO SISTEMA 3/3 ───────────────────────────────────────────────
 def score_signal(ticker, q):
-    """
-    Nuevo sistema de score máximo 3 puntos:
-      Punto 1 (RSI)       : rsi10 cruzando al alza el nivel de 30
-                            (rsi_prev <= 30 y rsi10 > 30)
-      Punto 2 (EMA200)    : precio >= ema200  O  precio a no más del 3% por debajo
-      Punto 3 (Bollinger) : cierre anterior < bb_lo_prev y cierre actual >= bb_lo
-                            (recuperó la banda inferior)
-
-    POC, divergencias y fundamentals NO suman puntos pero siguen apareciendo
-    en los mensajes de Telegram como indicadores de contexto.
-    """
     fund    = FUND.get(ticker, "buenos")
     fund_ex = fund == "excelentes"
     price   = q["price"]
@@ -522,28 +416,21 @@ def score_signal(ticker, q):
 
     score = 0
 
-    # ── Punto 1: RSI cruzando al alza el nivel de 30 — ventana 15 velas ────────
-    rsi_bounced    = (rsi10 > 30 and rsi_prev <= 30)           # 1 vela (fallback)
-    rsi_bounced_15 = q.get("rsi_bounced_15", rsi_bounced)      # 15 velas (preciso)
+    rsi_bounced    = (rsi10 > 30 and rsi_prev <= 30)
+    rsi_bounced_15 = q.get("rsi_bounced_15", rsi_bounced)
     rsi_oversold   = rsi10 <= 30
 
     if rsi_bounced_15:
         score += 1
 
-    # ── Punto 2: EMA200 — dos niveles ──────────────────────────────────────────
-    # ema_ok       : precio dentro del -5%  → posición completa
-    # ema_ok_media : precio entre -5% y -15% → posición media
-    # Ambos suman el punto; la sugerencia de tamaño la maneja sugerencia_signal
     ema_ok       = epct >= -5
     ema_ok_media = epct >= -15
     if ema_ok or ema_ok_media:
         score += 1
 
-    # ── Punto 3: Bollinger — recuperó banda inferior ──────────────────────────
     if q.get("bb_recov"):
         score += 1
 
-    # Setup en formación: RSI ≤ 38 sin rebote confirmado
     forming_rsi_zone = (rsi10 <= 38 and not rsi_bounced_15)
     forming = forming_rsi_zone
 
@@ -613,10 +500,6 @@ def answer_callback_query(callback_query_id, text="✅ Registrado"):
         print(f"  answerCallback error: {e}")
 
 def handle_operado(ticker_cmd):
-    """
-    Llamado cuando el usuario responde !operado TICKER desde Telegram.
-    Silencia el ticker y registra la entrada en data.json.
-    """
     ticker_cmd = ticker_cmd.strip().upper()
     if ticker_cmd not in YF_MAP:
         print(f"  [OPERADO] {ticker_cmd} no reconocido")
@@ -628,11 +511,9 @@ def handle_operado(ticker_cmd):
     except Exception:
         dj = {}
 
-    # Activar silencio
-    # Detectar posicion automaticamente segun epct al momento de operar
     cycs = dj.get("cycles", {})
     quotes_data = dj.get("quotes", {})
-    posicion = "completa"  # default
+    posicion = "completa"
     if ticker_cmd in quotes_data:
         _price  = quotes_data[ticker_cmd].get("price", 0)
         _ema200 = quotes_data[ticker_cmd].get("ema200", 0) or 1
@@ -645,15 +526,13 @@ def handle_operado(ticker_cmd):
         "posicion":    posicion,
     }
     dj["cycles"] = cycs
-    print(f"  [OPERADO] posicion detectada: {posicion} (epct guardado en ciclo)")
+    print(f"  [OPERADO] posicion detectada: {posicion}")
 
-    # Registrar entrada del día
     today = now_arg().strftime("%Y-%m-%d")
     daily = dj.get("daily", {"date": today, "signals": [], "watchlist": [], "entradas": []})
     if "entradas" not in daily:
         daily["entradas"] = []
 
-    # Buscar precio del ticker en quotes si está disponible
     price_str = ""
     quotes = dj.get("quotes", {})
     if ticker_cmd in quotes:
@@ -669,7 +548,6 @@ def handle_operado(ticker_cmd):
         json.dump(dj, f, indent=2, ensure_ascii=False)
 
     print(f"  [OPERADO] {ticker_cmd} silenciado. Ciclo iniciado.")
-    pos_emoji = "💯" if posicion == "completa" else "⚡"
     pos_label = "posición completa" if posicion == "completa" else "media posición"
     send_telegram(
         f"✅ <b>{ticker_cmd}</b> marcado como operado.\n"
@@ -677,36 +555,31 @@ def handle_operado(ticker_cmd):
         f"El bot silenciará alertas de Señal/Watchlist hasta completar el ciclo.\n"
     )
 
-# Procesar comando operado — soporta dos fuentes:
-# 1. Botón inline: CMD_OPERADO=operado:GLD  (callback_data del botón)
-# 2. Texto manual: CMD_OPERADO=!operado GLD (fallback por texto)
 _cmd_operado = os.environ.get("CMD_OPERADO", "").strip()
-_cbq_id      = os.environ.get("CALLBACK_QUERY_ID", "").strip()  # para answerCallbackQuery
+_cbq_id      = os.environ.get("CALLBACK_QUERY_ID", "").strip()
 
 if _cmd_operado.lower().startswith("operado:"):
-    # Formato botón inline: operado:GLD
     _ticker_op = _cmd_operado.split(":", 1)[1]
     handle_operado(_ticker_op)
     if _cbq_id:
         answer_callback_query(_cbq_id, "✅ Entrada registrada")
     import sys; sys.exit(0)
 elif _cmd_operado.lower().startswith("!operado "):
-    # Formato texto manual: !operado GLD
     _ticker_op = _cmd_operado.split(" ", 1)[1]
     handle_operado(_ticker_op)
     import sys; sys.exit(0)
-# ── Main ──────────────────────────────────────────────────────────────────────
+
 print(f"\n{'='*55}")
 print(f"CEDEARS ALERTAS — {now_arg().strftime('%d/%m/%Y %H:%M')} (ARG)")
 print(f"{'='*55}\n")
 
-signals_found   = []   # score 3/3  → alerta verde individual
-watchlist_found = []   # score 2/3  → alerta amarilla individual
-radar_info      = []   # score 0-1  → solo en reporte de cierre
+signals_found   = []
+watchlist_found = []
+radar_info      = []
 all_results     = []
 
 existing = {}
-cycles   = {}   # ciclos de acumulación por ticker
+cycles   = {}
 try:
     with open("data.json","r") as f:
         dj = json.load(f)
@@ -715,9 +588,6 @@ try:
 except: pass
 
 def get_cycle(ticker):
-    """Devuelve el estado del ciclo para un ticker.
-    Estructura: {is_silenced, rsi_hit_50, rsi_reset}
-    """
     return cycles.get(ticker, {
         "is_silenced": False,
         "rsi_hit_50":  False,
@@ -727,10 +597,6 @@ def get_cycle(ticker):
 def save_cycle(ticker, state):
     cycles[ticker] = state
 
-# ── Modo Intradiario ─────────────────────────────────────────────────────────
-# INTRADAY_CHECK=1 → chequeo liviano: solo precio actual vs EMA200 y RSI del
-# cierre anterior guardado en data.json. No recalcula indicadores. No genera
-# reportes de cierre. Solo dispara si la señal sigue activa Y no fue enviada hoy.
 _INTRADAY = os.environ.get("INTRADAY_CHECK", "0").strip() == "1"
 
 if _INTRADAY:
@@ -746,14 +612,12 @@ if _INTRADAY:
     _daily_intra   = _dj_intra.get("daily", {})
     _cycles_intra  = _dj_intra.get("cycles", {})
 
-    # Resetear daily si cambió la fecha
     if _daily_intra.get("date") != _today_intra:
         _daily_intra = {"date": _today_intra, "signals": [], "watchlist": [], "entradas": []}
 
     _intra_header_sent = False
     _intra_fired = []
 
-    # Sesión según hora Argentina — igual que el bot normal
     _intra_hour = now_arg().hour
     if 9 <= _intra_hour < 13:
         _intra_session = "APERTURA DE MERCADO"
@@ -768,24 +632,19 @@ if _INTRADAY:
             print(f"  [INTRADAY] {ticker}: sin datos guardados — skip")
             continue
 
-        # Skip si ya fue alertado hoy — con lógica de upgrade
         _intra_in_signals   = ticker in set(_daily_intra.get("signals", []))
         _intra_in_watchlist = ticker in set(_daily_intra.get("watchlist", []))
 
-        # Para evaluar upgrade necesitamos los datos guardados primero
-        # (los leemos abajo; acá solo skip definitivo si ya está en señal)
         if _intra_in_signals:
             print(f"  [INTRADAY] {ticker}: señal ya enviada hoy — skip")
             continue
 
-        # Skip si está silenciado (ciclo activo)
         cyc_intra = _cycles_intra.get(ticker, {})
         if cyc_intra.get("is_silenced"):
             print(f"  [INTRADAY] {ticker}: silenciado (ciclo) — skip")
             continue
 
-        # Leer datos del cierre anterior desde data.json
-        rsi_prev_close  = saved.get("rsi10")       # RSI del último cierre diario
+        rsi_prev_close  = saved.get("rsi10")
         ema200_saved    = saved.get("ema200")
         rsi_bounced_15  = saved.get("rsi_bounced_15", False)
         bb_recov_saved  = saved.get("bb_recov", False)
@@ -794,7 +653,6 @@ if _INTRADAY:
             print(f"  [INTRADAY] {ticker}: datos incompletos en data.json — skip")
             continue
 
-        # Fetch precio actual liviano
         current_price = fetch_price_only(sym)
         if current_price is None:
             print(f"  [INTRADAY] {ticker}: no se pudo obtener precio actual — skip")
@@ -802,20 +660,17 @@ if _INTRADAY:
 
         epct_intra = (current_price - ema200_saved) / ema200_saved * 100
 
-        # ── Mismas variables que usa score_signal ────────────────────────────
         _ema_ok_i      = epct_intra >= -5
         _ema_ok_med_i  = epct_intra >= -15
         _div_i         = saved.get("div_bullish", False)
-        _rsi10_i       = rsi_prev_close   # RSI del cierre anterior — no intradiario
+        _rsi10_i       = rsi_prev_close
 
-        # Score con precio actual (EMA recalculada con precio vivo, RSI y BB del cierre)
         _score_i = sum([
             bool(rsi_bounced_15),
             bool(_ema_ok_i or _ema_ok_med_i),
             bool(bb_recov_saved),
         ])
 
-        # ── Condiciones SEÑAL — idénticas al bot diario ──────────────────────
         _senal_normal = (
             _score_i == 3
             and rsi_bounced_15
@@ -829,14 +684,12 @@ if _INTRADAY:
         )
         signal_still_active = _senal_normal or _senal_div
 
-        # ── Condiciones WATCHLIST — idénticas al bot diario ──────────────────
         _watch_score2 = (
             _score_i == 2
             and not rsi_bounced_15
             and _rsi10_i <= 40
             and _ema_ok_med_i
         )
-        # bb_ema_watchlist: RSI <= 40 evita falsos positivos con RSI neutro sobre EMA
         _watch_bb_ema = (
             bb_recov_saved
             and _ema_ok_i
@@ -850,7 +703,6 @@ if _INTRADAY:
         )
         watchlist_still_active = _watch_score2 or _watch_bb_ema or _watch_div
 
-        # Si estaba en watchlist y sigue siendo watchlist → skip (ya fue avisado)
         if _intra_in_watchlist and not signal_still_active:
             print(f"  [INTRADAY] {ticker}: watchlist ya enviada hoy, sin upgrade — skip")
             continue
@@ -871,7 +723,6 @@ if _INTRADAY:
                     f"Señales activas del cierre anterior:"
                 )
                 _intra_header_sent = True
-            # Construir mensaje completo igual al bot diario
             _q_intra = dict(saved)
             _q_intra["price"] = current_price
             _poc_intra = saved.get("poc_proxy") or 1
@@ -942,7 +793,6 @@ if _INTRADAY:
                 _daily_intra.setdefault("watchlist", []).append(ticker)
             time.sleep(0.3)
 
-    # Guardar daily actualizado
     _dj_intra["daily"] = _daily_intra
     with open("data.json", "w") as f:
         json.dump(_dj_intra, f, indent=2, ensure_ascii=False)
@@ -954,7 +804,7 @@ if _INTRADAY:
 
     import sys; sys.exit(0)
 
-# ── Fin modo intradiario — continúa el análisis completo diario ───────────────
+# ── Fin modo intradiario ───────────────────────────────────────────────────────
 
 for ticker, sym in YF_MAP.items():
     print(f"Analizando {ticker}...", end=" ", flush=True)
@@ -981,16 +831,15 @@ for ticker, sym in YF_MAP.items():
         bb_tag  = " · BB↑"   if q.get("bb_recov")   else ""
         ema200_val = q.get("ema200") or 0
         epct_debug = (q["price"] - ema200_val) / ema200_val * 100 if ema200_val else 0
-        # Dirección RSI: flecha visual para ver si está tomando carrera o buscando piso
         _rsi_now  = q.get("rsi10") or 50
         _rsi_prev = q.get("rsi_prev") or _rsi_now
         rsi_arrow = "↗️" if _rsi_now > _rsi_prev else ("↘️" if _rsi_now < _rsi_prev else "→")
         q["rsi_direction"] = "subiendo" if _rsi_now > _rsi_prev else ("bajando" if _rsi_now < _rsi_prev else "lateral")
+        rsi_direction = q["rsi_direction"]  # ← FIX: extraer a variable local
         print(f"RSI {q['rsi10']}{rsi_arrow} · ${q['price']} · EMA200=${ema200_val} ({epct_debug:+.1f}%){div_tag}{bb_tag}")
 
-        # rsi_bounced_15 ya viene calculado desde fetch_ticker con las últimas 15 velas.
-        # No se fusiona con historial previo para evitar falsos positivos de sesiones anteriores.
-
+    # FIX: inicializar rsi_direction antes del bloque fallback como guardia defensiva
+    rsi_direction = q.get("rsi_direction", "lateral")
 
     if q.get("_fallback"):
         rsi10 = q["rsi10"] or 50
@@ -1005,33 +854,28 @@ for ticker, sym in YF_MAP.items():
     all_results.append((ticker, score, q, epct, ppct))
 
     rsi10 = q["rsi10"] or 50
-    # rsi_bounced_15 viene de q (calculado en fetch_ticker), rsi_bounced es 1 vela (fallback)
     rsi_bounced_15 = q.get("rsi_bounced_15", rsi_bounced)
 
     div      = q.get("div_bullish", False)
     bb_recov = q.get("bb_recov", False)
 
-    # ── Ciclo de Acumulación Inteligente ─────────────────────────────────────
     cyc = get_cycle(ticker)
     is_silenced = cyc["is_silenced"]
     rsi_hit_50  = cyc["rsi_hit_50"]
     rsi_reset   = cyc["rsi_reset"]
 
-    # Fase 2: Detectar cruce RSI > 50 mientras está silenciado
     if is_silenced and not rsi_hit_50 and rsi10 > 50:
         cyc["rsi_hit_50"] = True
         rsi_hit_50 = True
         print(f"  [CICLO] {ticker}: RSI cruzó 50 ({rsi10}) → rsi_hit_50=True")
         save_cycle(ticker, cyc)
 
-    # Fase 3: RSI_hit_50 confirmado + RSI vuelve a caer bajo 45 → rsi_reset
     if is_silenced and rsi_hit_50 and not rsi_reset and rsi10 < 45:
         cyc["rsi_reset"] = True
         rsi_reset = True
         print(f"  [CICLO] {ticker}: RSI bajó de 45 ({rsi10}) → rsi_reset=True")
         save_cycle(ticker, cyc)
 
-    # Fase 4: rsi_reset activo + nuevo rebote técnico válido → despertar
     rebote_valido = rsi_bounced and bb_recov
     if is_silenced and rsi_reset and rebote_valido:
         _posicion_previa = cyc.get("posicion", "completa")
@@ -1042,7 +886,6 @@ for ticker, sym in YF_MAP.items():
         is_silenced = False
         print(f"  [CICLO] {ticker}: DESPERTAR — ciclo completado (posicion_previa={_posicion_previa})")
         save_cycle(ticker, cyc)
-        # Notificar despertar con contexto de posicion
         if _posicion_previa == "media":
             send_telegram(
                 f"🔔 <b>{ticker}</b> — Ciclo completado\n"
@@ -1057,9 +900,6 @@ for ticker, sym in YF_MAP.items():
                 f"Si la señal confirma, podés evaluar una <b>nueva entrada</b>.\n"
             )
 
-    # ── Clasificación — condiciones ──────────────────────────────────────────
-
-    # watchlist_score2: score=2, sin rebote RSI, RSI en zona baja, precio no muy lejos de EMA
     watchlist_score2 = (
         score == 2
         and not rsi_bounced_15
@@ -1067,8 +907,6 @@ for ticker, sym in YF_MAP.items():
         and epct >= -15
     )
 
-    # bb_ema_watchlist: BB recuperado + precio cerca EMA + sin rebote RSI + RSI en zona baja
-    # RSI <= 40 evita falsos positivos como GOOGL con RSI 50 sobre EMA
     bb_ema_watchlist = (
         bb_recov
         and epct >= -5
@@ -1076,8 +914,6 @@ for ticker, sym in YF_MAP.items():
         and rsi10 <= 40
     )
 
-    # div_to_signal: divergencia bullish + BB + (rebote RSI o precio cerca EMA) + score>=2
-    # La divergencia puede reemplazar el rebote RSI como confirmación
     div_to_signal = (
         div
         and bb_recov
@@ -1085,10 +921,8 @@ for ticker, sym in YF_MAP.items():
         and score >= 2
     )
 
-    # div_to_watchlist: divergencia con score bajo — setup embrionario a monitorear
     div_to_watchlist = div and score <= 1 and rsi10 <= 40
 
-    # Activo silenciado: solo puede aparecer en radar si rsi_reset=True y RSI < 45
     if is_silenced:
         if rsi_reset and rsi10 < 45:
             print(f"  [CICLO] {ticker}: silenciado en radar (rsi_reset, RSI={rsi10})")
@@ -1115,13 +949,11 @@ for ticker, sym in YF_MAP.items():
 
     time.sleep(0.5)
 
-# Watchlists ordenadas por RSI ascendente
 watchlist_found.sort(key=lambda x: x[2]["rsi10"] or 99)
 
 now_str  = now_arg().strftime("%d/%m %H:%M")
 date_str = now_arg().strftime("%d/%m/%Y")
 
-# Sesión según hora Argentina
 _hour = now_arg().hour
 if 9 <= _hour < 13:
     session_name = "APERTURA DE MERCADO"
@@ -1138,8 +970,6 @@ session_header = (
     f"Iniciando reporte técnico..."
 )
 
-# ── Persistencia de alertas del día en data.json ─────────────────────────────
-# Lee acumulado del día; resetea si cambió la fecha
 _today = now_arg().strftime("%Y-%m-%d")
 _daily = {"date": _today, "signals": [], "watchlist": [], "entradas": []}
 try:
@@ -1152,16 +982,12 @@ try:
 except Exception:
     pass
 
-# ── Skip si ya fue alertado hoy — calculado una vez, antes de los loops ──────
 _alerted_signals_full   = set(_daily.get("signals", []))
 _alerted_watchlist_full = set(_daily.get("watchlist", []))
 
-# Filtrar signals_found y watchlist_found eliminando los ya alertados
 _signals_filtered = []
 for _item in signals_found:
     _tk = _item[0]
-    _sc = _item[1]; _q2 = _item[2]; _ep2 = _item[3]
-    _would_sig = True  # ya clasificó como señal
     if _tk in _alerted_signals_full:
         print(f"  [DAILY] {_tk}: señal ya enviada hoy — skip")
     else:
@@ -1179,7 +1005,6 @@ for _item in watchlist_found:
         _watchlist_filtered.append(_item)
 watchlist_found = _watchlist_filtered
 
-# ── 1. Señales confirmadas (Score 3/3) → alerta verde individual ──────────────
 _header_sent = False
 
 for ticker, score, q, epct, ppct, fund in signals_found:
@@ -1188,7 +1013,6 @@ for ticker, score, q, epct, ppct, fund in signals_found:
     poc    = q["poc_proxy"] or 0
     div    = q.get("div_bullish", False)
     bb_rec = q.get("bb_recov", False)
-    _ema200_s = q.get("ema200") or 1
     _ema_ok_s      = epct >= -5
     _ema_ok_med_s  = epct >= -15
 
@@ -1222,11 +1046,9 @@ for ticker, score, q, epct, ppct, fund in signals_found:
     send_telegram_with_button(msg, ticker)
     time.sleep(0.2)
 
-    # Acumular en historial del día
     if ticker not in _daily["signals"]:
         _daily["signals"].append(ticker)
 
-# ── 2. Watchlist — Score 2/3 → alerta amarilla individual ────────────────────
 for ticker, score, q, epct, ppct in watchlist_found:
     rsi10    = q["rsi10"] or 50
     rsi_p    = q["rsi_prev"] or rsi10
@@ -1268,11 +1090,9 @@ for ticker, score, q, epct, ppct in watchlist_found:
     send_telegram(msg)
     time.sleep(0.2)
 
-    # Acumular en historial del día
     if ticker not in _daily["watchlist"]:
         _daily["watchlist"].append(ticker)
 
-# ── Guardar historial del día + ciclos ───────────────────────────────────────
 try:
     with open("data.json", "r") as f:
         _dj_full = json.load(f)
@@ -1283,10 +1103,8 @@ _dj_full["cycles"] = cycles
 with open("data.json", "w") as f:
     json.dump(_dj_full, f, indent=2, ensure_ascii=False)
 
-# ── 3. Reporte Diario — SOLO en CIERRE DE MERCADO ────────────────────────────
 if is_cierre:
 
-    # Resumen de alertas del día completo (acumulado)
     _all_sig   = _daily.get("signals", [])
     _all_watch = _daily.get("watchlist", [])
 
@@ -1302,7 +1120,6 @@ if is_cierre:
             parts.append(f"<b>{len(_all_watch)}</b> watchlist(s) 🟡 ({wat_tickers})")
         intro = " · ".join(parts) + "."
 
-    # ── Radar ─────────────────────────────────────────────────────────────────
     def es_radar_valido(q, epct):
         rsi = q.get("rsi10") or 99
         rsi_prev = q.get("rsi_prev") or rsi
@@ -1354,7 +1171,6 @@ if is_cierre:
     if radar_lines:
         radar_section = "\n\nActivos bajo observación:\n\n" + "\n".join(radar_lines)
 
-    # Nota dinámica del bot
     rsi_values = [q["rsi10"] for _, _, q, _, _ in all_results if q.get("rsi10")]
     avg_rsi = round(sum(rsi_values)/len(rsi_values), 1) if rsi_values else 50
     if avg_rsi < 30:
@@ -1366,12 +1182,10 @@ if is_cierre:
     else:
         bot_note = random.choice(BOT_NOTES)
 
-    # El encabezado de cierre va siempre con el reporte (si no se mandó antes)
     if not _header_sent:
         send_telegram(session_header)
         time.sleep(0.3)
 
-    # Sección entradas del día (activos marcados como operados)
     _entradas = _daily.get("entradas", [])
     entradas_section = ""
     if _entradas:
