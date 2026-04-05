@@ -87,7 +87,7 @@ def calc_ema_trend(closes, period=200):
         ema = c*k + ema*(1-k); emas.append(ema)
     last20 = emas[-20:]
     slope = (last20[-1]-last20[0])/last20[0]*100
-    return "subiendo" if slope>1.5 else ("bajando" if slope<-1.5 else "lateral")
+    return "subiendo" if slope>0.8 else ("bajando" if slope<-0.8 else "lateral")
 
 def calc_bb_lower(closes, period=20, std=2):
     if len(closes) < period: return None
