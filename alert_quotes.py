@@ -833,7 +833,7 @@ if _INTRADAY:
         _watch_score2 = (
             _score_i == 2
             and not rsi_bounced_15
-            and _rsi10_i <= 40
+            and _rsi10_i <= 45
             and _ema_ok_med_i
         )
         # bb_ema_watchlist: RSI <= 40 evita falsos positivos con RSI neutro sobre EMA
@@ -841,12 +841,12 @@ if _INTRADAY:
             bb_recov_saved
             and _ema_ok_i
             and not rsi_bounced_15
-            and _rsi10_i <= 40
+            and _rsi10_i <= 45
         )
         _watch_div = (
             _div_i
             and _score_i <= 1
-            and _rsi10_i <= 40
+            and _rsi10_i <= 45
         )
         watchlist_still_active = _watch_score2 or _watch_bb_ema or _watch_div
 
@@ -1066,7 +1066,7 @@ for ticker, sym in YF_MAP.items():
     watchlist_score2 = (
         score == 2
         and not rsi_bounced_15
-        and rsi10 <= 40
+        and rsi10 <= 45
         and epct >= -15
     )
 
@@ -1076,7 +1076,7 @@ for ticker, sym in YF_MAP.items():
         bb_recov
         and epct >= -5
         and not rsi_bounced_15
-        and rsi10 <= 40
+        and rsi10 <= 45
     )
 
     # div_to_signal: divergencia bullish + BB + (rebote RSI o precio cerca EMA) + score>=2
@@ -1089,7 +1089,7 @@ for ticker, sym in YF_MAP.items():
     )
 
     # div_to_watchlist: divergencia con score bajo — setup embrionario a monitorear
-    div_to_watchlist = div and score <= 1 and rsi10 <= 40
+    div_to_watchlist = div and score <= 1 and rsi10 <= 45
 
     # Activo silenciado: solo puede aparecer en radar si rsi_reset=True y RSI < 45
     if is_silenced:
