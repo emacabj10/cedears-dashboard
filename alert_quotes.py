@@ -986,12 +986,15 @@ for ticker, sym in YF_MAP.items():
         _rsi_prev = q.get("rsi_prev") or _rsi_now
         rsi_arrow = "↗️" if _rsi_now > _rsi_prev else ("↘️" if _rsi_now < _rsi_prev else "→")
         q["rsi_direction"] = "subiendo" if _rsi_now > _rsi_prev else ("bajando" if _rsi_now < _rsi_prev else "lateral")
+        rsi_direction = q["rsi_direction"]  # ← FIX: extraer a variable local
         print(f"RSI {q['rsi10']}{rsi_arrow} · ${q['price']} · EMA200=${ema200_val} ({epct_debug:+.1f}%){div_tag}{bb_tag}")
 
         # rsi_bounced_15 ya viene calculado desde fetch_ticker con las últimas 15 velas.
         # No se fusiona con historial previo para evitar falsos positivos de sesiones anteriores.
 
-
+ # FIX: inicializar rsi_direction antes del bloque fallback como guardia defensiva
+    rsi_direction = q.get("rsi_direction", "lateral")
+    
     if q.get("_fallback"):
         rsi10 = q["rsi10"] or 50
         _, _, epct, ppct, _, _, _, _, _ = score_signal(ticker, q)
