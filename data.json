@@ -557,11 +557,7 @@
   "daily": {
     "date": "2026-04-05",
     "signals": [],
-    "watchlist": [
-      "BABA",
-      "TSLA",
-      "META"
-    ],
+    "watchlist": [],
     "entradas": []
   }
 }
