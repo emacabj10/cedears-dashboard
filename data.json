@@ -555,14 +555,12 @@
     }
   },
   "daily": {
-    "date": "2026-04-04",
-    "signals": [
-      "META",
-      "TSLA"
-    ],
+    "date": "2026-04-05",
+    "signals": [],
     "watchlist": [
       "BABA",
-      "GOOGL"
+      "TSLA",
+      "META"
     ],
     "entradas": []
   }
