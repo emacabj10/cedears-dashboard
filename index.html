@@ -319,24 +319,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">2</div>EMA200 — distancia al precio — Punto 2</div>
         <div class="ref-card-sub">El precio debe estar cerca o sobre la EMA200. <strong style="color:#2ea043">Suma 1 punto al score.</strong></div>
         <div class="ref-section">Cuándo suma el punto</div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio dentro del <strong>-15%</strong> de la EMA200 (posición media) o por encima</div></div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio dentro del <strong>-5%</strong> de la EMA200 → entrada con posición completa</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio dentro del <strong>-10%</strong> de la EMA200 → entrada con posición media</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio dentro del <strong>-5%</strong> o por encima → entrada con posición completa</div></div>
         <div class="ref-section">No suma cuando</div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Precio más del <strong>-15%</strong> bajo EMA200 → va a radar, no watchlist</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Precio más del <strong>-10%</strong> bajo EMA200 → va a radar, no watchlist</div></div>
       </div>
       <div class="ref-card">
         <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">3</div>Bollinger — recuperó banda inferior — Punto 3</div>
-        <div class="ref-card-sub">Una vela cerró fuera de la banda inferior y una posterior cerró dentro. <strong style="color:#2ea043">Suma 1 punto al score.</strong></div>
+        <div class="ref-card-sub">Una vela cerró fuera de la banda inferior, una posterior cerró dentro, <strong>con cierre mayor al día anterior</strong> (momentum). <strong style="color:#2ea043">Suma 1 punto al score.</strong></div>
         <div class="ref-section">Marcar SÍ cuando</div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una vela <strong>cerró</strong> bajo la banda inferior (no solo tocó) — últimas <strong>5 velas</strong></div></div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una vela posterior cerró dentro de las bandas — recuperación confirmada</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Una vela <strong>cerró</strong> bajo la banda inferior — últimas <strong>5 velas</strong></div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">La vela actual cerró dentro de las bandas <strong>y</strong> por encima del cierre anterior</div></div>
+        <div class="ref-section">BB en compresión (squeeze)</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text">Las bandas se estrecharon vs 5 velas atrás — no hay dirección definida. <strong>Esperar ruptura antes de entrar.</strong></div></div>
       </div>
       <div class="ref-card">
-        <div class="ref-card-title"><div class="ci ci-w" style="width:16px;height:16px;font-size:10px">÷</div>Divergencias RSI(10) — contexto</div>
-        <div class="ref-card-sub">No suman puntos directamente pero pueden promover de watchlist a señal.</div>
-        <div class="ref-section">Bullish DIV — puede promover a señal</div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio hace mínimo más bajo, RSI hace mínimo más alto — últimas <strong>15 velas</strong></div></div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Si DIV + BB recov + score ≥ 2 → <strong>señal DIV</strong> (equivale a señal verde)</div></div>
+        <div class="ref-card-title"><div class="ci ci-w" style="width:16px;height:16px;font-size:10px">÷</div>Divergencias RSI(10) — promoción a señal</div>
+        <div class="ref-card-sub">Pueden promover un setup de 2/3 a <strong>señal 3/3</strong> cuando hay calidad suficiente.</div>
+        <div class="ref-section">Bullish DIV — separación mínima 2%</div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Precio hace mínimo más bajo <strong>(al menos 2% menor)</strong>, RSI hace mínimo más alto — últimas <strong>15 velas</strong></div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Si DIV + BB recov + (RSI rebote o epct ≥ -10%) + score ≥ 2 → <strong>señal DIV 3/3</strong></div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text">Si score 2 + div + emaOk → score promovido a 3, mensaje dice <em>"Señal promovida por divergencia alcista"</em></div></div>
         <div class="ref-section">Bearish DIV — cancela watchlist</div>
         <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text">Precio máximo más alto, RSI máximo más bajo → no entrar</div></div>
       </div>
@@ -346,11 +349,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="ref-section">Cómo interpretarlo</div>
         <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text"><strong>≥ 40</strong> — tendencia semanal saludable, señal diaria más confiable</div></div>
         <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>25–39</strong> — tendencia débil, considerá reducir el tamaño</div></div>
-        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text"><strong>&lt; 25</strong> — muy bajista. Con fundamentals excelentes puede ser zona de acumulación.</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ng"></div><div class="ref-text"><strong>&lt; 25</strong> — muy bajista. Con fundamentals excelentes puede ser zona de acumulación gradual.</div></div>
       </div>
       <div class="ref-card">
-        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">%</div>% distancia al POC — FRVP anual</div>
-        <div class="ref-card-sub">Cuanto más negativo, más barata está la acción vs su historia. No suma al score pero define el tamaño.</div>
+        <div class="ref-card-title"><div class="ci ci-ok" style="width:16px;height:16px;font-size:10px">%</div>% distancia al POC — estimado</div>
+        <div class="ref-card-sub">Zona de valor estimada (heurística: mínimo anual × 1.15). No suma al score pero orienta el tamaño. No es un POC real de perfil de volumen.</div>
         <table class="poc-table">
           <tr><th>Distancia</th><th>Señal</th></tr>
           <tr><td class="td-pct poc-ok">Más de -15%</td><td class="poc-ok">Fuerte ✓</td></tr>
@@ -360,8 +363,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </table>
         <div class="ref-section" style="margin-top:8px">Score → clasificación</div>
         <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text"><strong>3/3 + RSI ≤ 45</strong> → Señal verde 🟢</div></div>
-        <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>2/3 sin RSI rebote + RSI ≤ 40</strong> → Watchlist 🟡</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text"><strong>DIV + BB + score ≥ 2 + epct ≥ -10%</strong> → Señal DIV 3/3 🟢</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>2/3 sin RSI rebote + RSI ≤ 45 + epct ≥ -10%</strong> → Watchlist 🟡</div></div>
         <div class="ref-row"><div class="ref-dot ref-dot-neu"></div><div class="ref-text"><strong>RSI ≤ 35</strong> → Radar 🔵</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-neu" style="background:#444441"></div><div class="ref-text"><strong>Silenciado</strong> → no aparece en señal/watchlist/radar — ciclo activo ⏸</div></div>
       </div>
     </div>
   </div>
@@ -658,25 +663,29 @@ function emaPct(p,e){return e>0?((p-e)/e*100):0;}
 function pocPct(p,c){return c>0?((p-c)/c*100):0;}
 
 function scoreTelegram(s){
-  // Replica exacta del sistema del bot de Telegram
+  // Replica exacta del sistema del bot de Telegram (alert_quotes.py)
   const fund=CUSTOM_FUND[s.t]||FUND[s.t]||"buenos";
   const epct=emaPct(s.price,s.ema200);
   const ppct=pocPct(s.price,s.poc);
   const rsi10=s.rsi10||50;
   const rsiPrev=s.rsiPrev||rsi10;
 
-  // Punto 1: RSI rebotó desde ≤30 (ventana 15 velas)
+  // Activo silenciado — excluido de señal/watchlist/radar
+  const silenced=SILENCED_TICKERS[s.t]?.is_silenced||false;
+
+  // Punto 1: RSI rebotó desde <=30 (ventana 15 velas) + momentum alcista
   const rsiBouncedNow=(rsi10>30&&rsiPrev<=30);
-  const rsiBounced=s.rsiBounce||rsiBouncedNow;  // rsiBounce viene de data.json merged
+  const rsiBounced=s.rsiBounce||rsiBouncedNow;
   const rsiOversold=rsi10<=30;
 
-  // Punto 2: EMA200 (posición completa si ≥-5%, media si ≥-15%)
+  // Punto 2: EMA200 — posición completa >=-5%, media >=-10%
   const emaOk=epct>=-5;
-  const emaOkMedia=epct>=-15;
+  const emaOkMedia=epct>=-10;
   const ema2pts=emaOk||emaOkMedia;
 
-  // Punto 3: BB recuperó banda inferior
+  // Punto 3: BB recuperó banda inferior (con confirmación price > price_prev)
   const bbRecov=s.bbRecov||false;
+  const bbSqueeze=s.bbSqueeze||false;
 
   let score=0;
   if(rsiBounced) score++;
@@ -686,44 +695,50 @@ function scoreTelegram(s){
   const div=s.divState==="bull";
   const divBear=s.divState==="bear";
 
-  // Setup en formación: RSI ≤38 sin rebote aún
+  // Condiciones de clasificación
+  const watchlistScore2=(score===2&&!rsiBounced&&rsi10<=45&&epct>=-10);
+  const bbEmaWatchlist=(bbRecov&&epct>=-5&&!rsiBounced&&rsi10<=45);
+  const divToSignal=(div&&bbRecov&&(rsiBounced||epct>=-10)&&score>=2);
+  const divToWatchlist=(div&&score<=1&&rsi10<=45);
+
+  // Promoción por divergencia: score 2 + div + emaOk -> efectivo 3
+  const promotedByDiv=divToSignal&&score===2&&emaOk;
+  const effectiveScore=promotedByDiv?3:score;
+
+  // Setup en formación
   const forming=!rsiBounced&&rsi10<=38&&rsi10>25;
 
-  // Clasificación — misma lógica que alert_quotes.py
-  let categoria="hold"; // radar / watchlist / signal / hold
+  // Clasificación — silenciados quedan en "hold" y van al panel de silenciados
+  let categoria="hold";
   let posicion="esperar";
 
-  const watchlistScore2=(score===2&&!rsiBounced&&rsi10<=45&&epct>=-15);
-  const bbEmaWatchlist=(bbRecov&&epct>=-5&&!rsiBounced&&rsi10<=45);
-  const divToSignal=(div&&bbRecov&&(rsiBounced||epct>=-15)&&score>=2);
-  const divToWatchlist=(div&&score<=1&&rsi10<=45);
-  // divToRadar eliminado — el bot no la usa en clasificación de radar
-
-  if(score===3&&rsiBounced&&rsi10<=45){
-    categoria="signal";
-    posicion=emaOk?"completa":"media";
-  } else if(divToSignal){
-    categoria="signal";
-    posicion=emaOk?"completa":"media";
-  } else if(watchlistScore2||bbEmaWatchlist||divToWatchlist){
-    categoria="watchlist";
-    posicion="esperar";
-  } else if(rsi10<=35||(rsi10<30&&!rsiBounced)){
-    categoria="radar";
-    posicion="monitorear";
-  } else if(forming){
-    categoria="forming";  // solo visual — el bot no notifica esta categoría
-    posicion="observar";
+  if(!silenced){
+    if(effectiveScore===3&&rsiBounced&&rsi10<=45){
+      categoria="signal";
+      posicion=emaOk?"completa":"media";
+    } else if(divToSignal){
+      categoria="signal";
+      posicion=emaOk?"completa":"media";
+    } else if(watchlistScore2||bbEmaWatchlist||divToWatchlist){
+      categoria="watchlist";
+      posicion="esperar";
+    } else if(rsi10<=35||(rsi10<30&&!rsiBounced)){
+      categoria="radar";
+      posicion="monitorear";
+    } else if(forming){
+      categoria="forming";
+      posicion="observar";
+    }
   }
 
-  // Lo que falta para completar la señal
   const missing=[];
   if(!rsiBounced) missing.push("RSI rebote desde 30");
   if(!ema2pts) missing.push("EMA200 (precio muy lejos)");
   if(!bbRecov) missing.push("BB recuperación inferior");
 
-  return{score,rsiBounced,rsiOversold,emaOk,emaOkMedia,bbRecov,div,divBear,
-    forming,categoria,posicion,epct,ppct,fund,missing,rsi10,rsiPrev};
+  return{score:effectiveScore,rsiBounced,rsiOversold,emaOk,emaOkMedia,bbRecov,
+    bbSqueeze,div,divBear,promotedByDiv,forming,silenced,
+    categoria,posicion,epct,ppct,fund,missing,rsi10,rsiPrev};
 }
 
 // Score para el panel legacy (5 puntos con divergencias)
@@ -945,6 +960,9 @@ async function loadFromStorage(){
         if(q.bb_below!=null&&!s._manualBB)s.bbState=q.bb_below?"below":(q.bb_above?"above":"inside");
         if(q.rsi_bounced_15!=null&&!s._manualBounce)s.rsiBounce=q.rsi_bounced_15;
         if(q.div_bullish!=null&&!s._manualDiv)s.divState=q.div_bullish?"bull":s.divState==="bear"?"bear":"none";
+        if(q.bb_squeeze!=null)s.bbSqueeze=q.bb_squeeze;
+        if(q.rsi_prev!=null)s.rsiPrev=q.rsi_prev;
+        if(q.promoted_by_div!=null)s.promotedByDiv=q.promoted_by_div;
       }
       if(dj.cycles){
         SILENCED_TICKERS=dj.cycles;
@@ -1081,6 +1099,8 @@ function buildSignalAlert(s,sc){
   const dotCls=isSignal?"alert-dot-buy":"alert-dot-watch";
   const itemCls=isSignal?"alert-buy":"alert-watch";
   const scoreCls=isSignal?"alert-score-buy":"alert-score-watch";
+  const squeezeNote=sc.bbSqueeze?`<div class="alert-action" style="color:#f0a500">⚠️ BB en compresión — esperar ruptura de rango antes de ejecutar.</div>`:"";
+  const divNote=sc.promotedByDiv?`<div class="alert-action" style="color:#58a6ff">🔀 Señal promovida por divergencia alcista.</div>`:"";
 
   return `<div class="alert-item ${itemCls}">
     <div class="alert-dot ${dotCls}" style="margin-top:6px"></div>
@@ -1099,6 +1119,7 @@ function buildSignalAlert(s,sc){
       </div>
       ${context?`<div class="alert-context">${context}</div>`:""}
       <div class="alert-action">💡 ${accion}</div>
+      ${divNote}${squeezeNote}
       ${tvLink(s.t)}
     </div>
   </div>`;
@@ -1172,13 +1193,15 @@ function renderAlerts(){
   const signals=[],watchlist=[],radar=[];
   data.forEach(s=>{
     const sc=scoreTelegram(s);
+    if(sc.silenced) return; // silenciados van solo al panel de silenciados
     if(sc.categoria==="signal")signals.push({s,sc});
     else if(sc.categoria==="watchlist")watchlist.push({s,sc});
     else if(sc.categoria==="radar"||sc.rsi10<=35)radar.push({s,sc});
   });
 
-  watchlist.sort((a,b)=>a.sc.rsi10-b.sc.rsi10);
-  radar.sort((a,b)=>a.sc.rsi10-b.sc.rsi10);
+  signals.sort((a,b)=>a.s.t.localeCompare(b.s.t)); // A→Z
+  watchlist.sort((a,b)=>a.s.t.localeCompare(b.s.t)); // A→Z
+  radar.sort((a,b)=>a.sc.rsi10-b.sc.rsi10); // radar por RSI ascendente
 
   const sigList=document.getElementById("alert-signals-list");
   const wlList=document.getElementById("alert-watchlist-list");
@@ -1255,7 +1278,7 @@ function renderWatchlist(){
     const sigMap={signal:"sig-buy",watchlist:"sig-watch",forming:"sig-forming",radar:"sig-hold",hold:"sig-hold"};
     const sigLbl={signal:`Señal ${score}/3`,watchlist:`Watch ${score}/3`,forming:"Formación",radar:"Radar",hold:"Esperar"};
     const d1Cls=rsiBounced?"d-ok":rsi10<=30?"d-w":"d-no";
-    const d2Cls=emaOk?"d-ok":epct>=-15?"d-w":"d-no";
+    const d2Cls=emaOk?"d-ok":epct>=-10?"d-w":"d-no";
     const d3Cls=bbRecov?"d-ok":s.bbState==="below"?"d-w":"d-no";
     const divCls=div?"d-ok":s.divState==="bear"?"d-ng":"d-no";
     const tvSym=TV_MAP[s.t]||s.t;
@@ -1285,7 +1308,7 @@ function renderWatchlist(){
         </div>
         <div class="radar-metrics">
           <div class="radar-met"><div class="radar-ml">RSI(10)</div><div class="radar-mv ${rsi10<=30?"ok":rsi10<=38?"warn":"neu"}">${rsi10}</div></div>
-          <div class="radar-met"><div class="radar-ml">vs EMA200</div><div class="radar-mv ${epct>=0?"ok":epct>=-15?"warn":"ng"}">${epct>=0?"+":""}${epct.toFixed(1)}%</div></div>
+          <div class="radar-met"><div class="radar-ml">vs EMA200</div><div class="radar-mv ${epct>=0?"ok":epct>=-10?"warn":"ng"}">${epct>=0?"+":""}${epct.toFixed(1)}%</div></div>
           <div class="radar-met"><div class="radar-ml">vs POC</div><div class="radar-mv ${ppct<=-15?"ok":ppct<=-5?"warn":"ng"}">${ppct.toFixed(1)}%</div></div>
         </div>
         <div class="radar-progress">
@@ -1551,6 +1574,9 @@ async function syncFromRepo(){
         if(q.bb_below!=null&&!s._manualBB)s.bbState=q.bb_below?"below":(q.bb_above?"above":"inside");
         if(q.rsi_bounced_15!=null&&!s._manualBounce)s.rsiBounce=q.rsi_bounced_15;
         if(q.div_bullish!=null&&!s._manualDiv)s.divState=q.div_bullish?"bull":s.divState==="bear"?"bear":"none";
+        if(q.bb_squeeze!=null)s.bbSqueeze=q.bb_squeeze;
+        if(q.rsi_prev!=null)s.rsiPrev=q.rsi_prev;
+        if(q.promoted_by_div!=null)s.promotedByDiv=q.promoted_by_div;
         updated++;
         logWf(`  ✓ ${s.t}: precio=$${q.price} RSI=${q.rsi10} EMA200=$${q.ema200}`, "log-ok");
       } else {
