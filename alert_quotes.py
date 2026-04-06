@@ -1308,7 +1308,7 @@ _dj_full["daily"]  = _daily
 _dj_full["cycles"] = cycles
 # Persistir quotes frescos para que el modo intradiario los lea (incluye promoted_by_div)
 _quotes_to_save = {}
-for _t, _q_raw, _ep, _pp, _sc in all_results:
+for _t, _sc, _q_raw, _ep, _pp in all_results:
     _quotes_to_save[_t] = _q_raw
 _dj_full["quotes"] = _quotes_to_save
 with open("data.json", "w") as f:
