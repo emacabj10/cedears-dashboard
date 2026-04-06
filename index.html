@@ -433,8 +433,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="fbtn" id="wl-f-watch" onclick="wlFilter('watch',this)">Watch</button>
       <button class="fbtn" id="wl-f-radar" onclick="wlFilter('radar',this)">Radar</button>
       <div style="width:1px;background:#21262d;margin:0 2px"></div>
-      <button class="fbtn" id="wl-s-score" onclick="wlSort('score',this)" style="color:#58a6ff;border-color:#1f6feb">Score ↓</button>
-      <button class="fbtn" id="wl-s-az" onclick="wlSort('az',this)">A→Z</button>
+      <button class="fbtn" id="wl-s-score" onclick="wlSort('score',this)">Score ↓</button>
+      <button class="fbtn active" id="wl-s-az" onclick="wlSort('az',this)" style="color:#58a6ff;border-color:#1f6feb">A→Z</button>
       <button class="fbtn" id="wl-s-rsi" onclick="wlSort('rsi',this)">RSI ↑</button>
     </div>
   </div>
@@ -1329,7 +1329,7 @@ function renderWatchlist(){
 // RENDER PANEL COMPLETO — eliminado, funciones legacy mantenidas como stubs
 // ═══════════════════════════════════════════════════════════════════════════
 let curFilt="all",curSort="az";
-let wlCurrentSort="score"; // score | az | rsi
+let wlCurrentSort="az"; // score | az | rsi
 
 function wlSort(type, btn){
   wlCurrentSort=type;
