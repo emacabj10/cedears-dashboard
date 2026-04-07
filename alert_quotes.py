@@ -1047,30 +1047,31 @@ for ticker, sym in YF_MAP.items():
         print(f"  [CICLO] {ticker}: RSI bajó de 45 ({rsi10}) → rsi_reset=True")
         save_cycle(ticker, cyc)
 
-    # Fase 4: rsi_reset activo + nuevo rebote técnico válido → despertar
-    rebote_valido = rsi_bounced and bb_recov
-    if is_silenced and rsi_reset and rebote_valido:
+    # Fase 4: rsi_reset activo → despertar automático y devolver al clasificador normal.
+    # Ya no se exige rebote+BB aquí: el clasificador evaluará score, watchlist o radar
+    # con los indicadores actuales, igual que cualquier activo sin ciclo activo.
+    if is_silenced and rsi_reset:
         _posicion_previa = cyc.get("posicion", "completa")
         cyc["is_silenced"] = False
         cyc["rsi_hit_50"]  = False
         cyc["rsi_reset"]   = False
         cyc["posicion"]    = None
         is_silenced = False
-        print(f"  [CICLO] {ticker}: DESPERTAR — ciclo completado (posicion_previa={_posicion_previa})")
+        print(f"  [CICLO] {ticker}: DESPERTAR — ciclo reset completado (posicion_previa={_posicion_previa})")
         save_cycle(ticker, cyc)
         # Notificar despertar con contexto de posicion
         if _posicion_previa == "media":
             send_telegram(
                 f"🔔 <b>{ticker}</b> — Ciclo completado\n"
-                f" Tenés <b>media posición</b> abierta en este activo.\n"
-                f"El setup técnico se renovó — si la señal confirma, "
+                f"Tenés <b>media posición</b> abierta en este activo.\n"
+                f"El activo vuelve al análisis normal — si la señal confirma, "
                 f"podés <b>completar a posición completa</b>.\n"
             )
         else:
             send_telegram(
                 f"🔔 <b>{ticker}</b> — Ciclo completado\n"
-                f" Posición previa era completa. "
-                f"Si la señal confirma, podés evaluar una <b>nueva entrada</b>.\n"
+                f"Posición previa era completa. "
+                f"El activo vuelve al análisis normal — si la señal confirma, podés evaluar una <b>nueva entrada</b>.\n"
             )
 
     # ── Clasificación — condiciones ──────────────────────────────────────────
@@ -1101,16 +1102,15 @@ for ticker, sym in YF_MAP.items():
         and score >= 2
     )
 
-    # div_to_watchlist: divergencia con score bajo — setup embrionario a monitorear
-    div_to_watchlist = div and score <= 1 and rsi10 <= 45
+    # div_to_watchlist: divergencia con score bajo — setup embrionario a monitorear.
+    # RSI <= 35 evita watchlists por divergencia cuando el RSI está simplemente "débil"
+    # pero no en zona de oversold real. Activos con RSI 36-45 + div se ignoran.
+    div_to_watchlist = div and score <= 1 and rsi10 <= 35
 
-    # Activo silenciado: solo puede aparecer en radar si rsi_reset=True y RSI < 45
+    # Activo silenciado: si llegó acá, aún no completó el reset → ignorado.
+    # (El despertar automático ocurre en Fase 4, antes de este bloque)
     if is_silenced:
-        if rsi_reset and rsi10 < 45:
-            print(f"  [CICLO] {ticker}: silenciado en radar (rsi_reset, RSI={rsi10})")
-            radar_info.append((ticker, q, epct, ppct, score))
-        else:
-            print(f"  [CICLO] {ticker}: silenciado — ignorado (RSI={rsi10} hit50={rsi_hit_50} reset={rsi_reset})")
+        print(f"  [CICLO] {ticker}: silenciado — ignorado (RSI={rsi10} hit50={rsi_hit_50} reset={rsi_reset})")
     elif score == 3 and rsi_bounced_15 and rsi10 <= 45:
         q["promoted_by_div"] = False   # señal orgánica, no promovida
         dir_tag = f" {rsi_direction}" if rsi_direction != "lateral" else ""
