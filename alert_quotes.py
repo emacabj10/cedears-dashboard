@@ -1055,7 +1055,7 @@ for ticker, sym in YF_MAP.items():
         cyc["is_silenced"] = False
         cyc["rsi_hit_50"]  = False
         cyc["rsi_reset"]   = False
-        cyc["posicion"]    = None
+        cyc.pop("posicion", None)
         is_silenced = False
         print(f"  [CICLO] {ticker}: DESPERTAR — ciclo reset completado (posicion_previa={_posicion_previa})")
         save_cycle(ticker, cyc)
