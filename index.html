@@ -699,7 +699,7 @@ function scoreTelegram(s){
   const watchlistScore2=(score===2&&!rsiBounced&&rsi10<=45&&epct>=-10);
   const bbEmaWatchlist=(bbRecov&&epct>=-5&&!rsiBounced&&rsi10<=45);
   const divToSignal=(div&&bbRecov&&(rsiBounced||epct>=-10)&&score>=2);
-  const divToWatchlist=(div&&score<=1&&rsi10<=45);
+  const divToWatchlist=(div&&score<=1&&rsi10<=35); // igual que alert_quotes.py: solo oversold real
 
   // Promoción por divergencia: score 2 + div + emaOk -> efectivo 3
   const promotedByDiv=divToSignal&&score===2&&emaOk;
