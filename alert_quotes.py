@@ -89,6 +89,19 @@ def calc_ema_trend(closes, period=200):
     slope = (last20[-1]-last20[0])/last20[0]*100
     return "subiendo" if slope>1.5 else ("bajando" if slope<-1.5 else "lateral")
 
+def calc_ema_slope(closes, period=200):
+    """Slope numérico de la EMA200 sobre los últimos 20 días (% de cambio).
+    Positivo = EMA subiendo. Umbral > 0.8% confirma tendencia alcista sostenida."""
+    if len(closes) < period + 20: return 0.0
+    k = 2 / (period + 1)
+    ema = sum(closes[:period]) / period
+    emas = []
+    for c in closes[period:]:
+        ema = c * k + ema * (1 - k)
+        emas.append(ema)
+    last20 = emas[-20:]
+    return round((last20[-1] - last20[0]) / last20[0] * 100, 3)
+
 def calc_bb_lower(closes, period=20, std=2):
     if len(closes) < period: return None
     window = closes[-period:]
@@ -136,6 +149,7 @@ def fetch_ticker(sym):
         rsi_w     = calc_rsi(w_closes, 10)
         ema200    = calc_ema(closes, 200)
         ema_trend = calc_ema_trend(closes, 200)
+        ema_slope = calc_ema_slope(closes, 200)
         bb_lo     = calc_bb_lower(closes, 20, 2)
         bb_lo_prev = calc_bb_lower(closes[:-1], 20, 2)
         bb_hi     = calc_bb_upper(closes, 20, 2)
@@ -215,7 +229,7 @@ def fetch_ticker(sym):
 
         return {
             "price":price,"rsi10":rsi10,"rsi_prev":rsi_prev,
-            "rsiW":rsi_w,"ema200":ema200,"emaTrend":ema_trend,
+            "rsiW":rsi_w,"ema200":ema200,"emaTrend":ema_trend,"emaSlope":ema_slope,
             "bb_lo":bb_lo,"bb_hi":bb_hi,"bb_recov":bb_recov,
             "bb_below":bb_below,"bb_above":bb_above,
             "bb_squeeze":bb_squeeze,"bb_near_lo":bb_near_lo,
@@ -1040,6 +1054,35 @@ for ticker, sym in YF_MAP.items():
         print(f"  [CICLO] {ticker}: RSI cruzó 50 ({rsi10}) → rsi_hit_50=True")
         save_cycle(ticker, cyc)
 
+    # Fase 2.5: Aviso único para completar media posición
+    # Condiciones: posicion=="media" (no avisado aún) + precio cerca EMA + slope > 0.8% + RSI > 50
+    # Una vez enviado, posicion pasa a "media_avisado" para no repetir.
+    _posicion_actual = cyc.get("posicion", "")
+    if is_silenced and _posicion_actual == "media":
+        _ema_slope  = q.get("emaSlope", 0.0) or 0.0
+        _epct_ciclo = (rsi10 and q.get("ema200")) and ((q["price"] - q["ema200"]) / q["ema200"] * 100) or -99
+        _epct_ciclo = (q["price"] - (q.get("ema200") or q["price"])) / (q.get("ema200") or q["price"]) * 100
+        dist_ok  = _epct_ciclo >= -10
+        trend_ok = _ema_slope > 0.8
+        rsi_ok   = rsi10 > 50
+        print(f"  [CICLO] {ticker}: media posición — slope={_ema_slope:.3f}% dist={_epct_ciclo:.1f}% rsi={rsi10} → dist_ok={dist_ok} trend_ok={trend_ok} rsi_ok={rsi_ok}")
+        if dist_ok and trend_ok and rsi_ok:
+            cyc["posicion"] = "media_avisado"
+            save_cycle(ticker, cyc)
+            _tv_sym_med = TV_MAP.get(ticker, ticker)
+            send_telegram(
+                f"📈 <b>{ticker}</b> — Considerá completar tu posición\n"
+                f"\n"
+                f"Tenés <b>media posición</b> abierta. La tendencia confirma fuerza:\n"
+                f"• EMA200 con pendiente <b>+{_ema_slope:.2f}%</b> (tendencia alcista sostenida)\n"
+                f"• Precio <b>{_epct_ciclo:+.1f}%</b> respecto a EMA200\n"
+                f"• RSI(10): <b>{rsi10}</b> — momentum alcista activo\n"
+                f"\n"
+                f"💡 Si el setup sigue favorable, podés <b>completar a posición completa</b>.\n"
+                f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_med}">Ver gráfico en TradingView →</a>'
+            )
+            print(f"  [CICLO] {ticker}: aviso 'completar posición' enviado → posicion=media_avisado")
+
     # Fase 3: RSI_hit_50 confirmado + RSI vuelve a caer bajo 45 → rsi_reset
     if is_silenced and rsi_hit_50 and not rsi_reset and rsi10 < 45:
         cyc["rsi_reset"] = True
@@ -1060,13 +1103,20 @@ for ticker, sym in YF_MAP.items():
         print(f"  [CICLO] {ticker}: DESPERTAR — ciclo reset completado (posicion_previa={_posicion_previa})")
         save_cycle(ticker, cyc)
         # Notificar despertar con contexto de posicion
-        if _posicion_previa == "media":
-            send_telegram(
-                f"🔔 <b>{ticker}</b> — Ciclo completado\n"
-                f"Tenés <b>media posición</b> abierta en este activo.\n"
-                f"El activo vuelve al análisis normal — si la señal confirma, "
-                f"podés <b>completar a posición completa</b>.\n"
-            )
+        if _posicion_previa in ("media", "media_avisado"):
+            if _posicion_previa == "media_avisado":
+                send_telegram(
+                    f"🔔 <b>{ticker}</b> — Ciclo completado\n"
+                    f"Tenés <b>media posición</b> abierta (ya recibiste aviso de completar).\n"
+                    f"El activo vuelve al análisis normal — evaluá si la señal justifica acción.\n"
+                )
+            else:
+                send_telegram(
+                    f"🔔 <b>{ticker}</b> — Ciclo completado\n"
+                    f"Tenés <b>media posición</b> abierta en este activo.\n"
+                    f"El activo vuelve al análisis normal — si la señal confirma, "
+                    f"podés <b>completar a posición completa</b>.\n"
+                )
         else:
             send_telegram(
                 f"🔔 <b>{ticker}</b> — Ciclo completado\n"
