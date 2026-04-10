@@ -43,6 +43,7 @@ YF_MAP = {
     "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD",
 
 
+    "NU":"NU",
 }
 
 BOT_NOTES = [
