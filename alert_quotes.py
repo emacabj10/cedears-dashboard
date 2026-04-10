@@ -44,6 +44,7 @@ YF_MAP = {
 
 
     "NU":"NU",
+    "NVDA":"NVDA",
 }
 
 BOT_NOTES = [
