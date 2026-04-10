@@ -12,6 +12,7 @@ YF_MAP = {
 
 
     "NU":"NU",
+    "NVDA":"NVDA",
 }
 
 def calc_rsi(closes, period=10):
