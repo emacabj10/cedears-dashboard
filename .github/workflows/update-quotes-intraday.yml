@@ -4,7 +4,7 @@ on:
   schedule:
     # Lun-Vie, cada 10 minutos en horario de mercado ARG (13:40–19:20 UTC)
     # Los crons de :30 están en el workflow diario — estos cubren el resto
-    - cron: '*/10 10,11,12,13,14,15,16,17,18 * * 0-6'
+    - cron: '*/10 11,12,13,14,15,16,17,18 * * 0-6'
   workflow_dispatch:
     inputs:
       intraday_check:
