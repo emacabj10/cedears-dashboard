@@ -11,6 +11,7 @@ YF_MAP = {
     "GLD":"GLD",
 
 
+    "NU":"NU",
 }
 
 def calc_rsi(closes, period=10):
