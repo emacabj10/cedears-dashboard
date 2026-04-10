@@ -17,6 +17,8 @@ FUND = {
     "ETH":"buenos","BNB":"buenos","GLD":"buenos",
     "AMD":"buenos","KO":"buenos","PEP":"buenos",
     "MCD":"buenos","BABA":"buenos","TSLA":"controversiales",
+    "NU":"buenos","NVDA":"excelentes","AAPL":"excelentes",
+    "INTC":"buenos"
 
 
 }
@@ -30,7 +32,8 @@ TV_MAP = {
     "KO":"NYSE:KO","PEP":"NASDAQ:PEP","MCD":"NYSE:MCD",
     "BABA":"NYSE:BABA","TSLA":"NASDAQ:TSLA",
     "GLD":"AMEX:GLD","BTC":"BINANCE:BTCUSDT","ETH":"BINANCE:ETHUSDT",
-    "BNB":"BINANCE:BNBUSDT",
+    "BNB":"BINANCE:BNBUSDT","NU":"buenos","NVDA":"excelentes","AAPL":"excelentes",
+    "INTC":"buenos"
 
 
 }
@@ -41,12 +44,7 @@ YF_MAP = {
     "GOOGL":"GOOGL","KO":"KO","MCD":"MCD","MELI":"MELI","META":"META",
     "MSFT":"MSFT","PEP":"PEP","QQQ":"QQQ",
     "SPY":"SPY","TSLA":"TSLA","V":"V","WMT":"WMT","GLD":"GLD",
-
-
-    "NU":"NU",
-    "NVDA":"NVDA",
-    "AAPL":"AAPL",
-    "INTC":"INTC",
+    "NU":"NU","NVDA":"NVDA", "AAPL":"AAPL", "INTC":"INTC"
 }
 
 BOT_NOTES = [
