@@ -628,7 +628,7 @@ const TV_MAP={
   BABA:"NYSE:BABA",TSLA:"NASDAQ:TSLA",
   GLD:"AMEX:GLD",BTC:"BINANCE:BTCUSDT",ETH:"BINANCE:ETHUSDT",
   BNB:"BINANCE:BNBUSDT",NVDA:"NASDAQ:NVDA",AAPL:"NASDAQ:AAPL",
-  INTC:"NASDAQ:INTC",NU:"NASDAQ:NU",
+  INTC:"NASDAQ:INTC",NU:"NYSE:NU",
 };
 
 let CUSTOM_FUND={};
@@ -897,12 +897,20 @@ async function loadFromStorage(){
     const saved=localStorage.getItem(OVERRIDES_KEY);
     if(saved){
       const parsed=JSON.parse(saved);
+      // Validar que tiene el formato nuevo (con campo 'overrides')
+      // Si no tiene 'overrides', es el formato viejo — ignorarlo
+      if(!parsed.overrides && !parsed.customTickers && !parsed.customFund){
+        localStorage.removeItem(OVERRIDES_KEY);
+        console.log("localStorage formato viejo detectado — limpiado");
+      } else {
       const savedCustomFund=parsed.customFund||{};
       const savedDeleted=parsed.deleted||[];
       const savedOverrides=parsed.overrides||{};
       const savedCustomTickers=parsed.customTickers||[];
       Object.assign(CUSTOM_FUND,savedCustomFund);
-      savedDeleted.forEach(t=>{DELETED_TICKERS.add(t);});
+      // Solo agregar a DELETED si el ticker NO está en el array base del HTML
+      const baseDataTickers=new Set(data.map(d=>d.t));
+      savedDeleted.filter(t=>!baseDataTickers.has(t)).forEach(t=>{DELETED_TICKERS.add(t);});
       data=data.filter(d=>!DELETED_TICKERS.has(d.t));
       // Restaurar tickers custom agregados manualmente
       savedCustomTickers.forEach(s=>{
@@ -921,6 +929,7 @@ async function loadFromStorage(){
           if(o.poc!==undefined){existing.poc=o.poc;existing._manualPoc=true;}
         }
       });
+      } // cierre del else formato nuevo
     }
   }catch(e){}
 
