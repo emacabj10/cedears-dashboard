@@ -1166,7 +1166,7 @@ for ticker, sym in YF_MAP.items():
     elif score == 3 and rsi_bounced_15 and rsi10 <= 45:
         q["promoted_by_div"] = False   # señal orgánica, no promovida
         dir_tag = f" {rsi_direction}" if rsi_direction != "lateral" else ""
-        print(f"  >>> SEÑAL 3/3: {ticker}{dir_tag} rsi_prev={q.get("rsi_prev")} bb_recov={bb_recov} epct={epct:.1f}")
+        print(f"  >>> SEÑAL 3/3: {ticker}{dir_tag} rsi_prev={q.get('rsi_prev')} bb_recov={bb_recov} epct={epct:.1f}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
     elif div_to_signal:
         score = 3
