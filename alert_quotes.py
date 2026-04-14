@@ -1053,7 +1053,7 @@ for ticker, sym in YF_MAP.items():
     if is_silenced and not rsi_hit_50 and rsi10 > 50:
         cyc["rsi_hit_50"] = True
         rsi_hit_50 = True
-        print(f"  [CICLO] {ticker}: RSI cruzó 50 ({rsi10}) → rsi_hit_50=True")
+        print(f"  [CICLO] {ticker}: RSI cruzó 50 → rsi_hit_50=True")
         save_cycle(ticker, cyc)
 
     # Fase 2.5: Aviso único para completar media posición
@@ -1089,7 +1089,7 @@ for ticker, sym in YF_MAP.items():
     if is_silenced and rsi_hit_50 and not rsi_reset and rsi10 < 45:
         cyc["rsi_reset"] = True
         rsi_reset = True
-        print(f"  [CICLO] {ticker}: RSI bajó de 45 ({rsi10}) → rsi_reset=True")
+        print(f"  [CICLO] {ticker}: RSI bajó de 45 → rsi_reset=True")
         save_cycle(ticker, cyc)
 
     # Fase 4: rsi_reset activo → despertar automático y devolver al clasificador normal.
@@ -1162,7 +1162,7 @@ for ticker, sym in YF_MAP.items():
     # Activo silenciado: si llegó acá, aún no completó el reset → ignorado.
     # (El despertar automático ocurre en Fase 4, antes de este bloque)
     if is_silenced:
-        print(f"  [CICLO] {ticker}: silenciado — ignorado (RSI={rsi10} hit50={rsi_hit_50} reset={rsi_reset})")
+        print(f"  [CICLO] {ticker}: silenciado — ignorado (hit50={rsi_hit_50} reset={rsi_reset})")
     elif score == 3 and rsi_bounced_15 and rsi10 <= 45:
         q["promoted_by_div"] = False   # señal orgánica, no promovida
         dir_tag = f" {rsi_direction}" if rsi_direction != "lateral" else ""
