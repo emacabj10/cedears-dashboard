@@ -32,8 +32,8 @@ TV_MAP = {
     "KO":"NYSE:KO","PEP":"NASDAQ:PEP","MCD":"NYSE:MCD",
     "BABA":"NYSE:BABA","TSLA":"NASDAQ:TSLA",
     "GLD":"AMEX:GLD","BTC":"BINANCE:BTCUSDT","ETH":"BINANCE:ETHUSDT",
-    "BNB":"BINANCE:BNBUSDT","NU":"buenos","NVDA":"excelentes","AAPL":"excelentes",
-    "INTC":"buenos",
+    "BNB":"BINANCE:BNBUSDT","NU":"NYSE:NU","NVDA":"NASDAQ:NVDA","AAPL":"NASDAQ:AAPL",
+    "INTC":"NASDAQ:INTC",
 
 
 }
@@ -1062,7 +1062,6 @@ for ticker, sym in YF_MAP.items():
     _posicion_actual = cyc.get("posicion", "")
     if is_silenced and _posicion_actual == "media":
         _ema_slope  = q.get("emaSlope", 0.0) or 0.0
-        _epct_ciclo = (rsi10 and q.get("ema200")) and ((q["price"] - q["ema200"]) / q["ema200"] * 100) or -99
         _epct_ciclo = (q["price"] - (q.get("ema200") or q["price"])) / (q.get("ema200") or q["price"]) * 100
         dist_ok  = _epct_ciclo >= -10
         trend_ok = _ema_slope > 0.8
@@ -1162,7 +1161,7 @@ for ticker, sym in YF_MAP.items():
     # Activo silenciado: si llegó acá, aún no completó el reset → ignorado.
     # (El despertar automático ocurre en Fase 4, antes de este bloque)
     if is_silenced:
-        print(f"  [CICLO] {ticker}: silenciado — ignorado (hit50={rsi_hit_50} reset={rsi_reset})")
+        print(f"  [CICLO] {ticker}: silenciado — ignorado (rsi_hit_50={rsi_hit_50} rsi_reset={rsi_reset})")
     elif score == 3 and rsi_bounced_15 and rsi10 <= 45:
         q["promoted_by_div"] = False   # señal orgánica, no promovida
         dir_tag = f" {rsi_direction}" if rsi_direction != "lateral" else ""
