@@ -1002,9 +1002,10 @@
   },
   "cycles": {
     "BRK.B": {
-      "is_silenced": false,
+      "is_silenced": true,
       "rsi_hit_50": false,
-      "rsi_reset": false
+      "rsi_reset": false,
+      "posicion": "completa"
     },
     "MCD": {
       "is_silenced": false,
@@ -1036,6 +1037,12 @@
     "watchlist": [
       "MCD"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "BRK.B",
+        "price": "$469.61",
+        "hora": "15:09"
+      }
+    ]
   }
 }
