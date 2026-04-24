@@ -1029,19 +1029,11 @@
     }
   },
   "daily": {
-    "date": "2026-04-23",
-    "signals": [
-      "BRK.B"
-    ],
+    "date": "2026-04-24",
+    "signals": [],
     "watchlist": [
       "MCD"
     ],
-    "entradas": [
-      {
-        "ticker": "BRK.B",
-        "price": "$469.61",
-        "hora": "15:09"
-      }
-    ]
+    "entradas": []
   }
 }
