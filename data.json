@@ -1007,9 +1007,10 @@
       "posicion": "completa"
     },
     "MCD": {
-      "is_silenced": false,
+      "is_silenced": true,
       "rsi_hit_50": false,
-      "rsi_reset": false
+      "rsi_reset": false,
+      "posicion": "completa"
     },
     "GLD": {
       "is_silenced": false,
@@ -1034,6 +1035,12 @@
       "MCD"
     ],
     "watchlist": [],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "MCD",
+        "price": "$294.31",
+        "hora": "14:20"
+      }
+    ]
   }
 }
