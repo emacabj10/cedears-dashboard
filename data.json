@@ -1029,17 +1029,9 @@
     }
   },
   "daily": {
-    "date": "2026-04-28",
-    "signals": [
-      "MCD"
-    ],
+    "date": "2026-04-29",
+    "signals": [],
     "watchlist": [],
-    "entradas": [
-      {
-        "ticker": "MCD",
-        "price": "$294.31",
-        "hora": "14:20"
-      }
-    ]
+    "entradas": []
   }
 }
