@@ -1030,11 +1030,9 @@
     }
   },
   "daily": {
-    "date": "2026-05-01",
+    "date": "2026-05-02",
     "signals": [],
-    "watchlist": [
-      "GLD"
-    ],
+    "watchlist": [],
     "entradas": []
   }
 }
