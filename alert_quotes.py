@@ -740,13 +740,15 @@ except: pass
 
 def get_cycle(ticker):
     """Devuelve el estado del ciclo para un ticker.
-    Estructura: {is_silenced, rsi_hit_50, rsi_reset}
+    Estructura: {is_silenced, rsi_hit_50, rsi_reset, override_sent}
+    override_sent: False = no enviado | True = alerta setup enviada | "deep" = alerta profundizacion enviada
     """
-    return cycles.get(ticker, {
-        "is_silenced": False,
-        "rsi_hit_50":  False,
-        "rsi_reset":   False,
-    })
+    cyc = cycles.get(ticker, {})
+    cyc.setdefault("is_silenced",   False)
+    cyc.setdefault("rsi_hit_50",    False)
+    cyc.setdefault("rsi_reset",     False)
+    cyc.setdefault("override_sent", False)
+    return cyc
 
 def save_cycle(ticker, state):
     cycles[ticker] = state
@@ -1096,9 +1098,10 @@ for ticker, sym in YF_MAP.items():
     # con los indicadores actuales, igual que cualquier activo sin ciclo activo.
     if is_silenced and rsi_reset:
         _posicion_previa = cyc.get("posicion", "completa")
-        cyc["is_silenced"] = False
-        cyc["rsi_hit_50"]  = False
-        cyc["rsi_reset"]   = False
+        cyc["is_silenced"]   = False
+        cyc["rsi_hit_50"]    = False
+        cyc["rsi_reset"]     = False
+        cyc["override_sent"] = False
         cyc.pop("posicion", None)
         is_silenced = False
         print(f"  [CICLO] {ticker}: DESPERTAR — ciclo reset completado (posicion_previa={_posicion_previa})")
@@ -1161,6 +1164,44 @@ for ticker, sym in YF_MAP.items():
     # Activo silenciado: si llegó acá, aún no completó el reset → ignorado.
     # (El despertar automático ocurre en Fase 4, antes de este bloque)
     if is_silenced:
+        # ── Override informativo: setup técnico armado durante silencio ──────
+        # Condiciones: RSI <= 30 + BB recuperado + precio bajo EMA200 >= -5% + RSI subiendo
+        # Se envía UNA sola vez (flag override_sent). Re-trigger si RSI profundiza <= 25.
+        # No modifica el ciclo ni genera señal oficial — solo informativo.
+        _override_sent = cyc.get("override_sent", False)
+        _setup_armado = (
+            rsi10 <= 30
+            and bb_recov
+            and epct <= -5
+            and rsi_direction == "subiendo"
+        )
+        _tv_sym_ov = TV_MAP.get(ticker, ticker)
+        if _setup_armado and not _override_sent:
+            cyc["override_sent"] = True
+            save_cycle(ticker, cyc)
+            print(f"  [CICLO-OVERRIDE] {ticker}: setup armado durante silencio → alerta enviada")
+            send_telegram(
+                f"⚠️ <b>{ticker}</b> — Setup durante ciclo silenciado\n"
+                f"\n"
+                f"RSI(10): <b>{rsi10:.1f}↗️</b> · Precio: <b>${q['price']:.2f}</b>\n"
+                f"EMA200: <b>{epct:+.1f}%</b> · BB↑ confirmado\n"
+                f"\n"
+                f"⚙️ Ciclo activo (posición previa). <i>Solo informativo — el sistema no actúa.</i>\n"
+                f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_ov}">Ver en TradingView →</a>'
+            )
+        elif _setup_armado and _override_sent == True and rsi10 <= 25:
+            cyc["override_sent"] = "deep"
+            save_cycle(ticker, cyc)
+            print(f"  [CICLO-OVERRIDE] {ticker}: RSI profundiza ({rsi10:.1f}) → alerta deep enviada")
+            send_telegram(
+                f"🔻 <b>{ticker}</b> — RSI profundiza durante ciclo silenciado\n"
+                f"\n"
+                f"RSI(10): <b>{rsi10:.1f}↗️</b> · Precio: <b>${q['price']:.2f}</b>\n"
+                f"EMA200: <b>{epct:+.1f}%</b> · BB↑ activo\n"
+                f"\n"
+                f"Setup se fortalece. Ciclo aún activo. <i>Solo informativo.</i>\n"
+                f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_ov}">Ver en TradingView →</a>'
+            )
         print(f"  [CICLO] {ticker}: silenciado — ignorado (rsi_hit_50={rsi_hit_50} rsi_reset={rsi_reset})")
     elif score == 3 and rsi_bounced_15 and rsi10 <= 45:
         q["promoted_by_div"] = False   # señal orgánica, no promovida
