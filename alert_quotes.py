@@ -875,7 +875,14 @@ if _INTRADAY:
             and _score_i <= 1
             and _rsi10_i <= 45
         )
-        watchlist_still_active = _watch_score2 or _watch_bb_ema or _watch_div
+        _watch_rsi_ema_pending_bb = (
+            _score_i == 2
+            and rsi_bounced_15
+            and not bb_recov_saved
+            and _rsi10_i <= 50
+            and _ema_ok_med_i
+        )
+        watchlist_still_active = _watch_score2 or _watch_bb_ema or _watch_div or _watch_rsi_ema_pending_bb
 
         # Si estaba en watchlist y sigue siendo watchlist → skip (ya fue avisado)
         if _intra_in_watchlist and not signal_still_active:
@@ -1161,6 +1168,20 @@ for ticker, sym in YF_MAP.items():
     # pero no en zona de oversold real. Activos con RSI 36-45 + div se ignoran.
     div_to_watchlist = div and score <= 1 and rsi10 <= 35
 
+    # watchlist_rsi_ema_pending_bb: RSI rebotó desde oversold + EMA ok, solo falta BB.
+    # Caso típico: activo que completó el rebote RSI hace varias velas, se alejó del
+    # oversold (rsi10 30-50), pero el precio nunca llegó a tocar/recuperar la banda
+    # inferior de Bollinger. Sin esta condición cae en "ignorado" porque watchlist_score2
+    # exige not rsi_bounced_15. RSI <= 50 evita capturar activos que ya recuperaron
+    # momentum completo y no necesitan monitoreo especial.
+    watchlist_rsi_ema_pending_bb = (
+        score == 2
+        and rsi_bounced_15
+        and not bb_recov
+        and rsi10 <= 50
+        and epct >= -10
+    )
+
     # Activo silenciado: si llegó acá, aún no completó el reset → ignorado.
     # (El despertar automático ocurre en Fase 4, antes de este bloque)
     if is_silenced:
@@ -1213,9 +1234,9 @@ for ticker, sym in YF_MAP.items():
         q["promoted_by_div"] = True
         print(f"  >>> SEÑAL DIV 3/3+div: {ticker} epct={epct:.1f} bb_recov={bb_recov}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
-    elif watchlist_score2 or bb_ema_watchlist or div_to_watchlist:
+    elif watchlist_score2 or bb_ema_watchlist or div_to_watchlist or watchlist_rsi_ema_pending_bb:
         q["promoted_by_div"] = False   # limpiar flag si no aplica
-        reason = "bb_ema" if bb_ema_watchlist else ("div" if div_to_watchlist else "score+rsi")
+        reason = "bb_ema" if bb_ema_watchlist else ("div" if div_to_watchlist else ("rsi_ema_bb_pend" if watchlist_rsi_ema_pending_bb else "score+rsi"))
         print(f"  ... {ticker}: score={score}/3 → watchlist ({reason})")
         watchlist_found.append((ticker, score, q, epct, ppct))
     elif rsi10 <= 35 or (rsi10 < 30 and not rsi_bounced_15):
