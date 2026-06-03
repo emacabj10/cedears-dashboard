@@ -1008,6 +1008,12 @@
       "rsi_reset": false,
       "posicion": "completa",
       "override_sent": false
+    },
+    "PEP": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "media"
     }
   },
   "daily": {
@@ -1021,6 +1027,11 @@
         "ticker": "WMT",
         "price": "",
         "hora": "14:26"
+      },
+      {
+        "ticker": "PEP",
+        "price": "$142.54",
+        "hora": "17:56"
       }
     ]
   }
