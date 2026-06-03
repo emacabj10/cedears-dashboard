@@ -1033,6 +1033,12 @@
       "rsi_hit_50": false,
       "rsi_reset": false,
       "override_sent": false
+    },
+    "PEP": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "media"
     }
   },
   "daily": {
@@ -1042,6 +1048,12 @@
       "WMT"
     ],
     "watchlist": [],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "PEP",
+        "price": "$143.22",
+        "hora": "14:26"
+      }
+    ]
   }
 }
