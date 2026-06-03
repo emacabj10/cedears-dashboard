@@ -1034,11 +1034,19 @@
       "rsi_reset": false,
       "override_sent": false
     },
+<<<<<<< Updated upstream
     "PEP": {
       "is_silenced": true,
       "rsi_hit_50": false,
       "rsi_reset": false,
       "posicion": "media"
+=======
+    "WMT": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "completa"
+>>>>>>> Stashed changes
     }
   },
   "daily": {
@@ -1050,8 +1058,13 @@
     "watchlist": [],
     "entradas": [
       {
+<<<<<<< Updated upstream
         "ticker": "PEP",
         "price": "$143.22",
+=======
+        "ticker": "WMT",
+        "price": "$116.55",
+>>>>>>> Stashed changes
         "hora": "14:26"
       }
     ]
