@@ -1014,6 +1014,12 @@
       "rsi_reset": false,
       "posicion": "media",
       "override_sent": false
+    },
+    "GLD": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "completa"
     }
   },
   "daily": {
@@ -1026,6 +1032,12 @@
       "TSLA",
       "NVDA"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "GLD",
+        "price": "$397.11",
+        "hora": "13:20"
+      }
+    ]
   }
 }
