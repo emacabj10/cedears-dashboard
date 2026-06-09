@@ -1020,6 +1020,12 @@
       "rsi_reset": false,
       "posicion": "completa",
       "override_sent": false
+    },
+    "GOOGL": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "completa"
     }
   },
   "daily": {
@@ -1033,6 +1039,12 @@
       "META",
       "NU"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "GOOGL",
+        "price": "$363.88",
+        "hora": "16:37"
+      }
+    ]
   }
 }
