@@ -1026,6 +1026,12 @@
       "rsi_reset": false,
       "posicion": "completa",
       "override_sent": false
+    },
+    "AMZN": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "completa"
     }
   },
   "daily": {
@@ -1041,6 +1047,12 @@
       "SPY",
       "AAPL"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "AMZN",
+        "price": "$241.49",
+        "hora": "10:51"
+      }
+    ]
   }
 }
