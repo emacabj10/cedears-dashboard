@@ -1035,12 +1035,11 @@
     }
   },
   "daily": {
-    "date": "2026-06-21",
+    "date": "2026-06-22",
     "signals": [],
     "watchlist": [
-      "PEP",
-      "META",
-      "GOOGL"
+      "GOOGL",
+      "PEP"
     ],
     "entradas": []
   }
