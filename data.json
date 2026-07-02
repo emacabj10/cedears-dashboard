@@ -1032,6 +1032,12 @@
       "rsi_reset": false,
       "posicion": "completa",
       "override_sent": false
+    },
+    "MCD": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "media"
     }
   },
   "daily": {
@@ -1045,6 +1051,12 @@
       "BNB",
       "MSFT"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "MCD",
+        "price": "$270.43",
+        "hora": "07:49"
+      }
+    ]
   }
 }
