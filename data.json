@@ -1008,10 +1008,10 @@
       "override_sent": false
     },
     "PEP": {
-      "is_silenced": false,
+      "is_silenced": true,
       "rsi_hit_50": false,
       "rsi_reset": false,
-      "override_sent": false
+      "posicion": "media"
     },
     "GLD": {
       "is_silenced": true,
@@ -1056,6 +1056,11 @@
         "ticker": "MCD",
         "price": "$270.43",
         "hora": "07:49"
+      },
+      {
+        "ticker": "PEP",
+        "price": "$140.58",
+        "hora": "07:50"
       }
     ]
   }
