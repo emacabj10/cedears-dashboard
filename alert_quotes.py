@@ -159,13 +159,17 @@ def fetch_ticker(sym):
         poc_proxy = calc_poc_proxy(closes)
         price_prev = closes[-2] if len(closes) >= 2 else price
 
-        # ── Rebote Bollinger — ventana de 5 velas ────────────────────────────
-        # Alguna de las últimas 4 velas cerró debajo de bb_lo en ese momento,
-        # y la vela actual cerró encima (recuperó la banda).
+        # ── Rebote Bollinger — ventana adaptativa ────────────────────────────
+        # Activos "excelentes" (más volátiles): ventana 5 velas — respuesta rápida.
+        # Activos "buenos"/"controversiales" (defensivos/lentos como KO, PEP, MCD):
+        # ventana 7 velas — tardan más en tocar y recuperar la banda inferior.
         # price > price_prev confirma momentum alcista — filtra dead cat bounces.
+        _yf_inv = {v: k for k, v in YF_MAP.items()}
+        _fund_ticker = FUND.get(_yf_inv.get(sym, sym), "buenos")
+        _bb_window = 5 if _fund_ticker == "excelentes" else 7
         bb_recov = False
         if bb_lo is not None and price >= bb_lo and price > price_prev:
-            for lookback in range(1, 6):   # velas 1..5 hacia atrás
+            for lookback in range(1, _bb_window + 1):
                 if len(closes) > lookback:
                     past_close = closes[-(lookback + 1)]
                     past_bb_lo = calc_bb_lower(closes[:-(lookback)], 20, 2)
@@ -908,19 +912,21 @@ for ticker, sym in YF_MAP.items():
     # div_to_watchlist: divergencia con score bajo — setup embrionario a monitorear.
     # RSI <= 35 evita watchlists por divergencia cuando el RSI está simplemente "débil"
     # pero no en zona de oversold real. Activos con RSI 36-45 + div se ignoran.
-    div_to_watchlist = div and score <= 1 and rsi10 <= 35
+    # epct <= 5: excluye activos ya extendidos sobre la EMA — divergencia en esa zona
+    # suele indicar debilidad gradual, no oportunidad de compra.
+    div_to_watchlist = div and score <= 1 and rsi10 <= 35 and epct <= 5
 
     # watchlist_rsi_ema_pending_bb: RSI rebotó desde oversold + EMA ok, solo falta BB.
     # Caso típico: activo que completó el rebote RSI hace varias velas, se alejó del
-    # oversold (rsi10 30-50), pero el precio nunca llegó a tocar/recuperar la banda
+    # oversold (rsi10 30-45), pero el precio nunca llegó a tocar/recuperar la banda
     # inferior de Bollinger. Sin esta condición cae en "ignorado" porque watchlist_score2
-    # exige not rsi_bounced_15. RSI <= 50 evita capturar activos que ya recuperaron
+    # exige not rsi_bounced_15. RSI <= 45 evita capturar activos que ya recuperaron
     # momentum completo y no necesitan monitoreo especial.
     watchlist_rsi_ema_pending_bb = (
         score == 2
         and rsi_bounced_15
         and not bb_recov
-        and rsi10 <= 50
+        and rsi10 <= 45
         and epct >= -10
     )
 
@@ -1083,8 +1089,10 @@ for ticker, score, q, epct, ppct, fund in signals_found:
 
     _price_fmt = f"${q['price']:,.2f}"
     _div_note = "\n🔀 <b>Nota:</b> Señal promovida por divergencia alcista." if q.get("promoted_by_div") else ""
+    _ema_badge = f"📗 Sobre EMA200 ({epct:+.1f}%)" if epct >= 0 else f"📙 Bajo EMA200 ({epct:+.1f}%)"
     msg = (
         f"🟢 <b>{ticker} {_price_fmt} — SEÑAL {score}/3 (Diario)</b>\n"
+        f"<i>{_ema_badge}</i>\n"
         f"\n<b>Indicadores</b>\n"
         f"📉 {rsi_label_signal(rsi10, rsi_p)}\n"
         f"📈 {ema_label_signal(epct, q['emaTrend'], q['ema200'])}\n"
@@ -1205,13 +1213,21 @@ if is_cierre:
         if es_radar_valido(q, ep)
     ]
     for ticker, q, epct, ppct, score in sorted(radar_filtered, key=lambda x: x[1]["rsi10"] or 99)[:6]:
-        rsi    = q["rsi10"] or 0
+        rsi       = q["rsi10"] or 0
+        rsi_prev_r = q.get("rsi_prev") or rsi
+        _rsi_dir  = "subiendo" if rsi > rsi_prev_r else ("bajando" if rsi < rsi_prev_r else "lateral")
         partes = []
 
         if rsi < 30:
-            partes.append(f"RSI(10) en {rsi} — en zona de suelo (oversold)")
+            if _rsi_dir == "subiendo":
+                partes.append(f"RSI(10) en {rsi} subiendo — posible zona de piso, monitorear BB")
+            else:
+                partes.append(f"RSI(10) en {rsi} — en caída libre, no anticipar entrada")
         elif rsi <= 35:
-            partes.append(f"RSI(10) en {rsi} y bajando hacia 30")
+            if _rsi_dir == "subiendo":
+                partes.append(f"RSI(10) en {rsi} girando al alza desde zona baja")
+            else:
+                partes.append(f"RSI(10) en {rsi} bajando hacia 30 — aún sin señal de piso")
 
         if abs(epct) <= 1:
             partes.append(f"cerca de testear la EMA200 ({epct:+.1f}%)")
