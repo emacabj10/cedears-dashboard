@@ -14,11 +14,11 @@ FUND = {
     "META":"excelentes","BRK.B":"excelentes","V":"excelentes",
     "WMT":"excelentes","MELI":"excelentes","QQQ":"excelentes",
     "SPY":"excelentes","DIA":"excelentes","BTC":"excelentes",
-    "ETH":"buenos","BNB":"moderados","GLD":"buenos",
+    "ETH":"buenos","BNB":"buenos","GLD":"buenos",
     "AMD":"buenos","KO":"buenos","PEP":"buenos",
-    "MCD":"buenos","BABA":"controversiales","TSLA":"controversiales",
-    "NU":"excelentes","NVDA":"excelentes","AAPL":"excelentes",
-    "INTC":"moderados",
+    "MCD":"buenos","BABA":"buenos","TSLA":"controversiales",
+    "NU":"buenos","NVDA":"excelentes","AAPL":"excelentes",
+    "INTC":"buenos",
 
 
 }
@@ -159,17 +159,13 @@ def fetch_ticker(sym):
         poc_proxy = calc_poc_proxy(closes)
         price_prev = closes[-2] if len(closes) >= 2 else price
 
-        # ── Rebote Bollinger — ventana adaptativa ────────────────────────────
-        # Activos "excelentes" (más volátiles): ventana 5 velas — respuesta rápida.
-        # Todos los demás (buenos, moderados, controversiales): ventana 7 velas —
-        # tardan más en tocar y recuperar la banda inferior.
+        # ── Rebote Bollinger — ventana de 5 velas ────────────────────────────
+        # Alguna de las últimas 4 velas cerró debajo de bb_lo en ese momento,
+        # y la vela actual cerró encima (recuperó la banda).
         # price > price_prev confirma momentum alcista — filtra dead cat bounces.
-        _yf_inv = {v: k for k, v in YF_MAP.items()}
-        _fund_ticker = FUND.get(_yf_inv.get(sym, sym), "buenos")
-        _bb_window = 5 if _fund_ticker == "excelentes" else 7
         bb_recov = False
         if bb_lo is not None and price >= bb_lo and price > price_prev:
-            for lookback in range(1, _bb_window + 1):
+            for lookback in range(1, 6):   # velas 1..5 hacia atrás
                 if len(closes) > lookback:
                     past_close = closes[-(lookback + 1)]
                     past_bb_lo = calc_bb_lower(closes[:-(lookback)], 20, 2)
@@ -1087,8 +1083,10 @@ for ticker, score, q, epct, ppct, fund in signals_found:
 
     _price_fmt = f"${q['price']:,.2f}"
     _div_note = "\n🔀 <b>Nota:</b> Señal promovida por divergencia alcista." if q.get("promoted_by_div") else ""
+    _ema_badge = f"📗 Sobre EMA200 ({epct:+.1f}%)" if epct >= 0 else f"📙 Bajo EMA200 ({epct:+.1f}%)"
     msg = (
         f"🟢 <b>{ticker} {_price_fmt} — SEÑAL {score}/3 (Diario)</b>\n"
+        f"📌 <b>{_ema_badge}</b>\n"
         f"\n<b>Indicadores</b>\n"
         f"📉 {rsi_label_signal(rsi10, rsi_p)}\n"
         f"📈 {ema_label_signal(epct, q['emaTrend'], q['ema200'])}\n"
