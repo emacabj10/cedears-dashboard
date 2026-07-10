@@ -908,19 +908,19 @@ for ticker, sym in YF_MAP.items():
     # div_to_watchlist: divergencia con score bajo — setup embrionario a monitorear.
     # RSI <= 35 evita watchlists por divergencia cuando el RSI está simplemente "débil"
     # pero no en zona de oversold real. Activos con RSI 36-45 + div se ignoran.
-    div_to_watchlist = div and score <= 1 and rsi10 <= 35
+    div_to_watchlist = div and score <= 1 and rsi10 <= 35 and epct <= 5
 
     # watchlist_rsi_ema_pending_bb: RSI rebotó desde oversold + EMA ok, solo falta BB.
     # Caso típico: activo que completó el rebote RSI hace varias velas, se alejó del
     # oversold (rsi10 30-50), pero el precio nunca llegó a tocar/recuperar la banda
     # inferior de Bollinger. Sin esta condición cae en "ignorado" porque watchlist_score2
-    # exige not rsi_bounced_15. RSI <= 50 evita capturar activos que ya recuperaron
+    # exige not rsi_bounced_15. RSI <= 45 evita capturar activos que ya recuperaron
     # momentum completo y no necesitan monitoreo especial.
     watchlist_rsi_ema_pending_bb = (
         score == 2
         and rsi_bounced_15
         and not bb_recov
-        and rsi10 <= 50
+        and rsi10 <= 45
         and epct >= -10
     )
 
