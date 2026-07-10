@@ -14,11 +14,11 @@ FUND = {
     "META":"excelentes","BRK.B":"excelentes","V":"excelentes",
     "WMT":"excelentes","MELI":"excelentes","QQQ":"excelentes",
     "SPY":"excelentes","DIA":"excelentes","BTC":"excelentes",
-    "ETH":"buenos","BNB":"buenos","GLD":"buenos",
+    "ETH":"buenos","BNB":"moderados","GLD":"buenos",
     "AMD":"buenos","KO":"buenos","PEP":"buenos",
-    "MCD":"buenos","BABA":"buenos","TSLA":"controversiales",
-    "NU":"buenos","NVDA":"excelentes","AAPL":"excelentes",
-    "INTC":"buenos",
+    "MCD":"buenos","BABA":"controversiales","TSLA":"controversiales",
+    "NU":"excelentes","NVDA":"excelentes","AAPL":"excelentes",
+    "INTC":"moderados",
 
 
 }
@@ -133,7 +133,7 @@ def calc_poc_proxy(closes):
     window = closes[-252:] if len(closes) >= 252 else closes
     return round(min(window) * 1.15, 2)
 
-def fetch_ticker(sym):
+def fetch_ticker(sym, fund="buenos"):
     # 2y para que la EMA200 tenga suficiente historial y sea precisa
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=2y"
     headers = {"User-Agent":"Mozilla/5.0","Accept":"application/json"}
@@ -159,13 +159,15 @@ def fetch_ticker(sym):
         poc_proxy = calc_poc_proxy(closes)
         price_prev = closes[-2] if len(closes) >= 2 else price
 
-        # ── Rebote Bollinger — ventana de 5 velas ────────────────────────────
-        # Alguna de las últimas 4 velas cerró debajo de bb_lo en ese momento,
-        # y la vela actual cerró encima (recuperó la banda).
+        # ── Rebote Bollinger — ventana adaptativa ────────────────────────────
+        # Activos "excelentes" (más volátiles): ventana 5 velas — respuesta rápida.
+        # Todos los demás (buenos, moderados, controversiales): ventana 7 velas —
+        # tardan más en tocar y recuperar la banda inferior.
         # price > price_prev confirma momentum alcista — filtra dead cat bounces.
+        _bb_window = 5 if fund == "excelentes" else 7
         bb_recov = False
         if bb_lo is not None and price >= bb_lo and price > price_prev:
-            for lookback in range(1, 6):   # velas 1..5 hacia atrás
+            for lookback in range(1, _bb_window + 1):
                 if len(closes) > lookback:
                     past_close = closes[-(lookback + 1)]
                     past_bb_lo = calc_bb_lower(closes[:-(lookback)], 20, 2)
@@ -738,7 +740,7 @@ def save_cycle(ticker, state):
 
 for ticker, sym in YF_MAP.items():
     print(f"Analizando {ticker}...", end=" ", flush=True)
-    q = fetch_ticker(sym)
+    q = fetch_ticker(sym, FUND.get(ticker, "buenos"))
     if not q:
         if ticker in existing:
             prev = existing[ticker]
