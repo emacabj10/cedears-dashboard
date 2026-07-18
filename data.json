@@ -37,7 +37,9 @@
         54.57,
         49.71,
         43.34
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "AMZN": {
       "price": 247.23,
@@ -75,7 +77,8 @@
         56.53,
         66.08,
         56.68
-      ]
+      ],
+      "rsi_direction": "bajando"
     },
     "BABA": {
       "price": 114.97,
@@ -113,18 +116,20 @@
         64.09,
         72.38,
         71.69
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "BNB": {
-      "price": 572.25,
-      "rsi10": 48.55,
+      "price": 571.7,
+      "rsi10": 48.1,
       "rsi_prev": 44.66,
-      "rsiW": 38.43,
+      "rsiW": 38.22,
       "ema200": 662.31,
       "emaTrend": "bajando",
-      "emaSlope": -2.788,
-      "bb_lo": 549.38,
-      "bb_hi": 591.96,
+      "emaSlope": -2.789,
+      "bb_lo": 549.36,
+      "bb_hi": 591.92,
       "bb_recov": false,
       "bb_below": false,
       "bb_above": false,
@@ -151,7 +156,9 @@
         54.15,
         47.88,
         44.66
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "BRK.B": {
       "price": 490.91,
@@ -189,18 +196,20 @@
         44.49,
         41.21,
         48.55
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "BTC": {
-      "price": 64591.35,
-      "rsi10": 57.43,
+      "price": 64526.03,
+      "rsi10": 57.09,
       "rsi_prev": 53.61,
-      "rsiW": 42.29,
-      "ema200": 74170.09,
+      "rsiW": 42.11,
+      "ema200": 74169.44,
       "emaTrend": "bajando",
       "emaSlope": -3.027,
-      "bb_lo": 59583.99,
-      "bb_hi": 66214.5,
+      "bb_lo": 59587.28,
+      "bb_hi": 66204.68,
       "bb_recov": false,
       "bb_below": false,
       "bb_above": false,
@@ -227,7 +236,9 @@
         58.78,
         53.01,
         53.61
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "DIA": {
       "price": 520.81,
@@ -265,18 +276,20 @@
         57.95,
         60.39,
         57.12
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "ETH": {
-      "price": 1862.32,
-      "rsi10": 60.83,
+      "price": 1860.01,
+      "rsi10": 60.57,
       "rsi_prev": 58.27,
-      "rsiW": 46.34,
-      "ema200": 2205.45,
+      "rsiW": 46.19,
+      "ema200": 2205.42,
       "emaTrend": "bajando",
-      "emaSlope": -3.863,
-      "bb_lo": 1590.97,
-      "bb_hi": 1948.5,
+      "emaSlope": -3.864,
+      "bb_lo": 1591.09,
+      "bb_hi": 1948.15,
       "bb_recov": false,
       "bb_below": false,
       "bb_above": false,
@@ -303,7 +316,9 @@
         72.37,
         62.08,
         58.27
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "GOOGL": {
       "price": 346.77,
@@ -341,7 +356,9 @@
         50.3,
         60.56,
         45.5
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "KO": {
       "price": 81.56,
@@ -379,7 +396,9 @@
         54.33,
         50.57,
         62.01
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "MCD": {
       "price": 267.71,
@@ -417,7 +436,9 @@
         39.15,
         34.48,
         48.93
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "MELI": {
       "price": 1813.91,
@@ -455,7 +476,9 @@
         77.27,
         67.59,
         69.56
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "META": {
       "price": 646.01,
@@ -493,7 +516,9 @@
         66.88,
         70.81,
         63.84
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "MSFT": {
       "price": 393.82,
@@ -531,7 +556,9 @@
         48.9,
         57.34,
         61.0
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "PEP": {
       "price": 137.12,
@@ -569,7 +596,9 @@
         36.51,
         36.42,
         48.23
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "QQQ": {
       "price": 695.33,
@@ -607,7 +636,9 @@
         50.17,
         49.11,
         43.0
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "SPY": {
       "price": 743.29,
@@ -645,7 +676,9 @@
         56.78,
         59.65,
         54.16
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "TSLA": {
       "price": 380.84,
@@ -683,7 +716,9 @@
         47.02,
         46.23,
         44.58
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "V": {
       "price": 358.56,
@@ -721,7 +756,9 @@
         65.6,
         64.09,
         72.19
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "WMT": {
       "price": 114.24,
@@ -759,7 +796,9 @@
         45.8,
         41.99,
         51.31
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "GLD": {
       "price": 368.41,
@@ -797,7 +836,8 @@
         42.53,
         42.79,
         36.06
-      ]
+      ],
+      "rsi_direction": "subiendo"
     },
     "NU": {
       "price": 13.59,
@@ -835,7 +875,9 @@
         65.47,
         62.29,
         59.65
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "NVDA": {
       "price": 202.81,
@@ -873,7 +915,9 @@
         59.64,
         60.3,
         53.29
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "AAPL": {
       "price": 333.74,
@@ -911,7 +955,9 @@
         63.54,
         72.9,
         76.02
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "INTC": {
       "price": 95.04,
@@ -949,7 +995,9 @@
         39.92,
         36.25,
         32.12
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     }
   },
   "cycles": {
