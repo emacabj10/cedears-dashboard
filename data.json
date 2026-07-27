@@ -1022,10 +1022,10 @@
       "override_sent": true
     },
     "GOOGL": {
-      "is_silenced": false,
+      "is_silenced": true,
       "rsi_hit_50": false,
       "rsi_reset": false,
-      "override_sent": false
+      "posicion": "completa"
     },
     "AMZN": {
       "is_silenced": false,
@@ -1048,6 +1048,12 @@
     "watchlist": [
       "AMZN"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "GOOGL",
+        "price": "$328.70",
+        "hora": "13:49"
+      }
+    ]
   }
 }
