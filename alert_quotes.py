@@ -336,7 +336,9 @@ def bb_label_signal(q):
 
 def bb_label_watchlist(q):
     """Labels BB para watchlist"""
-    if q.get("bb_below"):
+    if q.get("bb_recov"):
+        return "BB: Recuperó banda inferior (Rebote confirmado, aún sin score completo)"
+    elif q.get("bb_below"):
         return "BB: Velas cerrando fuera de la banda (Extremo de pánico)"
     elif q.get("bb_near_lo"):
         return "BB: Presionando banda inferior (Posible zona de capitulación)"
@@ -926,6 +928,18 @@ for ticker, sym in YF_MAP.items():
         and epct >= -10
     )
 
+    # bb_recov_lejos: score=2 vía RSI rebotado + BB recuperado, pero precio lejos
+    # de EMA200 (entre -10% y -20%). Sin esto caía en "ignorado" porque
+    # watchlist_score2/bb_ema_watchlist exigen epct >= -10 y
+    # watchlist_rsi_ema_pending_bb exige not bb_recov. Visto en NU, MELI, BNB.
+    bb_recov_lejos = (
+        score == 2
+        and bb_recov
+        and rsi_bounced_15
+        and rsi10 <= 45
+        and -20 <= epct < -10
+    )
+
     # Activo silenciado: si llegó acá, aún no completó el reset → ignorado.
     # (El despertar automático ocurre en Fase 4, antes de este bloque)
     if is_silenced:
@@ -978,9 +992,9 @@ for ticker, sym in YF_MAP.items():
         q["promoted_by_div"] = True
         print(f"  >>> SEÑAL DIV 3/3+div: {ticker} epct={epct:.1f} bb_recov={bb_recov}")
         signals_found.append((ticker, score, q, epct, ppct, fund))
-    elif watchlist_score2 or bb_ema_watchlist or div_to_watchlist or watchlist_rsi_ema_pending_bb:
+    elif watchlist_score2 or bb_ema_watchlist or div_to_watchlist or watchlist_rsi_ema_pending_bb or bb_recov_lejos:
         q["promoted_by_div"] = False   # limpiar flag si no aplica
-        reason = "bb_ema" if bb_ema_watchlist else ("div" if div_to_watchlist else ("rsi_ema_bb_pend" if watchlist_rsi_ema_pending_bb else "score+rsi"))
+        reason = "bb_ema" if bb_ema_watchlist else ("div" if div_to_watchlist else ("rsi_ema_bb_pend" if watchlist_rsi_ema_pending_bb else ("bb_recov_lejos" if bb_recov_lejos else "score+rsi")))
         print(f"  ... {ticker}: score={score}/3 → watchlist ({reason})")
         watchlist_found.append((ticker, score, q, epct, ppct))
     elif rsi10 <= 35 or (rsi10 < 30 and not rsi_bounced_15):
@@ -1085,10 +1099,8 @@ for ticker, score, q, epct, ppct, fund in signals_found:
 
     _price_fmt = f"${q['price']:,.2f}"
     _div_note = "\n🔀 <b>Nota:</b> Señal promovida por divergencia alcista." if q.get("promoted_by_div") else ""
-    _ema_badge = f"📗 Sobre EMA200 ({epct:+.1f}%)" if epct >= 0 else f"📙 Bajo EMA200 ({epct:+.1f}%)"
     msg = (
-        f"🟢 <b>{ticker} {_price_fmt} — SEÑAL {score}/3 (Diario)</b>\n"
-        f"📌 <b>{_ema_badge}</b>\n"
+        f"🟢 <b>{ticker} {_price_fmt} — SEÑAL {score}/3</b>\n"
         f"\n<b>Indicadores</b>\n"
         f"📉 {rsi_label_signal(rsi10, rsi_p)}\n"
         f"📈 {ema_label_signal(epct, q['emaTrend'], q['ema200'])}\n"
@@ -1135,7 +1147,7 @@ for ticker, score, q, epct, ppct in watchlist_found:
 
     _price_fmt_w = f"${q['price']:,.2f}"
     msg = (
-        f"🟡 <b>{ticker} {_price_fmt_w} — WATCHLIST {score}/3 (Diario)</b>\n"
+        f"🟡 <b>{ticker} {_price_fmt_w} — WATCHLIST {score}/3</b>\n"
         f"⚠️ <b>Estado:</b> Setup en formación. Aviso previo — monitorear.\n"
         f"\n<b>Indicadores</b>\n"
         f"📉 {rsi_label_watchlist(rsi10, rsi_p)}\n"
