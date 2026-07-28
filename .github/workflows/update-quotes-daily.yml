@@ -1,4 +1,4 @@
-name: Update quotes (diario)
+name: Update quotes
 
 on:
   schedule:
