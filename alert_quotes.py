@@ -735,6 +735,7 @@ def get_cycle(ticker):
     cyc.setdefault("rsi_hit_50",    False)
     cyc.setdefault("rsi_reset",     False)
     cyc.setdefault("override_sent", False)
+    cyc.setdefault("tren_sent",     False)
     return cyc
 
 def save_cycle(ticker, state):
@@ -1005,6 +1006,38 @@ for ticker, sym in YF_MAP.items():
     else:
         q["promoted_by_div"] = False   # limpiar flag si no aplica
         print(f"  ... {ticker}: score={score}/3 → ignorado")
+
+    # ── Alerta "tren en marcha": confluencia completa pero RSI ya pasó ────────
+    # el techo de 45 usado en watchlist/señal. No cambia clasificación ni
+    # ciclo — solo informativa. Se envía una vez por entrada en la franja
+    # 45-55 y se resetea cuando el activo sale de esa franja.
+    if not is_silenced:
+        _tren_en_marcha = (
+            score >= 2
+            and bb_recov
+            and rsi_bounced_15
+            and 45 < rsi10 <= 55
+        )
+        _tren_sent = cyc.get("tren_sent", False)
+        if _tren_en_marcha and not _tren_sent:
+            cyc["tren_sent"] = True
+            save_cycle(ticker, cyc)
+            _tv_sym_tren = TV_MAP.get(ticker, ticker)
+            _dir_tag = "↗️" if rsi_direction == "subiendo" else "↘️"
+            print(f"  [TREN] {ticker}: setup completo, RSI {rsi10:.1f} fuera de techo → alerta enviada")
+            send_telegram(
+                f"⚠️ <b>{ticker}</b> — Setup completo, RSI ya avanzado\n"
+                f"\n"
+                f"RSI(10): <b>{rsi10:.1f}{_dir_tag}</b> · Precio: <b>${q['price']:.2f}</b>\n"
+                f"EMA200: <b>{epct:+.1f}%</b> · BB↑ confirmado · Score {score}/3\n"
+                f"\n"
+                f"Cumple la confluencia completa (RSI rebotado + BB + EMA), pero el RSI\n"
+                f"ya superó el techo de 45 usado para clasificar automáticamente.\n"
+                f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_tren}">Ver en TradingView →</a>'
+            )
+        elif not _tren_en_marcha and _tren_sent:
+            cyc["tren_sent"] = False
+            save_cycle(ticker, cyc)
 
     time.sleep(0.5)
 
