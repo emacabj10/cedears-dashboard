@@ -1038,6 +1038,12 @@
       "rsi_hit_50": false,
       "rsi_reset": false,
       "override_sent": false
+    },
+    "QQQ": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "completa"
     }
   },
   "daily": {
@@ -1049,6 +1055,12 @@
       "INTC",
       "NVDA"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "QQQ",
+        "price": "$683.47",
+        "hora": "11:57"
+      }
+    ]
   }
 }
