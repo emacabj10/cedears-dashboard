@@ -1053,9 +1053,10 @@
       "tren_sent": false
     },
     "META": {
-      "is_silenced": false,
+      "is_silenced": true,
       "rsi_hit_50": false,
       "rsi_reset": false,
+      "posicion": "media",
       "override_sent": false,
       "tren_sent": false
     }
@@ -1066,6 +1067,12 @@
     "watchlist": [
       "TSLA"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "META",
+        "price": "$582.88",
+        "hora": "11:11"
+      }
+    ]
   }
 }
