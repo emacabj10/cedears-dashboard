@@ -1025,7 +1025,7 @@ for ticker, sym in YF_MAP.items():
             _tv_sym_tren = TV_MAP.get(ticker, ticker)
             _dir_tag = "↗️" if rsi_direction == "subiendo" else "↘️"
             print(f"  [TREN] {ticker}: setup completo, RSI {rsi10:.1f} fuera de techo → alerta enviada")
-            send_telegram(
+            send_telegram_with_button(
                 f"⚠️ <b>{ticker}</b> — Setup completo, RSI ya avanzado\n"
                 f"\n"
                 f"RSI(10): <b>{rsi10:.1f}{_dir_tag}</b> · Precio: <b>${q['price']:.2f}</b>\n"
@@ -1033,7 +1033,8 @@ for ticker, sym in YF_MAP.items():
                 f"\n"
                 f"Cumple la confluencia completa (RSI rebotado + BB + EMA), pero el RSI\n"
                 f"ya superó el techo de 45 usado para clasificar automáticamente.\n"
-                f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_tren}">Ver en TradingView →</a>'
+                f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_tren}">Ver en TradingView →</a>',
+                ticker
             )
         elif not _tren_en_marcha and _tren_sent:
             cyc["tren_sent"] = False
