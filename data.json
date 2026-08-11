@@ -37,7 +37,9 @@
         45.75,
         47.45,
         46.13
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "AMZN": {
       "price": 278.09,
@@ -75,7 +77,9 @@
         65.79,
         65.4,
         66.66
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "BABA": {
       "price": 132.32,
@@ -113,18 +117,20 @@
         75.49,
         69.66,
         71.9
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "BNB": {
-      "price": 612.3,
-      "rsi10": 72.67,
+      "price": 612.21,
+      "rsi10": 72.63,
       "rsi_prev": 63.76,
-      "rsiW": 55.22,
+      "rsiW": 55.19,
       "ema200": 645.47,
       "emaTrend": "bajando",
       "emaSlope": -1.881,
-      "bb_lo": 557.34,
-      "bb_hi": 612.12,
+      "bb_lo": 557.36,
+      "bb_hi": 612.1,
       "bb_recov": false,
       "bb_below": false,
       "bb_above": true,
@@ -151,7 +157,9 @@
         67.38,
         68.3,
         63.76
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "BRK.B": {
       "price": 529.42,
@@ -189,10 +197,12 @@
         76.15,
         80.16,
         73.47
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "BTC": {
-      "price": 64240.87,
+      "price": 64240.88,
       "rsi10": 50.22,
       "rsi_prev": 46.96,
       "rsiW": 43.02,
@@ -227,7 +237,9 @@
         57.01,
         56.35,
         46.96
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "DIA": {
       "price": 538.99,
@@ -265,17 +277,19 @@
         71.24,
         63.81,
         65.06
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "ETH": {
-      "price": 1886.22,
-      "rsi10": 50.37,
+      "price": 1886.1,
+      "rsi10": 50.35,
       "rsi_prev": 46.88,
-      "rsiW": 48.1,
+      "rsiW": 48.09,
       "ema200": 2139.01,
       "emaTrend": "bajando",
-      "emaSlope": -2.363,
-      "bb_lo": 1837.48,
+      "emaSlope": -2.364,
+      "bb_lo": 1837.47,
       "bb_hi": 1944.21,
       "bb_recov": false,
       "bb_below": false,
@@ -303,7 +317,9 @@
         57.48,
         55.7,
         46.88
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "GOOGL": {
       "price": 357.52,
@@ -341,7 +357,8 @@
         56.55,
         53.53,
         51.3
-      ]
+      ],
+      "rsi_direction": "subiendo"
     },
     "KO": {
       "price": 86.87,
@@ -379,7 +396,9 @@
         59.49,
         59.58,
         60.53
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "MCD": {
       "price": 273.72,
@@ -417,7 +436,9 @@
         56.49,
         59.47,
         56.11
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "MELI": {
       "price": 1824.34,
@@ -455,7 +476,9 @@
         72.44,
         47.44,
         45.68
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "META": {
       "price": 594.92,
@@ -493,7 +516,8 @@
         46.31,
         46.78,
         47.77
-      ]
+      ],
+      "rsi_direction": "subiendo"
     },
     "MSFT": {
       "price": 506.06,
@@ -531,7 +555,9 @@
         80.4,
         82.55,
         82.57
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "PEP": {
       "price": 137.73,
@@ -569,7 +595,9 @@
         48.09,
         46.86,
         49.32
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "QQQ": {
       "price": 720.87,
@@ -607,7 +635,8 @@
         58.59,
         57.01,
         60.73
-      ]
+      ],
+      "rsi_direction": "bajando"
     },
     "SPY": {
       "price": 773.03,
@@ -645,7 +674,9 @@
         68.61,
         67.1,
         69.92
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "TSLA": {
       "price": 330.88,
@@ -683,7 +714,9 @@
         37.75,
         36.86,
         43.53
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "V": {
       "price": 361.32,
@@ -721,7 +754,9 @@
         65.07,
         67.36,
         51.78
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "WMT": {
       "price": 112.66,
@@ -759,7 +794,9 @@
         50.56,
         49.38,
         48.35
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "GLD": {
       "price": 402.54,
@@ -797,7 +834,9 @@
         65.95,
         65.98,
         72.07
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "NU": {
       "price": 13.86,
@@ -835,7 +874,9 @@
         58.06,
         49.78,
         44.31
-      ]
+      ],
+      "rsi_direction": "subiendo",
+      "promoted_by_div": false
     },
     "NVDA": {
       "price": 217.55,
@@ -873,7 +914,9 @@
         65.92,
         65.59,
         69.33
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "AAPL": {
       "price": 308.26,
@@ -911,7 +954,9 @@
         42.27,
         43.78,
         44.83
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     },
     "INTC": {
       "price": 97.52,
@@ -949,7 +994,9 @@
         52.79,
         51.15,
         53.51
-      ]
+      ],
+      "rsi_direction": "bajando",
+      "promoted_by_div": false
     }
   },
   "cycles": {
@@ -1014,7 +1061,7 @@
     }
   },
   "daily": {
-    "date": "2026-08-10",
+    "date": "2026-08-11",
     "signals": [],
     "watchlist": [],
     "entradas": []
