@@ -1004,11 +1004,10 @@
   },
   "cycles": {
     "WMT": {
-      "is_silenced": false,
+      "is_silenced": true,
       "rsi_hit_50": false,
       "rsi_reset": false,
-      "override_sent": false,
-      "tren_sent": false
+      "posicion": "media"
     },
     "PEP": {
       "is_silenced": false,
@@ -1068,6 +1067,12 @@
     "watchlist": [
       "WMT"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "WMT",
+        "price": "$105.26",
+        "hora": "13:58"
+      }
+    ]
   }
 }
