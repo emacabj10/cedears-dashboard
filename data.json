@@ -1045,11 +1045,10 @@
       "tren_sent": false
     },
     "QQQ": {
-      "is_silenced": false,
+      "is_silenced": true,
       "rsi_hit_50": false,
       "rsi_reset": false,
-      "override_sent": false,
-      "tren_sent": false
+      "posicion": "completa"
     },
     "META": {
       "is_silenced": false,
@@ -1085,6 +1084,12 @@
       "AMD",
       "BNB"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "QQQ",
+        "price": "$720.70",
+        "hora": "13:16"
+      }
+    ]
   }
 }
