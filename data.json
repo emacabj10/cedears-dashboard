@@ -1072,6 +1072,12 @@
       "posicion": "completa",
       "override_sent": false,
       "tren_sent": false
+    },
+    "INTC": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "completa"
     }
   },
   "daily": {
@@ -1083,6 +1089,12 @@
       "AMD",
       "NVDA"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "INTC",
+        "price": "$92.73",
+        "hora": "15:53"
+      }
+    ]
   }
 }
