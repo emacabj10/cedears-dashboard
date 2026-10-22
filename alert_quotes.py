@@ -1211,7 +1211,7 @@ except Exception:
     _dj_full = {}
 _dj_full["daily"]  = _daily
 _dj_full["cycles"] = cycles
-# Persistir quotes frescos para que el modo intradiario los lea (incluye promoted_by_div)
+# Persistir quotes frescos para el próximo run diario (incluye promoted_by_div)
 _quotes_to_save = {}
 for _t, _sc, _q_raw, _ep, _pp in all_results:
     _quotes_to_save[_t] = _q_raw
