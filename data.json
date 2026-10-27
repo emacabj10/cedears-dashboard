@@ -1078,6 +1078,12 @@
       "posicion": "completa",
       "override_sent": false,
       "tren_sent": false
+    },
+    "MELI": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "media"
     }
   },
   "daily": {
@@ -1099,8 +1105,13 @@
         "hora": "14:32"
       },
       {
+<<<<<<< Updated upstream
         "ticker": "GLD",
         "price": "$372.32",
+=======
+        "ticker": "MELI",
+        "price": "$1,682.75",
+>>>>>>> Stashed changes
         "hora": "16:48"
       }
     ]
