@@ -1023,11 +1023,10 @@
       "tren_sent": false
     },
     "GOOGL": {
-      "is_silenced": false,
+      "is_silenced": true,
       "rsi_hit_50": false,
       "rsi_reset": false,
-      "override_sent": false,
-      "tren_sent": false
+      "posicion": "completa"
     },
     "AMZN": {
       "is_silenced": false,
@@ -1093,6 +1092,12 @@
       "ETH",
       "AMD"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "GOOGL",
+        "price": "$321.51",
+        "hora": "14:32"
+      }
+    ]
   }
 }
