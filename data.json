@@ -1027,6 +1027,12 @@
       "rsi_hit_50": false,
       "rsi_reset": false,
       "posicion": "media"
+    },
+    "ETH": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "completa"
     }
   },
   "daily": {
@@ -1054,6 +1060,11 @@
         "ticker": "MELI",
         "price": "$1,624.53",
         "hora": "11:20"
+      },
+      {
+        "ticker": "ETH",
+        "price": "$2,263.82",
+        "hora": "11:35"
       }
     ]
   }
