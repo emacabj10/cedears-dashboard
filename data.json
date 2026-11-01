@@ -1015,6 +1015,12 @@
       "rsi_hit_50": false,
       "rsi_reset": false,
       "posicion": "media"
+    },
+    "GLD": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "media"
     }
   },
   "daily": {
@@ -1032,6 +1038,11 @@
         "ticker": "GOOGL",
         "price": "$279.84",
         "hora": "11:17"
+      },
+      {
+        "ticker": "GLD",
+        "price": "$355.78",
+        "hora": "11:19"
       }
     ]
   }
