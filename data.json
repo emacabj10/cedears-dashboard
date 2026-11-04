@@ -1050,6 +1050,12 @@
       "rsi_reset": false,
       "override_sent": false,
       "tren_sent": true
+    },
+    "META": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "completa"
     }
   },
   "daily": {
@@ -1067,6 +1073,11 @@
       {
         "ticker": "QQQ",
         "price": "$691.95",
+        "hora": "18:03"
+      },
+      {
+        "ticker": "META",
+        "price": "$630.15",
         "hora": "18:03"
       }
     ]
