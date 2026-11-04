@@ -508,7 +508,8 @@ def score_signal(ticker, q):
     Nuevo sistema de score máximo 3 puntos:
       Punto 1 (RSI)       : rsi10 cruzando al alza el nivel de 30
                             (rsi_prev <= 30 y rsi10 > 30)
-      Punto 2 (EMA200)    : precio >= ema200  O  precio a no más del 3% por debajo
+      Punto 2 (EMA200)    : precio a no más del 10% por debajo de la EMA200
+                            (dentro del -5% = posición completa; -5% a -10% = media)
       Punto 3 (Bollinger) : cierre anterior < bb_lo_prev y cierre actual >= bb_lo
                             (recuperó la banda inferior)
 
@@ -1024,15 +1025,25 @@ for ticker, sym in YF_MAP.items():
             save_cycle(ticker, cyc)
             _tv_sym_tren = TV_MAP.get(ticker, ticker)
             _dir_tag = "↗️" if rsi_direction == "subiendo" else "↘️"
-            print(f"  [TREN] {ticker}: setup completo, RSI {rsi10:.1f} fuera de techo → alerta enviada")
+            _ema_en_rango = epct >= -10
+            if _ema_en_rango:
+                _tren_titulo = "Setup completo, RSI ya avanzado"
+                _tren_ema    = f"EMA200: <b>{epct:+.1f}%</b>"
+                _tren_cuerpo = ("Cumple la confluencia completa (RSI rebotado + BB + EMA), pero el RSI\n"
+                                "ya superó el techo de 45 usado para clasificar automáticamente.\n")
+            else:
+                _tren_titulo = "Setup casi completo, RSI ya avanzado"
+                _tren_ema    = f"EMA200: <b>{epct:+.1f}%</b> (fuera del rango de -10%)"
+                _tren_cuerpo = ("Cumple RSI rebotado + BB recuperada, pero el precio sigue lejos de la EMA200\n"
+                                "(no suma ese punto) y el RSI ya superó el techo de 45 usado para clasificar.\n")
+            print(f"  [TREN] {ticker}: {_tren_titulo.lower()}, RSI {rsi10:.1f} fuera de techo → alerta enviada")
             send_telegram_with_button(
-                f"⚠️ <b>{ticker}</b> — Setup completo, RSI ya avanzado\n"
+                f"⚠️ <b>{ticker}</b> — {_tren_titulo}\n"
                 f"\n"
                 f"RSI(10): <b>{rsi10:.1f}{_dir_tag}</b> · Precio: <b>${q['price']:.2f}</b>\n"
-                f"EMA200: <b>{epct:+.1f}%</b> · BB↑ confirmado · Score {score}/3\n"
+                f"{_tren_ema} · BB↑ confirmado · Score {score}/3\n"
                 f"\n"
-                f"Cumple la confluencia completa (RSI rebotado + BB + EMA), pero el RSI\n"
-                f"ya superó el techo de 45 usado para clasificar automáticamente.\n"
+                f"{_tren_cuerpo}"
                 f'📊 <a href="https://www.tradingview.com/chart/?symbol={_tv_sym_tren}">Ver en TradingView →</a>',
                 ticker
             )
