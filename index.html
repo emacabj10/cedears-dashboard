@@ -361,6 +361,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="ref-section" style="margin-top:8px">Score → clasificación</div>
         <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text"><strong>3/3 + RSI ≤ 45</strong> → Señal verde 🟢</div></div>
         <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>2/3 sin RSI rebote + RSI ≤ 45 (EMA ≥ -10%)</strong> → Watchlist 🟡</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>RSI rebotado + EMA ok, falta BB (RSI ≤ 45)</strong> → Watchlist 🟡</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>RSI rebotado + BB recuperada, EMA entre -10% y -20% (RSI ≤ 45)</strong> → Watchlist 🟡</div></div>
         <div class="ref-row"><div class="ref-dot ref-dot-neu"></div><div class="ref-text"><strong>RSI ≤ 35</strong> → Radar 🔵</div></div>
         <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>RSI rebotado + BB recuperada + RSI entre 45 y 55</strong> → Aviso ⚠️ "RSI ya avanzado" (informativo, no es señal)</div></div>
       </div>
@@ -656,20 +658,24 @@ let data=[
 function emaPct(p,e){return e>0?((p-e)/e*100):0;}
 function pocPct(p,c){return c>0?((p-c)/c*100):0;}
 
+// Ciclos de acumulación leídos de data.json (se completa en syncFromRepo).
+// Declarado acá arriba porque scoreTelegram lo consulta para excluir silenciados.
+let SILENCED_TICKERS={};
+
 function scoreTelegram(s){
-  // Replica exacta del sistema del bot de Telegram
+  // Espejo de la clasificación de alert_quotes.py (misma cadena, mismos umbrales)
   const fund=CUSTOM_FUND[s.t]||FUND[s.t]||"buenos";
   const epct=emaPct(s.price,s.ema200);
   const ppct=pocPct(s.price,s.poc);
   const rsi10=s.rsi10||50;
   const rsiPrev=s.rsiPrev||rsi10;
 
-  // Punto 1: RSI rebotó desde ≤30 (ventana 15 velas)
-  const rsiBouncedNow=(rsi10>30&&rsiPrev<=30);
-  const rsiBounced=s.rsiBounce||rsiBouncedNow;  // rsiBounce viene de data.json merged
+  // Punto 1: rsi_bounced_15 tal como lo calcula el bot (RSI tocó ≤30 en 15 velas
+  // y está subiendo). Si no hay dato del bot, fallback de 1 vela como en score_signal.
+  const rsiBounced=(typeof s.rsiBounce==="boolean")?s.rsiBounce:(rsi10>30&&rsiPrev<=30);
   const rsiOversold=rsi10<=30;
 
-  // Punto 2: EMA200 (posición completa si ≥-5%, media si ≥-10%)
+  // Punto 2: EMA200 — completa si ≥-5%, media si ≥-10% (ambas suman el punto)
   const emaOk=epct>=-5;
   const emaOkMedia=epct>=-10;
   const ema2pts=emaOk||emaOkMedia;
@@ -684,35 +690,42 @@ function scoreTelegram(s){
 
   const div=s.divState==="bull";
   const divBear=s.divState==="bear";
+  const forming=!rsiBounced&&rsi10<=38&&rsi10>25;   // solo informativo, no es categoría
 
-  // Setup en formación: RSI ≤38 sin rebote aún
-  const forming=!rsiBounced&&rsi10<=38&&rsi10>25;
-
-  // Clasificación — misma lógica que alert_quotes.py
-  let categoria="hold"; // radar / watchlist / signal / hold
-  let posicion="esperar";
-
-  const watchlistScore2=(score===2&&!rsiBounced&&rsi10<=40&&epct>=-10);
-  const bbEmaWatchlist=(bbRecov&&epct>=-5&&!rsiBounced);
+  // ── Condiciones — idénticas a alert_quotes.py ─────────────────────────────
+  const watchlistScore2=(score===2&&!rsiBounced&&rsi10<=45&&epct>=-10);
+  const bbEmaWatchlist=(bbRecov&&epct>=-5&&!rsiBounced&&rsi10<=45);
   const divToSignal=(div&&bbRecov&&(rsiBounced||epct>=-10)&&score>=2);
-  const divToWatchlist=(div&&score<=1&&rsi10<=40);
-  const divToRadar=(div&&score===0&&rsi10<=35);
+  const divToWatchlist=(div&&score<=1&&rsi10<=35&&epct<=5);
+  const watchlistRsiEmaPendingBb=(score===2&&rsiBounced&&!bbRecov&&rsi10<=45&&epct>=-10);
+  const bbRecovLejos=(score===2&&bbRecov&&rsiBounced&&rsi10<=45&&epct>=-20&&epct<-10);
 
-  if(score===3&&rsiBounced&&rsi10<=45){
+  const cyc=SILENCED_TICKERS[s.t];
+  const isSilenced=!!(cyc&&cyc.is_silenced);
+
+  let categoria="hold";      // signal / watchlist / radar / hold / silenced
+  let posicion="esperar";
+  let promotedByDiv=false;
+  let motivo="";
+
+  if(isSilenced){
+    categoria="silenced";
+    posicion="silenciado";
+  } else if(score===3&&rsiBounced&&rsi10<=45){
     categoria="signal";
     posicion=emaOk?"completa":"media";
   } else if(divToSignal){
     categoria="signal";
     posicion=emaOk?"completa":"media";
-  } else if(watchlistScore2||bbEmaWatchlist||divToWatchlist){
+    promotedByDiv=true;
+    score=3;                 // el bot muestra SEÑAL DIV como 3/3
+  } else if(watchlistScore2||bbEmaWatchlist||divToWatchlist||watchlistRsiEmaPendingBb||bbRecovLejos){
     categoria="watchlist";
     posicion="esperar";
-  } else if(rsi10<=35||rsiOversold||divToRadar){
+    motivo=bbEmaWatchlist?"bb_ema":(divToWatchlist?"div":(watchlistRsiEmaPendingBb?"rsi_ema_bb_pend":(bbRecovLejos?"bb_recov_lejos":"score+rsi")));
+  } else if(rsi10<=35||(rsi10<30&&!rsiBounced)){
     categoria="radar";
     posicion="monitorear";
-  } else if(forming){
-    categoria="forming";
-    posicion="observar";
   }
 
   // Lo que falta para completar la señal
@@ -722,7 +735,8 @@ function scoreTelegram(s){
   if(!bbRecov) missing.push("BB recuperación inferior");
 
   return{score,rsiBounced,rsiOversold,emaOk,emaOkMedia,bbRecov,div,divBear,
-    forming,categoria,posicion,epct,ppct,fund,missing,rsi10,rsiPrev};
+    forming,categoria,posicion,epct,ppct,fund,missing,rsi10,rsiPrev,
+    isSilenced,promotedByDiv,motivo};
 }
 
 // Score para el panel legacy (5 puntos con divergencias)
@@ -1065,8 +1079,7 @@ function buildRadarItem(s,sc){
   </div>`;
 }
 
-// Global silenced tickers from data.json (set during syncFromRepo)
-let SILENCED_TICKERS={};
+// (SILENCED_TICKERS se declara junto a scoreTelegram)
 
 function renderSilenced(){
   const section=document.getElementById("alert-silenced-section");
@@ -1097,7 +1110,7 @@ function renderAlerts(){
     const sc=scoreTelegram(s);
     if(sc.categoria==="signal")signals.push({s,sc});
     else if(sc.categoria==="watchlist")watchlist.push({s,sc});
-    else if(sc.categoria==="radar"||sc.rsi10<=35)radar.push({s,sc});
+    else if(sc.categoria==="radar")radar.push({s,sc});
   });
 
   watchlist.sort((a,b)=>a.sc.rsi10-b.sc.rsi10);
@@ -1119,8 +1132,8 @@ function renderAlerts(){
     ?radar.map(({s,sc})=>buildRadarItem(s,sc)).join("")
     :`<div class="alert-empty">No hay activos en zona de radar (RSI ≤ 35).</div>`;
 
-  document.getElementById("c-sig3").textContent=signals.filter(x=>x.sc.score===3).length;
-  document.getElementById("c-sig2").textContent=signals.filter(x=>x.sc.score===2).length;
+  document.getElementById("c-sig3").textContent=signals.filter(x=>!x.sc.promotedByDiv).length;
+  document.getElementById("c-sig2").textContent=signals.filter(x=>x.sc.promotedByDiv).length;
   document.getElementById("c-watch").textContent=watchlist.length;
   document.getElementById("c-radar").textContent=radar.length;
 
@@ -1151,8 +1164,8 @@ function renderWatchlist(){
 
   const sorted=[...data].sort((a,b)=>{
     const sa=scoreTelegram(a),sb=scoreTelegram(b);
-    const order={signal:0,watchlist:1,forming:2,radar:3,hold:4};
-    return(order[sa.categoria]||4)-(order[sb.categoria]||4)||sa.rsi10-sb.rsi10;
+    const order={signal:0,watchlist:1,radar:2,hold:3,silenced:4};
+    return(order[sa.categoria]??3)-(order[sb.categoria]??3)||sa.rsi10-sb.rsi10;
   });
 
   sorted.forEach(s=>{
@@ -1161,15 +1174,15 @@ function renderWatchlist(){
     if(wlCurrentFilter!=="all"){
       if(wlCurrentFilter==="signal"&&categoria!=="signal")return;
       if(wlCurrentFilter==="watch"&&categoria!=="watchlist")return;
-      if(wlCurrentFilter==="radar"&&categoria!=="radar"&&rsi10>35)return;
+      if(wlCurrentFilter==="radar"&&categoria!=="radar")return;
     }
 
     const rsiCls=rsi10<=30?"ok":rsi10<=38?"warn":"neu";
     const rsiWCls=s.rsiW>=40?"ok":s.rsiW>=25?"warn":"ng";
     const emaCls=epct>=0?"ok":epct>=-8?"warn":"ng";
     const pocCls=ppct<=-15?"ok":ppct<=-5?"warn":ppct<0?"neu":"ng";
-    const sigMap={signal:"sig-buy",watchlist:"sig-watch",forming:"sig-forming",radar:"sig-hold",hold:"sig-hold"};
-    const sigLbl={signal:`Señal ${score}/3`,watchlist:`Watch ${score}/3`,forming:"Formación",radar:"Radar",hold:"Esperar"};
+    const sigMap={signal:"sig-buy",watchlist:"sig-watch",radar:"sig-hold",hold:"sig-hold",silenced:"sig-hold"};
+    const sigLbl={signal:`Señal ${score}/3`,watchlist:`Watch ${score}/3`,radar:"Radar",hold:"Esperar",silenced:"Silenciado"};
     const d1Cls=rsiBounced?"d-ok":rsi10<=30?"d-w":"d-no";
     const d2Cls=emaOk?"d-ok":epct>=-10?"d-w":"d-no";
     const d3Cls=bbRecov?"d-ok":s.bbState==="below"?"d-w":"d-no";
@@ -1192,7 +1205,7 @@ function renderWatchlist(){
     </tr>`);
 
     // Radar cards para activos que les faltan 1-2 puntos
-    if((categoria==="radar"||categoria==="forming"||(categoria==="watchlist"&&score<=2))&&sc.missing.length>0){
+    if((categoria==="radar"||(categoria==="watchlist"&&score<=2))&&sc.missing.length>0){
       const missingStr=sc.missing.map(m=>`<div style="display:flex;gap:4px;align-items:center"><div class="d d-no" style="flex-shrink:0"></div>${m}</div>`).join("");
       radarCards.push(`<div class="radar-card">
         <div class="radar-card-head">
