@@ -1024,11 +1024,10 @@
       "tren_sent": false
     },
     "MELI": {
-      "is_silenced": false,
+      "is_silenced": true,
       "rsi_hit_50": false,
       "rsi_reset": false,
-      "override_sent": false,
-      "tren_sent": false
+      "posicion": "media"
     },
     "ETH": {
       "is_silenced": false,
@@ -1072,6 +1071,12 @@
     "watchlist": [
       "TSLA"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "MELI",
+        "price": "$1,545.63",
+        "hora": "11:51"
+      }
+    ]
   }
 }
