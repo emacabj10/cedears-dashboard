@@ -1057,6 +1057,12 @@
       "posicion": "completa",
       "override_sent": false,
       "tren_sent": false
+    },
+    "AMD": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "completa"
     }
   },
   "daily": {
@@ -1076,6 +1082,11 @@
         "ticker": "MELI",
         "price": "$1,545.63",
         "hora": "11:51"
+      },
+      {
+        "ticker": "AMD",
+        "price": "$451.59",
+        "hora": "13:08"
       }
     ]
   }
