@@ -903,12 +903,15 @@ for ticker, sym in YF_MAP.items():
     )
 
     # div_to_signal: divergencia bullish + BB + (rebote RSI o precio cerca EMA) + score>=2
+    # Piso: precio no más de 20% bajo la EMA200 (mismo límite que bb_recov_lejos).
+    # Más lejos que eso, la divergencia sola no alcanza para promover a señal.
     # La divergencia puede reemplazar el rebote RSI como confirmación
     div_to_signal = (
         div
         and bb_recov
         and (rsi_bounced_15 or epct >= -10)
         and score >= 2
+        and epct >= -20
     )
 
     # div_to_watchlist: divergencia con score bajo — setup embrionario a monitorear.
