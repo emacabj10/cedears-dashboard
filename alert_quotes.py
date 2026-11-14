@@ -891,6 +891,7 @@ for ticker, sym in YF_MAP.items():
         and not rsi_bounced_15
         and rsi10 <= 45
         and epct >= -10
+        and epct <= 10   # techo: no extendido más de 10% sobre la EMA200
     )
 
     # bb_ema_watchlist: BB recuperado + precio cerca EMA + sin rebote RSI + RSI en zona baja
@@ -900,6 +901,7 @@ for ticker, sym in YF_MAP.items():
         and epct >= -5
         and not rsi_bounced_15
         and rsi10 <= 45
+        and epct <= 10   # techo: "cerca de la EMA" no incluye activos extendidos
     )
 
     # div_to_signal: divergencia bullish + BB + (rebote RSI o precio cerca EMA) + score>=2
