@@ -360,7 +360,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </table>
         <div class="ref-section" style="margin-top:8px">Score → clasificación</div>
         <div class="ref-row"><div class="ref-dot ref-dot-ok"></div><div class="ref-text"><strong>3/3 + RSI ≤ 45</strong> → Señal verde 🟢</div></div>
-        <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>2/3 sin RSI rebote + RSI ≤ 45 (EMA ≥ -10%)</strong> → Watchlist 🟡</div></div>
+        <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>2/3 sin RSI rebote + RSI ≤ 45 (EMA entre -10% y +10%)</strong> → Watchlist 🟡</div></div>
         <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>RSI rebotado + EMA ok, falta BB (RSI ≤ 45)</strong> → Watchlist 🟡</div></div>
         <div class="ref-row"><div class="ref-dot ref-dot-warn"></div><div class="ref-text"><strong>RSI rebotado + BB recuperada, EMA entre -10% y -20% (RSI ≤ 45)</strong> → Watchlist 🟡</div></div>
         <div class="ref-row"><div class="ref-dot ref-dot-neu"></div><div class="ref-text"><strong>RSI ≤ 35</strong> → Radar 🔵</div></div>
@@ -693,8 +693,8 @@ function scoreTelegram(s){
   const forming=!rsiBounced&&rsi10<=38&&rsi10>25;   // solo informativo, no es categoría
 
   // ── Condiciones — idénticas a alert_quotes.py ─────────────────────────────
-  const watchlistScore2=(score===2&&!rsiBounced&&rsi10<=45&&epct>=-10);
-  const bbEmaWatchlist=(bbRecov&&epct>=-5&&!rsiBounced&&rsi10<=45);
+  const watchlistScore2=(score===2&&!rsiBounced&&rsi10<=45&&epct>=-10&&epct<=10);
+  const bbEmaWatchlist=(bbRecov&&epct>=-5&&!rsiBounced&&rsi10<=45&&epct<=10);
   const divToSignal=(div&&bbRecov&&(rsiBounced||epct>=-10)&&score>=2&&epct>=-20);
   const divToWatchlist=(div&&score<=1&&rsi10<=35&&epct<=5);
   const watchlistRsiEmaPendingBb=(score===2&&rsiBounced&&!bbRecov&&rsi10<=45&&epct>=-10);
