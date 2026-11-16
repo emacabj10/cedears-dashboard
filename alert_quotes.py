@@ -895,7 +895,7 @@ for ticker, sym in YF_MAP.items():
     )
 
     # bb_ema_watchlist: BB recuperado + precio cerca EMA + sin rebote RSI + RSI en zona baja
-    # RSI <= 40 evita falsos positivos como GOOGL con RSI 50 sobre EMA
+    # RSI <= 45 (mismo techo que la señal) evita falsos positivos como GOOGL con RSI 50 sobre EMA
     bb_ema_watchlist = (
         bb_recov
         and epct >= -5
