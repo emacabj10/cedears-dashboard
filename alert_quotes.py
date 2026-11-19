@@ -506,8 +506,11 @@ def sugerencia_watchlist(score, rsi10, epct, fund, div, bb_recov, bb_below, rsi_
 def score_signal(ticker, q):
     """
     Nuevo sistema de score máximo 3 puntos:
-      Punto 1 (RSI)       : rsi10 cruzando al alza el nivel de 30
-                            (rsi_prev <= 30 y rsi10 > 30)
+      Punto 1 (RSI)       : rebote desde sobreventa (rsi_bounced_15, calculado
+                            en fetch_ticker): el RSI tocó <= 30 en las últimas
+                            15 velas, hoy está > 30 y está subiendo.
+                            Fallback de 1 vela si q no trae el dato:
+                            rsi_prev <= 30 y rsi10 > 30
       Punto 2 (EMA200)    : precio a no más del 10% por debajo de la EMA200
                             (dentro del -5% = posición completa; -5% a -10% = media)
       Punto 3 (Bollinger) : cierre anterior < bb_lo_prev y cierre actual >= bb_lo
