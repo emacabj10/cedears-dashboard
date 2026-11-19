@@ -696,7 +696,7 @@ function scoreTelegram(s){
   const watchlistScore2=(score===2&&!rsiBounced&&rsi10<=45&&epct>=-10&&epct<=10);
   const bbEmaWatchlist=(bbRecov&&epct>=-5&&!rsiBounced&&rsi10<=45&&epct<=10);
   const divToSignal=(div&&bbRecov&&(rsiBounced||epct>=-10)&&score>=2&&epct>=-20);
-  const divToWatchlist=(div&&score<=1&&rsi10<=35&&epct<=5);
+  const divToWatchlist=(div&&score<=1&&rsi10<=35&&epct<=5&&epct>=-20);
   const watchlistRsiEmaPendingBb=(score===2&&rsiBounced&&!bbRecov&&rsi10<=45&&epct>=-10);
   const bbRecovLejos=(score===2&&bbRecov&&rsiBounced&&rsi10<=45&&epct>=-20&&epct<-10);
 
