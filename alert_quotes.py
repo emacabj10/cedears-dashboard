@@ -489,7 +489,16 @@ def sugerencia_watchlist(score, rsi10, epct, fund, div, bb_recov, bb_below, rsi_
 
     # Caso 4: divergencia activa
     if div:
-        falta = "RSI" if not rsi_ok else ("BB" if not bb_ok else "EMA")
+        faltan = []
+        if not rsi_ok:
+            faltan.append("RSI")
+        if not bb_ok:
+            faltan.append("BB")
+        if epct < -10:
+            faltan.append("EMA")
+        if not faltan:
+            faltan = ["EMA"]
+        falta = faltan[0] if len(faltan) == 1 else ", ".join(faltan[:-1]) + " y " + faltan[-1]
         return (
             f"Falta confirmar {falta} para completar la señal. "
             "Cuando se complete, entrada con posición completa."
@@ -924,7 +933,9 @@ for ticker, sym in YF_MAP.items():
     # Más lejos que eso queda en radar, sin mensaje individual.
     # RSI <= 35 evita watchlists por divergencia cuando el RSI está simplemente "débil"
     # pero no en zona de oversold real. Activos con RSI 36-45 + div se ignoran.
-    div_to_watchlist = div and score <= 1 and rsi10 <= 35 and epct <= 5 and epct >= -20
+    # Score mínimo 1: con score 0 (nada confirmado: RSI sin rebote, EMA fuera de -10% y BB sin
+    # recuperar) la divergencia sola no alcanza para mensaje individual; queda en radar.
+    div_to_watchlist = div and score == 1 and rsi10 <= 35 and epct <= 5 and epct >= -20
 
     # watchlist_rsi_ema_pending_bb: RSI rebotó desde oversold + EMA ok, solo falta BB.
     # Caso típico: activo que completó el rebote RSI hace varias velas, se alejó del
