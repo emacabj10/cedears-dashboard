@@ -14,6 +14,12 @@ on:
         required: false
         default: ''
 
+# Un solo run a la vez: evita que dos runs pisen data.json (marcados "Operada" perdidos).
+# cancel-in-progress: false => el run en curso termina y el siguiente espera su turno.
+concurrency:
+  group: update-quotes
+  cancel-in-progress: false
+
 jobs:
   fetch:
     runs-on: ubuntu-latest
@@ -31,8 +37,10 @@ jobs:
 
       - name: Detect command type
         id: cmd
+        env:
+          CMD_INPUT: ${{ github.event.inputs.cmd_operado }}
         run: |
-          CMD="${{ github.event.inputs.cmd_operado }}"
+          CMD="$CMD_INPUT"
           # trim de espacios
           CMD="${CMD#"${CMD%%[![:space:]]*}"}"
           CMD="${CMD%"${CMD##*[![:space:]]}"}"
