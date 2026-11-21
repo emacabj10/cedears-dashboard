@@ -1,0 +1,35 @@
+name: Limpiar runs viejos
+
+# Borra el historial de runs de Actions y conserva los 50 más recientes.
+# No toca data.json ni el estado del bot: solo borra logs viejos.
+on:
+  schedule:
+    - cron: '0 9 * * 0'   # domingos 06:00 ARG (09:00 UTC)
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      KEEP: 50
+    steps:
+      - name: Borrar runs completados más viejos que los últimos 50
+        run: |
+          # Cada vuelta lista hasta 1000 runs y borra todos menos los 50 más nuevos.
+          # 4 vueltas cubren hasta ~3800 runs acumulados.
+          for i in 1 2 3 4; do
+            ids=$(gh run list --repo "$REPO" --limit 1000 --json databaseId,createdAt,status \
+              --jq "[.[] | select(.status==\"completed\")] | sort_by(.createdAt) | reverse | .[${KEEP}:] | .[].databaseId")
+            if [ -z "$ids" ]; then
+              echo "Nada más para borrar."
+              break
+            fi
+            echo "Vuelta $i: borrando $(echo "$ids" | wc -l) runs"
+            echo "$ids" | xargs -I{} gh run delete {} --repo "$REPO"
+          done
