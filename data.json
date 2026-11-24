@@ -1072,6 +1072,12 @@
       "rsi_reset": false,
       "override_sent": false,
       "tren_sent": false
+    },
+    "MSFT": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "completa"
     }
   },
   "daily": {
@@ -1081,6 +1087,12 @@
       "MSFT"
     ],
     "watchlist": [],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "MSFT",
+        "price": "$497.02",
+        "hora": "14:20"
+      }
+    ]
   }
 }
