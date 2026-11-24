@@ -1078,6 +1078,12 @@
       "rsi_hit_50": false,
       "rsi_reset": false,
       "posicion": "completa"
+    },
+    "DIA": {
+      "is_silenced": true,
+      "rsi_hit_50": false,
+      "rsi_reset": false,
+      "posicion": "completa"
     }
   },
   "daily": {
@@ -1092,6 +1098,11 @@
         "ticker": "MSFT",
         "price": "$497.02",
         "hora": "14:20"
+      },
+      {
+        "ticker": "DIA",
+        "price": "$496.60",
+        "hora": "14:23"
       }
     ]
   }
