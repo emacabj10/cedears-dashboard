@@ -1088,11 +1088,10 @@
       "tren_sent": false
     },
     "SPY": {
-      "is_silenced": false,
+      "is_silenced": true,
       "rsi_hit_50": false,
       "rsi_reset": false,
-      "override_sent": false,
-      "tren_sent": true
+      "posicion": "completa"
     }
   },
   "daily": {
@@ -1106,6 +1105,12 @@
       "BNB",
       "AMD"
     ],
-    "entradas": []
+    "entradas": [
+      {
+        "ticker": "SPY",
+        "price": "$726.42",
+        "hora": "14:32"
+      }
+    ]
   }
 }
