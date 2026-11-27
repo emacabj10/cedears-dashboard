@@ -1,10 +1,6 @@
 name: Update quotes
 
 on:
-  schedule:
-    - cron: '30 07 * * 1-5'   # 10:30 ARG — apertura
-    - cron: '30 10 * * 1-5'   # 13:30 ARG — media rueda
-    - cron: '30 13 * * 1-5'   # 16:30 ARG — cierre
   workflow_dispatch:
     inputs:
       cmd_operado:
